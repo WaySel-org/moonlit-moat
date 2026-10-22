@@ -135,7 +135,8 @@ output { font-variant-numeric: tabular-nums; color: var(--fg); min-width: 44px; 
 
 #minimap { position: fixed; top: calc(16px + env(safe-area-inset-top, 0px)); right: 16px; width: 170px; height: 170px; border: 1px solid var(--line); border-radius: 6px; background: rgba(6, 10, 12, 0.82); z-index: 2; pointer-events: none; }
 #minimap.big { width: min(420px, calc(100vw - 32px)); height: min(420px, calc(100vw - 32px)); }
-#hero { position: fixed; top: calc(196px + env(safe-area-inset-top, 0px)); right: 16px; width: min(280px, calc(100vw - 32px)); box-sizing: border-box; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; font-size: 12px; z-index: 2; }
+#campclock { position: fixed; top: calc(192px + env(safe-area-inset-top, 0px)); right: 16px; width: 170px; box-sizing: border-box; text-align: center; font-size: 11px; color: #7fdc8a; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 3px 0; pointer-events: none; z-index: 2; font-variant-numeric: tabular-nums; }
+#hero { position: fixed; top: calc(222px + env(safe-area-inset-top, 0px)); right: 16px; width: min(280px, calc(100vw - 32px)); box-sizing: border-box; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; font-size: 12px; z-index: 2; }
 #hero:not([open]) { width: auto; }
 #hero > summary { cursor: pointer; padding: 9px 14px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; font-size: 11px; color: var(--moon); list-style: none; }
 #hero > summary::-webkit-details-marker { display: none; }
@@ -157,13 +158,15 @@ output { font-variant-numeric: tabular-nums; color: var(--fg); min-width: 44px; 
 .sk i { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: rgba(0,0,0,.7); }
 .sk.locked { opacity: .3; }
 #prompt { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(74px + env(safe-area-inset-bottom, 0px)); font-size: 12px; color: var(--moon); background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 5px 10px; pointer-events: none; white-space: nowrap; }
-#shop { position: fixed; inset: 0; display: grid; place-items: center; padding-inline: 16px; background: rgba(0,0,0,.5); z-index: 3; }
-#shop .card { width: min(380px, 100%); box-sizing: border-box; display: grid; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; font-size: 12px; }
-#shop h2 { margin: 0; font-size: 18px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--moon); font-weight: 600; }
-#shop p { margin: 0; color: var(--muted); line-height: 1.45; }
+#shop, #worlds { position: fixed; inset: 0; display: grid; place-items: center; padding-inline: 16px; background: rgba(0,0,0,.5); z-index: 3; }
+#shop .card, #worlds .card { width: min(380px, 100%); box-sizing: border-box; display: grid; gap: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 20px; font-size: 12px; }
+#shop h2, #worlds h2 { margin: 0; font-size: 18px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--moon); font-weight: 600; }
+#shop p, #worlds p { margin: 0; color: var(--muted); line-height: 1.45; }
 .shopbtn { display: flex; justify-content: space-between; gap: 12px; font: inherit; text-align: left; color: var(--fg); background: rgba(255,255,255,.03); border: 1px solid var(--line); border-radius: 4px; padding: 9px 12px; cursor: pointer; }
 .shopbtn:disabled { color: var(--muted); cursor: default; }
-#shop .close { font: inherit; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #11161a; background: var(--moon); border: 0; border-radius: 4px; padding: 9px 16px; cursor: pointer; }
+#worldlist { display: grid; gap: 8px; }
+.shopbtn small { display: block; margin-top: 2px; font-size: 10px; color: var(--muted); line-height: 1.4; }
+#shop .close, #worlds .close { font: inherit; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #11161a; background: var(--moon); border: 0; border-radius: 4px; padding: 9px 16px; cursor: pointer; }
 #cbars { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
 .cbar { position: absolute; left: 0; top: 0; display: grid; justify-items: center; gap: 2px; }
 .cbar span { font-size: 10px; white-space: nowrap; color: var(--fg); text-shadow: 0 0 4px #000, 0 0 2px #000; }

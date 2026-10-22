@@ -106,7 +106,7 @@
       const A = c.atk; A.t += dt;
       c.tele.circle(A.at.x, A.at.y, A.at.z, 2.8, A.t / 1.1);
       if (A.t >= 1.1) {
-        c.tele.hide(); c.atk = null; c.cool = 2.2 + Math.random();
+        c.tele.hide(); c.atk = null; c.cool = (2.2 + Math.random()) * (c.storyBoss ? 0.65 : 1);
         sfx('boom'); G.shake = Math.max(G.shake, 0.4);
         for (let i = 0; i < 70; i++) { fwColor.setHSL(c.godHue + Math.random() * 0.05, 0.8, 0.75); fwParticle(A.at.x + (Math.random() - 0.5) * 2, A.at.y + Math.random() * 10, A.at.z + (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, -6 - Math.random() * 6, (Math.random() - 0.5) * 2, fwColor, 0.6, true); }
         if (flatDist(player.position, A.at) < 3.1 && Math.abs(player.position.y - A.at.y) < 2) hitPlayer(30, A.at, 9, false, c);
@@ -142,14 +142,19 @@
     const ratio = c.max > 1 ? c.hp / c.max : 1;
     c.max = Math.round((CREEP_BASE[c.type] || 50) * (c.ancient ? 4 : 1) * (1 + 0.35 * (c.lv - 1)));
     c.hp = Math.max(1, Math.round(c.max * ratio));
-    c.bar.className = 'cbar' + (c.ancient ? ' anc' : (c.lv > worldTier() ? ' vet' : ''));
+    c.bar.className = 'cbar' + (c.ancient || c.storyBoss ? ' anc' : (c.lv > worldTier() ? ' vet' : ''));
   }
   function spawnCreep(c) {
-    const p = c.ancient ? c.camp.clone().add(new THREE.Vector3((Math.random() - 0.5) * 2, 0, (Math.random() - 0.5) * 2)) : (c.realm === 'spirit' ? spiritSpot(c) : creepSpot());
+    if (c.storyBoss && G.story.step[c.storyBoss] !== 1) { c.respawn = 2; return; }
+    // Pick the spot as the creep's own world and realm see it
+    const w0 = G.world, r0 = G.realm;
+    if (WORLDS[c.realm]) { G.world = c.realm; G.realm = 'material'; } else { G.world = 'moat'; G.realm = c.realm; }
+    const p = c.storyBoss ? c.camp.clone() : (c.ancient || c.neutral) ? c.camp.clone().add(new THREE.Vector3((Math.random() - 0.5) * 2, 0, (Math.random() - 0.5) * 2)) : (c.realm === 'spirit' ? spiritSpot(c) : WORLDS[c.realm] ? worldSpot(c) : creepSpot());
+    G.world = w0; G.realm = r0;
     if (!p) { c.respawn = 2; return; }
-    c.lv = worldTier() + (c.ai === 'godling' ? 3 : c.ancient ? 2 : (Math.random() < 0.3 ? 1 : 0)); c.max = 1; c.age = 0;
+    c.lv = worldTier() + (c.storyBoss ? 0 : c.ai === 'godling' ? 3 : c.ancient ? 2 : (Math.random() < 0.3 ? 1 : 0)); c.max = 1; c.age = 0;
     creepStats(c);
-    c.alive = true; c.g.visible = c.realm === G.realm; c.pos.copy(p); c.home.copy(p); c.wander.copy(p);
+    c.alive = true; c.g.visible = c.realm === realmKey(); c.pos.copy(p); c.home.copy(p); c.wander.copy(p);
     c.atk = null; c.cool = 1; c.stun = 0; c.leash = false;
     c.g.scale.setScalar((c.ancient ? 1.8 : 1) * (c.type === 'crawler' ? 1 + (c.lv - 1) * 0.08 : 1));
   }
@@ -165,21 +170,21 @@
   }
   function updateCreep(c, dt) {
     if (!c.alive) { c.respawn -= dt; if (c.respawn <= 0) spawnCreep(c); return; }
-    if (c.realm !== G.realm) return;
+    if (c.realm !== realmKey()) return;
     const tt = uTime.value;
     c.flash = Math.max(0, c.flash - dt * 6);
     const glowA = c.ancient ? 0.22 + 0.08 * Math.sin(tt * 3) : 0;
     if (c.type === 'crawler') c.mat.emissive.setRGB(c.flash + glowA, c.flash * 0.8 + glowA * 0.6, c.flash * 0.6);
     // Creeps grow stronger the longer they live
     c.age += dt;
-    if (c.age > 75 && c.lv < worldTier() + (c.ancient ? 4 : 3)) {
+    if (c.age > 75 && !c.storyBoss && c.lv < worldTier() + (c.ancient ? 4 : 3)) {
       c.age = 0; c.lv++; creepStats(c); c.hp = Math.min(c.max, c.hp + c.max * 0.25);
       if (flatDist(c.pos, player.position) < 22) floatText(`${CREEP_NAME[c.type]} reached Lv ${c.lv}`, c.pos.clone().add(new THREE.Vector3(0, 2.2, 0)), 'word', '#ffd36a');
     }
     const d = flatDist(player.position, c.pos);
     if (flatDist(c.pos, c.home) > (c.ancient ? 12 : 26)) c.leash = true;
     if (c.leash && flatDist(c.pos, c.home) < 3) c.leash = false;
-    const aggro = d < 11 && player.position.y < 2 && !c.leash && G.state !== 'dead' && G.state !== 'won';
+    const aggro = (c.neutral ? (c.provoked || d < 3.5) : d < 11) && player.position.y < 2 && !c.leash && G.state !== 'dead' && G.state !== 'won';
     c.stun = Math.max(0, c.stun - dt);
     const groundY = Math.min(0, groundAt(c.pos.x, c.pos.z));
     if (c.ai === 'godling') { updateGodling(c, dt, d, groundY); }
@@ -241,6 +246,7 @@
   }
   function damageCreep(c, dmg, poiseDmg, heavy) {
     if (!c.alive) return;
+    if (c.neutral) provokeCamp(c);
     const out = Math.round(dmg * (0.9 + Math.random() * 0.2) * (P.buffDmg > 0 ? 1.5 : 1));
     c.hp -= out; c.flash = 1; if (heavy) c.stun = 0.5;
     const at = c.pos.clone().add(new THREE.Vector3(0, 1, 0));
@@ -252,14 +258,16 @@
   }
   function killCreep(c) {
     c.alive = false; c.g.visible = false; c.tele.hide(); c.atk = null; c.bar.hidden = true;
-    c.respawn = c.ai === 'godling' ? 120 : c.ancient ? 60 : 7 + Math.random() * 6;
+    c.respawn = c.neutral ? Infinity : c.ai === 'godling' ? 120 : c.ancient ? 60 : 7 + Math.random() * 6;
+    if (c.neutral) campCreepDied(c);
     spawnSoul(c.pos.x, c.pos.y, c.pos.z, c.ai === 'godling' ? 0.4 : c.ancient ? 0.15 : 0.06);
     if (c.ai === 'godling') floatText(`${c.godName} falls`, c.pos.clone().add(new THREE.Vector3(0, 4, 0)), 'word', '#e0c8ff');
     if (c.ancient) { floatText('Ancient slain', c.pos.clone().add(new THREE.Vector3(0, 2.6, 0)), 'word', '#ff9a4a'); G.shake = Math.max(G.shake, 0.3); }
     burst(c.pos.x, c.pos.y + 0.6, c.pos.z, 24, 5);
-    reward((c.type === 'crawler' ? 22 : 18) * c.mult * (c.ancient ? 6 : 1) * (c.ai === 'godling' ? 14 : 1), (4 + Math.random() * 6) * c.mult * (c.ancient ? 5 : 1) * (c.ai === 'godling' ? 10 : 1), c.pos.clone().add(new THREE.Vector3(0, 1.8, 0)));
+    reward((c.type === 'crawler' ? 22 : 18) * c.mult * (c.neutral ? 1.5 : 1) * (c.ancient ? 6 : 1) * (c.ai === 'godling' ? 14 : 1), (4 + Math.random() * 6) * c.mult * (c.ancient ? 5 : 1) * (c.ai === 'godling' ? 10 : 1), c.pos.clone().add(new THREE.Vector3(0, 1.8, 0)));
     if (c.ancient) spawnLoot(c.pos.x + 1, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
     if (Math.random() < 0.2) spawnLoot(c.pos.x, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
+    if (c.storyBoss) completeChapter(c.storyBoss);
     if (G.target === c) G.target = null;
   }
   const loot = [];

@@ -27,7 +27,7 @@
         if (uMode > 1.5 || (uMode > 0.5 && fc.x < splitX)) { gl_FragColor = vec4(texture2D(tScene, fc / uRes).rgb, 1.0); return; }
         vec2 ci = floor(fc / uCell);
         // In the spirit realm the world sways like a dream; gameplay stays put
-        vec2 wfc = fc + uSpirit * vec2(sin(fc.y * 0.018 + uTime * 1.3) * 7.0, cos(fc.x * 0.014 + uTime * 0.9) * 5.0) * (uRes.y / 900.0);
+        vec2 wfc = fc + uSpirit * vec2(sin(fc.y * 0.018 + uTime * 1.3) * 12.0, cos(fc.x * 0.014 + uTime * 0.9) * 8.0) * (uRes.y / 900.0);
         vec2 cw = floor(wfc / uCell);
         vec3 col = cellCol(cw);
         float lum = clamp(pow(L(col) * uGain, 0.8), 0.0, 1.0);
@@ -68,14 +68,16 @@
           tint = vec3(1.0, 0.72, 0.3) * (0.25 + lv) * (imp > 0.5 ? 1.2 : 0.6);
         }
         vec3 bg = uPal < 0.5 ? vec3(0.03, 0.033, 0.035) : vec3(0.012, 0.018, 0.022);
-        bg = mix(bg, vec3(0.05, 0.04, 0.09), uSpirit);
+        bg = mix(bg, vec3(0.06, 0.035, 0.11), uSpirit);
+        float pulse = 0.5 + 0.5 * sin(uTime * 1.8);
+        bg += vec3(0.16, 0.05, 0.26) * uSpirit * smoothstep(0.25, 0.75, length(fc / uRes - 0.5) * 1.4) * (0.55 + 0.45 * pulse);
         // Falling code rain over the scenery, only in the spirit realm
         vec3 rain = vec3(0.0);
         if (uSpirit > 0.01 && imp < 0.5) {
           float rows = uRes.y / uCell, seed = fract(sin(ci.x * 91.7) * 43758.5);
           float head = fract(uTime * (3.0 + seed * 8.0) / rows + seed * 7.0);
           float d = head - (1.0 - (ci.y + 0.5) / rows); if (d < 0.0) d += 1.0;
-          float trail = (d < 0.2 && seed > 0.4) ? 1.0 - d / 0.2 : 0.0;
+          float trail = (d < 0.2 && seed > 0.22) ? 1.0 - d / 0.2 : 0.0;
           if (trail > 0.0) {
             float rg = 1.0 + floor(fract(sin(dot(ci, vec2(12.9898, 78.233)) + floor(uTime * 8.0)) * 43758.5) * (uCount - 2.0));
             float rm = texture2D(tAtlas, vec2((rg + local.x) / uTotal, local.y)).r;

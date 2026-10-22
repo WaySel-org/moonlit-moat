@@ -34,23 +34,25 @@
     P.hp = P.max; P.mana = P.manaMax; P.flasks = PR.flaskMax; sfx('drink');
     renderShop();
   }
-  function closeShop() { G.shop = false; ui.shop.hidden = true; if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }
+  function closeShop() { G.shop = false; G.gateUI = false; ui.shop.hidden = true; document.getElementById('worlds').hidden = true; if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }
   document.getElementById('shopclose').addEventListener('click', closeShop);
 
   function nearestInteract() {
     if (G.state === 'dead' || G.state === 'won') return null;
     if (P.mount) return { kind: 'dismount' };
+    if (G.world !== 'moat') return worldInteract();
     let best = null, bd = 2.2;
     chests.forEach(c => { if (!c.open && Math.abs(player.position.y - c.y) < 1.5) { const d = flatDist(player.position, c); if (d < bd) { bd = d; best = { kind: 'chest', c }; } } });
     if (best || P.y > 1) return best;
     if (flatDist(player.position, SHRINE) < 2.6) return { kind: 'shrine' };
     if (G.realm === 'spirit') return best;
-    if (G.state === 'explore' && B.state === 'perch' && Math.hypot(player.position.x, player.position.z + 17) < 7) return { kind: 'gate' };
+    if (flatDist(player.position, MOAT_GATE) < 3) return { kind: 'wgate' };
+    if (G.state === 'explore' && !G.storm && B.state === 'perch' && Math.hypot(player.position.x, player.position.z + 17) < 7) return { kind: 'gate' };
     beasts.forEach(b => { if (b.state === 'wild' && flatDist(player.position, b.g.position) < 3.4) best = { kind: 'beast', b }; });
     return best;
   }
   function interact() {
     if (G.shop) { closeShop(); return; }
     const it = nearestInteract(); if (!it) return;
-    if (it.kind === 'chest') openChest(it.c); else if (it.kind === 'gate') startFight(); else if (it.kind === 'beast') beginTame(it.b); else if (it.kind === 'dismount') dismount(); else openShop();
+    if (it.kind === 'wgate') openWorlds(); else if (it.kind === 'survivor') rescue(it.s); else if (it.kind === 'chest') openChest(it.c); else if (it.kind === 'gate') startFight(); else if (it.kind === 'beast') beginTame(it.b); else if (it.kind === 'dismount') dismount(); else openShop();
   }

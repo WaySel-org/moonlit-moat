@@ -44,6 +44,7 @@ DOMAINS = [
     ('Progression', 'actors/player', 'progression'),
     ("Warden's Leap", 'actors/player', 'warden-leap'),
     ('Creeps', 'actors/creeps', 'creeps'),
+    ('Neutral camps', 'actors/creeps', 'neutral-camps'),
     ('Treasure chests', 'world/moat', 'treasure-chests'),
     ('Moon Shrine', 'world/moat', 'moon-shrine'),
     ('HUD', 'ui', 'hud'),
@@ -56,6 +57,7 @@ DOMAINS = [
     ('Warden hunts', 'actors/bosses', 'warden-hunts'),
     ('Readability', 'render', 'gameplay-mask'),
     ('The Spirit Realm', 'world/spirit', 'spirit-realm'),
+    ('Spirit sword', 'world/spirit', 'spirit-sword-and-storm'),
     ('Map', 'ui', 'minimap'),
     # Multi-world system (from the multi-world branch)
     ('World system', 'world', 'world-system'),

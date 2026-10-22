@@ -22,24 +22,22 @@
 
 
     const pr = updatePlayer(dt);
-    updateBoss(dt);
-    updatePods(dt);
+    const inMoat = G.world === 'moat';
+    if (inMoat) { updateBoss(dt); updatePods(dt); }
     updateBolts(dt);
-    royals.forEach(r => updateRoyal(r, dt));
-    updateShots(dt);
-    updateDragon(dt);
+    if (inMoat) { royals.forEach(r => updateRoyal(r, dt)); updateShots(dt); updateDragon(dt); }
     updateFireworks(dt);
     updatePatches(dt);
     creeps.forEach(c => updateCreep(c, dt));
     updateCreepShots(dt);
-    updateChests(dt);
+    if (inMoat) updateChests(dt);
     updateLoot(dt);
     updateFxRings(dt);
-    updateTraps(dt);
+    if (inMoat) updateTraps(dt);
     updateSwooshes(dt);
-    updateBeasts(dt);
-    updateHunt(dt);
-    if (G.state === 'interlude' && player.position.y > ROOF.y - 0.5 && Math.abs(player.position.z) > 20) startRoyal();
+    if (inMoat) { updateBeasts(dt); if (!G.storm) updateHunt(dt); }
+    if (inMoat && !G.storm && G.state === 'interlude' && player.position.y > ROOF.y - 0.5 && Math.abs(player.position.z) > 20) startRoyal();
+    if (!G.shop && !G.paused) updateWorlds(dt, real);
     if (G.wardenDown) wards.forEach(w => { if (w.visible) { w.material.opacity -= real * 0.6; if (w.material.opacity <= 0) w.visible = false; } });
     else wards.forEach(w => { w.material.opacity = 0.55 + 0.2 * Math.sin(t * 6); });
 
@@ -117,7 +115,7 @@
     sky.position.copy(camera.position);
 
     // Pass 1: reflection from a camera mirrored below the water line
-    if (S.reflect && Math.hypot(player.position.x - LAKE.x, player.position.z - LAKE.z) < 45) {
+    if (S.reflect && G.world === 'moat' && Math.hypot(player.position.x - LAKE.x, player.position.z - LAKE.z) < 45) {
       mirrorCam.position.set(camera.position.x, -camera.position.y, camera.position.z);
       mirrorCam.lookAt(camLook.x, -camLook.y, camLook.z);
       water.visible = false;

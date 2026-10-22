@@ -2,11 +2,55 @@
   "id": "ashfall",
   "name": "Ashfall",
   "theme": "zombie",
-  "status": "in-progress",
+  "status": "live",
   "originality": "original",
   "dataDriven": false,
   "bounds": 70,
   "objective": "Rescue 3 survivors",
   "boss": "The Rot Sovereign",
-  "shard": "Shard of the World Heart (Ashfall)"
+  "shard": "Shard of the World Heart (Ashfall)",
+  "spawn": [
+    0,
+    56
+  ],
+  "worldGate": [
+    -5,
+    61
+  ],
+  "bossBaseHealth": 2200,
+  "gameId": "ash",
+  "objectivePoints": [
+    [
+      -44,
+      -18
+    ],
+    [
+      42,
+      8
+    ],
+    [
+      -8,
+      -50
+    ]
+  ],
+  "bossAt": [
+    26,
+    -34
+  ],
+  "roster": [
+    {
+      "name": "Shambler",
+      "ai": "melee",
+      "count": 15,
+      "baseHealth": 72
+    },
+    {
+      "name": "Bloater",
+      "ai": "ranged",
+      "count": 5,
+      "baseHealth": 56
+    }
+  ],
+  "solids": "up to 18 ruined houses and 30 dead trees",
+  "unlockedBy": "Director Halvane's defeat"
 }

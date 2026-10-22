@@ -1,6 +1,6 @@
 # Ashfall
 
-**Status:** in progress
+**Status:** live
 
 ## The place
 A shard of ash and dusk: ruined houses, dead trees, graves, and the last of the living hiding in the fog.

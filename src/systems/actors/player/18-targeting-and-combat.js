@@ -2,9 +2,10 @@
   const WARDEN = { get pos() { return boss.position; }, radius: 1.3, hitY: 2.6, markY: 6.3, isWarden: true };
   function liveTargets() {
     const out = [];
-    if (HITTABLE.includes(B.state)) out.push(WARDEN);
-    royals.forEach(r => { if (r.active && r.alive) out.push(r); });
-    creeps.forEach(c => { if (c.alive && c.realm === G.realm && flatDist(c.pos, player.position) < (c.ai === 'godling' ? 40 : 26)) out.push(c); });
+    const rk = realmKey(), inMoat = G.world === 'moat';
+    if (inMoat && HITTABLE.includes(B.state)) out.push(WARDEN);
+    royals.forEach(r => { if (inMoat && r.active && r.alive) out.push(r); });
+    creeps.forEach(c => { if (c.alive && c.realm === rk && flatDist(c.pos, player.position) < (c.ai === 'godling' ? 40 : 26)) out.push(c); });
     return out;
   }
   function nearestTarget(list, from) {
@@ -61,7 +62,7 @@
       const d = flatDist(player.position, t.pos);
       const ang = Math.abs(angDiff(P.facing, yawTo(player.position, t.pos)));
       if (d > range + t.radius || ang > arc / 2) return;
-      damageEnemy(t, dmg * PR.dmg * (G.env.dmg || 1), poiseDmg, heavy);
+      damageEnemy(t, dmg * PR.dmg * (G.env.dmg || 1) * (G.realm === 'spirit' ? 1.3 : 1), poiseDmg, heavy);
     });
   }
   function damageBoss(dmg, poiseDmg, heavy) {

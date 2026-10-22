@@ -30,6 +30,7 @@
 <div id="lockmark" hidden>&#9660;</div>
 <div id="cbars"></div>
 
+<div id="campclock">Camps restock 1:00</div>
 <canvas id="minimap" width="170" height="170" aria-label="Map"></canvas>
 <details id="hero">
   <summary>Hero <span id="hlv">Lv 1</span> <span id="hpts" hidden></span></summary>
@@ -42,6 +43,7 @@
     <div class="row"><span>World tier</span><span id="wtier">1</span></div>
     <div class="row"><span>Environment</span><span id="wenv">Moonlit Night</span></div>
     <div class="row"><span>Warden hunt</span><span id="whunt">in 3:00</span></div>
+    <div class="row"><span>World Heart</span><span id="wshards">0 / 4 shards</span></div>
     <p class="muted" id="wnote">Bosses, creeps and chests grow stronger every two minutes.</p>
     <div class="attrs">
       <div class="attr"><span>Strength <b id="a_str">0</b></span><button type="button" data-attr="str" aria-label="Add a point to strength">+</button><small>+6% weapon damage</small></div>
@@ -82,6 +84,15 @@
     <button type="button" class="shopbtn" id="buy_armor"></button>
     <button type="button" class="shopbtn" id="buy_flask"></button>
     <button type="button" class="close" id="shopclose">Leave (E)</button>
+  </div>
+</div>
+
+<div id="worlds" hidden>
+  <div class="card">
+    <h2>World Gate</h2>
+    <p id="worldsnote">Shards of the World Heart: 0 of 4. Each world holds one.</p>
+    <div id="worldlist"></div>
+    <button type="button" class="close" id="worldsclose">Stay (E)</button>
   </div>
 </div>
 
@@ -141,12 +152,14 @@
         <dt>Z</dt><dd>Throw a dagger. Fast, costs a little stamina.</dd>
         <dt>V</dt><dd>Arc Volley: five homing bolts. Unlocks at level 3, costs 50 mana.</dd>
         <dt>X</dt><dd>Warden's Leap: jump onto a target or up onto the roof and slam the ground. Earned by beating the Warden.</dd>
-        <dt>E</dt><dd>Open a chest or use the Moon Shrine.</dd>
+        <dt>E</dt><dd>Open a chest, use the Moon Shrine or a World Gate.</dd>
         <dt>P</dt><dd>Open your hero sheet to spend attribute points.</dd>
       </dl>
       <p style="margin:8px 0 0">After the Warden falls, the red ward on the stairs beside the gate breaks. Climb to the roof to face two queens. Vesthra the Gorgon sweeps her tail all around her, lunges, and fires a stone gaze down a long red lane: turn your back or roll before it lands, or you are frozen in place. Nyxara the Thorn Empress floats out of reach, throws fans of thorns, calls a burst of briars under your feet, and vanishes to the far side of the roof when you get close. Kill one and the other gets faster. Die on the roof and you start again at the foot of the stairs.</p>
       <p style="margin:8px 0 0">Cinderwing the dragon circles the castle setting off fireworks. It leaves you alone unless you hit it. Hit it and it fights back for a while with fireballs and fire breath. Drive it off and it drops a big reward, then returns a few minutes later.</p>
       <p style="margin:8px 0 0">Crawlers and wisps roam the meadow. Kill them for gold and experience, and sometimes a pod. Each level gives two attribute points (P). Treasure chests (E) are spread across the map and upgrade from wooden to iron, gilded and crystal the longer you leave them. The world tier rises every two minutes, so the bosses get stronger the longer you wait.</p>
+      <p style="margin:8px 0 0">The Sundering: the World Heart has cracked and every world holds a shard. The Gate Warden guards the moat's. Beat it and the World Gate beside the Moon Shrine opens onto Veyra, a violet grove under three moons: walk over three Lumen Seeds, then face the Hive Matron. Next is Neon Verge, a smog-lit city: stand beside three relay terminals for three seconds each to hack them, then face Director Halvane. Last is Ashfall, a dead town under falling ash: press E beside three survivors to lead them out, then face the Rot Sovereign. Each guardian you beat carries you on to the next world, and you can travel back through any World Gate (not mid-fight, during a hunt or from the spirit realm).</p>
+      <p style="margin:8px 0 0">Every few minutes a rift storm may tear you into another world, open or sealed, for 75 seconds before dropping you back where you were. After the last shard the game keeps going: tiers rise, the Warden hunts and the Veil still opens.</p>
       <p style="margin:8px 0 0;color:var(--muted)">The pond is shallow. You can wade through it, but slowly.</p>
       <ul class="legend">
         <li><i style="background:var(--b-green)"></i>Green pod: +35 health</li>

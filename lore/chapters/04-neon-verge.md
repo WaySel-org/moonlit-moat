@@ -1,6 +1,6 @@
 # Neon Verge
 
-**Status:** in progress
+**Status:** live
 
 ## The place
 A shard of towers and smog lit in orange and magenta, where patrol drones never sleep.

@@ -2,11 +2,55 @@
   "id": "veyra",
   "name": "Veyra",
   "theme": "alien",
-  "status": "in-progress",
+  "status": "live",
   "originality": "original",
   "dataDriven": false,
   "bounds": 70,
   "objective": "Collect 3 Lumen Seeds",
   "boss": "The Hive Matron",
-  "shard": "Shard of the World Heart (Veyra)"
+  "shard": "Shard of the World Heart (Veyra)",
+  "spawn": [
+    0,
+    56
+  ],
+  "worldGate": [
+    -5,
+    61
+  ],
+  "bossBaseHealth": 2200,
+  "gameId": "veyra",
+  "objectivePoints": [
+    [
+      -42,
+      18
+    ],
+    [
+      44,
+      8
+    ],
+    [
+      8,
+      -50
+    ]
+  ],
+  "bossAt": [
+    0,
+    -14
+  ],
+  "roster": [
+    {
+      "name": "Skitterling",
+      "ai": "melee",
+      "count": 11,
+      "baseHealth": 34
+    },
+    {
+      "name": "Spore Drifter",
+      "ai": "ranged",
+      "count": 6,
+      "baseHealth": 40
+    }
+  ],
+  "solids": "up to 18 crystal spires and 36 mushroom-tree stems",
+  "unlockedBy": "the Gate Warden's true defeat"
 }

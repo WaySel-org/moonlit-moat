@@ -14,17 +14,19 @@
     if (tier !== G.lastTier) {
       G.lastTier = tier; G.env = ENVS[(tier - 1) % ENVS.length];
       genMaze();
-      if (P.y < 1 && groundAt(player.position.x, player.position.z) >= 99) {
+      if (G.world === 'moat' && P.y < 1 && groundAt(player.position.x, player.position.z) >= 99) {
         const c = MAZE.cell; player.position.x = MAZE.x0 + (Math.floor((player.position.x - MAZE.x0) / c) + 0.5) * c; player.position.z = MAZE.z0 + (Math.floor((player.position.z - MAZE.z0) / c) + 0.5) * c;
       }
-      if (ui.banner.hidden || ui.banner.className === 'title') { showBanner(G.env.name, `World tier ${tier}. ${G.env.note} The hedge maze has shifted.`, 'title'); bannerTimer = 4; }
+      if (ui.banner.hidden || ui.banner.className === 'title') { showBanner(G.env.name, `World tier ${tier}. ${G.env.note}${G.world === 'moat' ? ' The hedge maze has shifted.' : ''}`, 'title'); bannerTimer = 4; }
     }
     // Ease the sky, fog and moon toward the current environment
-    const k = Math.min(1, real * 0.6), e = G.realm === 'spirit' ? SPIRIT_ENV : G.env;
+    const k = G.envSnap ? 1 : Math.min(1, real * 0.6), e = G.realm === 'spirit' ? SPIRIT_ENV : G.world !== 'moat' ? WORLD_ENV[G.world] : G.env;
     if (G.realm === 'spirit' && G.state !== 'dead') { const floor = P.max * 0.15; if (P.hp > floor) P.hp = Math.max(floor, P.hp - real * 1.0); }
     postU.uSpirit.value += ((G.realm === 'spirit' ? 1 : 0) - postU.uSpirit.value) * Math.min(1, real * 1.5);
     spiritProps.visible = postU.uSpirit.value > 0.05;
-    updateRifts(real); updateSouls(real);
+    if (G.world === 'moat') updateRifts(real);
+    spiritTick(real); campTick(real);
+    updateSouls(real);
     skyU.uHor.value.x += (e.hor[0] - skyU.uHor.value.x) * k; skyU.uHor.value.y += (e.hor[1] - skyU.uHor.value.y) * k; skyU.uHor.value.z += (e.hor[2] - skyU.uHor.value.z) * k;
     skyU.uZen.value.x += (e.zen[0] - skyU.uZen.value.x) * k; skyU.uZen.value.y += (e.zen[1] - skyU.uZen.value.y) * k; skyU.uZen.value.z += (e.zen[2] - skyU.uZen.value.z) * k;
     skyU.uAur.value += (e.aur - skyU.uAur.value) * k;
@@ -32,6 +34,7 @@
     scene.fog.color.lerp(envFogCol.setHex(e.fogCol), k);
     grassU.uFogD.value = scene.fog.density; grassU.uFogCol.value.copy(scene.fog.color);
     moon.material.color.lerp(moonCol.setHex(e.moon), k);
+    G.envSnap = false;
     if (e.embers) {
       for (let i = 0; i < 3; i++) {
         fwColor.setHSL(0.05 + Math.random() * 0.05, 1, 0.55);

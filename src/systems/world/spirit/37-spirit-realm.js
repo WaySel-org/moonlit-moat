@@ -1,5 +1,5 @@
   // ---------- The Spirit Realm: a dream laid over the same world ----------
-  const SPIRIT_ENV = { name: 'Spirit Realm', hor: [0.2, 0.17, 0.32], zen: [0.04, 0.03, 0.1], moon: 0xd8c8ff, aur: 0.9, fog: 0.018, fogCol: 0x2a2440, embers: 0 };
+  const SPIRIT_ENV = { name: 'Spirit Realm', hor: [0.28, 0.16, 0.42], zen: [0.06, 0.02, 0.14], moon: 0xe0c8ff, aur: 1.4, fog: 0.024, fogCol: 0x3a2458, embers: 0 };
   const RIFTS = [[10, 26], [-28, 10], [34, -14], [-20, 46], [62, 6], [-50, -72], [6, -56]].map(([x, z]) => ({ x, z }));
   const riftMat = new THREE.MeshBasicMaterial({ color: 0xc8a0ff });
   const riftInner = new THREE.MeshBasicMaterial({ color: 0x8a6aff, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false });
@@ -40,7 +40,8 @@
   }
   function setRealm(r, silent) {
     G.realm = r; G.lock = false; G.target = null;
-    creeps.forEach(c => { c.g.visible = c.alive && c.realm === r; if (c.realm !== r) { c.bar.hidden = true; c.tele.hide(); c.atk = null; } });
+    const rk = realmKey();
+    creeps.forEach(c => { c.g.visible = c.alive && c.realm === rk; if (c.realm !== rk) { c.bar.hidden = true; c.tele.hide(); c.atk = null; } });
     if (P.mount && r === 'spirit') dismount(true);
     if (silent) return;
     sfx('parry'); G.shake = Math.max(G.shake, 0.3);
@@ -53,6 +54,7 @@
   function toggleRealm() {
     if (G.paused || G.shop || P.act === 'dead') return;
     const at = player.position.clone().add(new THREE.Vector3(0, 2.6, 0));
+    if (G.world !== 'moat' || G.storm) { floatText(G.storm ? 'The rift storm drowns out the Veil' : 'The Veil only opens over the moat', at, 'word', '#c8a0ff'); return; }
     if (G.realm === 'material') {
       if (!(G.state === 'explore' || G.state === 'interlude') || G.hunt) { floatText("The Veil won't open mid-battle", at, 'word', '#c8a0ff'); return; }
       setRealm('spirit');

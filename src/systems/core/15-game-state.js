@@ -1,5 +1,5 @@
   // ---------- Game state ----------
-  const G = { realm: 'material', state: 'explore', hitstop: 0, slow: 0, shake: 0, lock: false, fightStart: 0, parries: 0, hitsTaken: 0, wardenDown: false, target: null, dmgMult: 1, runStart: 0, shop: false };
+  const G = { world: 'moat', realm: 'material', state: 'explore', hitstop: 0, slow: 0, shake: 0, lock: false, fightStart: 0, parries: 0, hitsTaken: 0, wardenDown: false, target: null, dmgMult: 1, runStart: 0, shop: false };
   const worldTier = () => 1 + Math.floor(Math.max(0, uTime.value - G.runStart) / 120);
   const tierMult = t => 1 + 0.3 * (t - 1);
   const P = { hp: 100, max: 100, st: 100, stMax: 100, stDelay: 0, flasks: 3, act: null, actT: 0, actDur: 0, combo: 0, hitDone: false, buffer: null, bufferT: 0,

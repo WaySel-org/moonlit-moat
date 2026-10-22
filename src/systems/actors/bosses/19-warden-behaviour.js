@@ -239,6 +239,7 @@
     const m = tierMult(G.bossTier || 1);
     PR.warden = true; recalc(); P.armor = P.armorMax; P.mana = P.manaMax;
     reward(300 * m, 160 * m, boss.position.clone().add(new THREE.Vector3(0, 4, 0)));
+    completeChapter('moat');
     setTimeout(() => {
       if (G.state !== 'interlude') return;
       showBanner("Warden's Might", 'You took its power: Leap (X), +40 armour, +25% damage, +10% speed, +50 mana. The stairs are open.', 'title');
@@ -251,7 +252,9 @@
     G.state = 'dead'; G.lock = false; P.act = 'dead'; P.actT = 0; hideTele();
     royals.forEach(r => r.tele.hide());
     let text;
-    if (G.wardenDown) {
+    if (G.world !== 'moat' || G.storm) {
+      text = `You keep your level and lose a fifth of your gold.${G.storm ? ' The rift storm lets go of you.' : ''}`;
+    } else if (G.wardenDown) {
       const left = royals.filter(r => r.alive).map(r => `${r.name} ${Math.round(r.hp / r.max * 100)}%`).join(', ');
       text = `Still standing: ${left}. You keep your level and lose a fifth of your gold.`;
     } else {

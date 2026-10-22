@@ -1,6 +1,6 @@
 # Veyra
 
-**Status:** in progress
+**Status:** live
 
 ## The place
 An alien shard of violet sky and two extra moons, glowing mushroom forests and crystal spires.

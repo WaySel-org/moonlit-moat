@@ -106,6 +106,7 @@
   const OBJ_START = 'Build up on creeps, ancients, chests and the hedge maze to the south-west. When you are ready, press E at the castle gate.';
   function resetGame() {
     if (G.realm === 'spirit') setRealm('material', true);
+    resetStory();
     Object.assign(PR, { level: 1, xp: 0, gold: 0, points: 0, str: 0, vit: 0, agi: 0, spi: 0, weapon: 0, armorLv: 0, flaskMax: 3, warden: false });
     recalc();
     Object.assign(G, { state: 'explore', hitstop: 0, slow: 0, shake: 0, lock: false, parries: 0, hitsTaken: 0, wardenDown: false, target: null, dmgMult: 1, runStart: uTime.value, shop: false });
@@ -123,14 +124,25 @@
     if (G.realm === 'spirit') setRealm('material', true);
     const lost = Math.round(PR.gold * 0.2); PR.gold -= lost;
     resetVitals();
-    if (G.hunt && G.hunt.echo) { B.state = 'dead'; boss.visible = false; hideTele(); ui.bossbar.hidden = true; }
-    Object.assign(G, { hitstop: 0, slow: 0, shake: 0, lock: false, target: null, shop: false, hunt: null, huntClock: 0 });
-    if (G.wardenDown) {
-      resetRoyals(); G.state = 'interlude'; player.position.set(1.5, 0, -16); ui.obj.textContent = OBJ_CLIMB;
-    } else {
-      resetWarden(); G.state = 'explore'; player.position.copy(SPAWN); ui.obj.textContent = OBJ_START;
-    }
     ui.royalbars.hidden = true; ui.banner.hidden = true; ui.hud.hidden = false;
+    const storm = G.storm;
+    if (G.world !== 'moat' || storm) {
+      // Another world, or a rift storm: wake at a world spawn and leave the moat's Warden and royals alone
+      Object.assign(G, { hitstop: 0, slow: 0, shake: 0, lock: false, target: null, shop: false });
+      G.state = G.wardenDown ? 'interlude' : 'explore';
+      calmStoryBoss(G.world);
+      G.storm = null;
+      const to = storm ? storm.from : G.world;
+      enterWorld(to, spawnOf(to), storm ? 'stormEnd' : 'respawn');
+    } else {
+      if (G.hunt && G.hunt.echo) { B.state = 'dead'; boss.visible = false; hideTele(); ui.bossbar.hidden = true; }
+      Object.assign(G, { hitstop: 0, slow: 0, shake: 0, lock: false, target: null, shop: false, hunt: null, huntClock: 0 });
+      if (G.wardenDown) {
+        resetRoyals(); G.state = 'interlude'; player.position.set(1.5, 0, -16); ui.obj.textContent = OBJ_CLIMB;
+      } else {
+        resetWarden(); G.state = 'explore'; player.position.copy(SPAWN); ui.obj.textContent = OBJ_START;
+      }
+    }
     renderHero();
     if (lost) floatText(`-${lost} gold`, player.position.clone().add(new THREE.Vector3(0, 2.5, 0)), 'word', '#ffd36a');
   }

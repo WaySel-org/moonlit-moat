@@ -59,7 +59,7 @@
         const hit = live.find(t => flatDist(b.m.position, t.pos) < t.radius + 0.3 && b.m.position.y > t.pos.y - 0.5 && b.m.position.y < t.pos.y + t.hitY * 2);
         if (hit) { done = true; damageEnemy(hit, b.dmg, b.poise, b.heavy); }
       }
-      if (!done && dragon.state === 'fly' && dragon.g.visible) {
+      if (!done && G.world === 'moat' && dragon.state === 'fly' && dragon.g.visible) {
         const dc = dragon.g.position;
         if (b.m.position.distanceTo(dc) < 3.4) { done = true; damageDragon(b.dmg); }
       }
