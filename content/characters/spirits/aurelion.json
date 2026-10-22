@@ -1,0 +1,12 @@
+{
+  "gameId": "godling",
+  "uniqueName": true,
+  "name": "Aurelion the Sunless",
+  "ai": "godling",
+  "look": "A robed sun-godling with a gold halo; calls down radiant strikes.",
+  "lore": "A god of a dawn that never came, now wandering the spirit wilds.",
+  "id": "aurelion",
+  "kind": "spirit",
+  "world": "spirit",
+  "originality": "original"
+}

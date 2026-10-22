@@ -1,0 +1,12 @@
+{
+  "id": "ashfall",
+  "name": "Ashfall",
+  "theme": "zombie",
+  "status": "in-progress",
+  "originality": "original",
+  "dataDriven": false,
+  "bounds": 70,
+  "objective": "Rescue 3 survivors",
+  "boss": "The Rot Sovereign",
+  "shard": "Shard of the World Heart (Ashfall)"
+}

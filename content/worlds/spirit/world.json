@@ -1,0 +1,53 @@
+{
+  "id": "spirit",
+  "name": "The Spirit Realm",
+  "status": "live",
+  "originality": "original",
+  "dataDriven": false,
+  "overlay": "moat",
+  "bounds": 116,
+  "enterWith": "Q anywhere in the moat",
+  "returnAt": "Veil Rifts",
+  "rifts": [
+    [
+      10,
+      26
+    ],
+    [
+      -28,
+      10
+    ],
+    [
+      34,
+      -14
+    ],
+    [
+      -20,
+      46
+    ],
+    [
+      62,
+      6
+    ],
+    [
+      -50,
+      -72
+    ],
+    [
+      6,
+      -56
+    ]
+  ],
+  "rules": [
+    "Life drains to a 15% floor",
+    "Fallen foes leave souls that heal",
+    "Dying pulls you back to the nearest rift"
+  ],
+  "roster": [
+    "hollow-lantern",
+    "tide-shade",
+    "ember-wraith",
+    "aurelion",
+    "varghast"
+  ]
+}

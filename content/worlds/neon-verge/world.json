@@ -1,0 +1,12 @@
+{
+  "id": "neon-verge",
+  "name": "Neon Verge",
+  "theme": "cyberpunk",
+  "status": "in-progress",
+  "originality": "original",
+  "dataDriven": false,
+  "bounds": 70,
+  "objective": "Hack 3 relay terminals",
+  "boss": "Director Halvane",
+  "shard": "Shard of the World Heart (Neon Verge)"
+}

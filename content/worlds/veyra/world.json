@@ -1,0 +1,12 @@
+{
+  "id": "veyra",
+  "name": "Veyra",
+  "theme": "alien",
+  "status": "in-progress",
+  "originality": "original",
+  "dataDriven": false,
+  "bounds": 70,
+  "objective": "Collect 3 Lumen Seeds",
+  "boss": "The Hive Matron",
+  "shard": "Shard of the World Heart (Veyra)"
+}

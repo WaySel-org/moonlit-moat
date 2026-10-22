@@ -1,0 +1,13 @@
+{
+  "gameId": "godling",
+  "name": "Fallen Godling",
+  "ai": "godling",
+  "stats": {
+    "baseHealth": 900
+  },
+  "look": "Base type for the godlings.",
+  "id": "fallen-godling",
+  "kind": "spirit",
+  "world": "spirit",
+  "originality": "original"
+}

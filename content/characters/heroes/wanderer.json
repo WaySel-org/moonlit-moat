@@ -1,0 +1,15 @@
+{
+  "id": "wanderer",
+  "name": "The Wanderer",
+  "kind": "hero",
+  "world": "moat",
+  "originality": "original",
+  "lore": "An adventurer with a braid, a red scarf and a lantern who walked into the moonlit keep and never left the story.",
+  "look": "Teal tunic, leather belt and boots, braid and scarf that swing when running, lantern in the left hand, sword in the right.",
+  "stats": {
+    "baseHealth": 100,
+    "baseMana": 100,
+    "baseStamina": 100,
+    "walkSpeed": 6.8
+  }
+}

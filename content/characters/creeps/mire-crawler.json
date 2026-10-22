@@ -1,0 +1,13 @@
+{
+  "gameId": "crawler",
+  "name": "Mire Crawler",
+  "kind": "creep",
+  "world": "moat",
+  "stats": {
+    "baseHealth": 60
+  },
+  "ai": "melee",
+  "look": "Low six-legged beetle with a mossy shell and red eyes.",
+  "id": "mire-crawler",
+  "originality": "original"
+}

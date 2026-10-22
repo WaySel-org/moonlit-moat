@@ -1,0 +1,12 @@
+{
+  "gameId": "godling",
+  "uniqueName": true,
+  "name": "Varghast the Hollow Thunderer",
+  "ai": "godling",
+  "look": "A violet storm-godling with a pale halo; calls down thunder.",
+  "lore": "A thunder god whose worshippers forgot his name.",
+  "id": "varghast",
+  "kind": "spirit",
+  "world": "spirit",
+  "originality": "original"
+}

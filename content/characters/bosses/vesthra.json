@@ -1,0 +1,20 @@
+{
+  "id": "vesthra",
+  "gameId": "gorgon",
+  "name": "Vesthra, the Gorgon",
+  "kind": "boss",
+  "world": "moat",
+  "chapter": 1,
+  "lore": "A gorgon from the old myths who rules the castle roof. Meeting her gaze turns flesh to stone.",
+  "look": "Coiled green serpent tail, living snake hair, glowing eyes, twin sickle blades.",
+  "stats": {
+    "baseHealth": 440
+  },
+  "abilities": [
+    "Tail sweep",
+    "Lunge",
+    "Stone gaze (face away to resist)"
+  ],
+  "originality": "original",
+  "dataDriven": false
+}

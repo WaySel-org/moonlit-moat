@@ -1,0 +1,31 @@
+{
+  "gameId": "gryphon",
+  "name": "Gryphon",
+  "stats": {
+    "levelRequired": 4,
+    "speed": 1.6,
+    "goreDamage": 48,
+    "rideHeight": 1.45
+  },
+  "powers": {
+    "mp1": {
+      "name": "Gale Wing",
+      "short": "Gale",
+      "kind": "gust",
+      "cd": 5,
+      "mana": 20
+    },
+    "mp2": {
+      "name": "Sky Pounce",
+      "short": "Pounce",
+      "kind": "pounce",
+      "cd": 7,
+      "mana": 0
+    }
+  },
+  "look": "Eagle-lion with folded wings and a golden beak.",
+  "id": "gryphon",
+  "kind": "mount",
+  "world": "moat",
+  "originality": "original"
+}

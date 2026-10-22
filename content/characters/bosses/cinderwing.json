@@ -1,0 +1,19 @@
+{
+  "id": "cinderwing",
+  "gameId": "dragon",
+  "name": "Cinderwing",
+  "kind": "boss",
+  "world": "moat",
+  "lore": "A dragon that circles the castle setting off fireworks. Peaceful unless struck.",
+  "look": "Dark red scales, back spines, horns, bat-like wings, long tail.",
+  "stats": {
+    "baseHealth": 400
+  },
+  "abilities": [
+    "Fireworks (peaceful)",
+    "Fireball",
+    "Fire breath (only when angered)"
+  ],
+  "originality": "original",
+  "dataDriven": false
+}

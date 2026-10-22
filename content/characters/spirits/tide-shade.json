@@ -1,0 +1,13 @@
+{
+  "gameId": "tide",
+  "name": "Tide Shade",
+  "ai": "ranged",
+  "stats": {
+    "baseHealth": 46
+  },
+  "look": "A tall translucent hooded figure the colour of deep water.",
+  "id": "tide-shade",
+  "kind": "spirit",
+  "world": "spirit",
+  "originality": "original"
+}

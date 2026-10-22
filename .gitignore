@@ -1,6 +1,5 @@
 # Build output and local hosting links
-moonlit-moat/
-site/
+dist/
 .vercel/
 .DS_Store
 __pycache__/
