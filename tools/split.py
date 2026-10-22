@@ -57,6 +57,13 @@ DOMAINS = [
     ('Readability', 'render', 'gameplay-mask'),
     ('The Spirit Realm', 'world/spirit', 'spirit-realm'),
     ('Map', 'ui', 'minimap'),
+    # Multi-world system (from the multi-world branch)
+    ('World system', 'world', 'world-system'),
+    ('World select', 'ui', 'world-select'),
+    ('Rift storms', 'world', 'rift-storms'),
+    ('Veyra', 'world/veyra', 'veyra'),
+    ('Neon Verge', 'world/neon-verge', 'neon-verge'),
+    ('Ashfall', 'world/ashfall', 'ashfall'),
     ('Content', 'core', 'content'),
     ('Pause', 'core', 'pause'),
     ('Input', 'core', 'input'),
