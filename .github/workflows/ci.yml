@@ -72,7 +72,7 @@ jobs:
           docker inspect --format '{{.Config.User}}' moonlit-moat:ci | grep -qx 101
           docker logs mm
       - name: Vulnerability scan
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2  # v0.28.0, pinned by SHA: upstream renamed its tags once already
         with:
           image-ref: moonlit-moat:ci
           severity: CRITICAL,HIGH
