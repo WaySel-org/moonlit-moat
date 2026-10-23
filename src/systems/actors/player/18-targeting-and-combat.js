@@ -4,7 +4,7 @@
     const out = [];
     const rk = realmKey(), inMoat = G.world === 'moat';
     if (inMoat && HITTABLE.includes(B.state)) out.push(WARDEN);
-    royals.forEach(r => { if (inMoat && r.active && r.alive) out.push(r); });
+    royals.forEach(r => { if (r.field ? r.alive && r.g.visible && flatDist(r.pos, player.position) < 30 : inMoat && r.active && r.alive) out.push(r); });
     creeps.forEach(c => { if (c.alive && c.realm === rk && flatDist(c.pos, player.position) < (c.ai === 'godling' ? 40 : 26)) out.push(c); });
     return out;
   }
@@ -17,7 +17,7 @@
     const live = liveTargets();
     if (!live.length) return null;
     if (!G.target || !live.includes(G.target)) {
-      const bosses = live.filter(t => !t.isCreep);
+      const bosses = live.filter(t => !t.isCreep && !(t.field && !G.royalHunt && !(t.provoked > 0)));
       G.target = nearestTarget(bosses.length ? bosses : live, player.position);
     }
     return G.target;
@@ -62,7 +62,7 @@
       const d = flatDist(player.position, t.pos);
       const ang = Math.abs(angDiff(P.facing, yawTo(player.position, t.pos)));
       if (d > range + t.radius || ang > arc / 2) return;
-      damageEnemy(t, dmg * PR.dmg * (G.env.dmg || 1) * (G.realm === 'spirit' ? 1.3 : 1), poiseDmg, heavy);
+      damageEnemy(t, dmg * PR.dmg * (G.env.dmg || 1), poiseDmg, heavy);
     });
   }
   function damageBoss(dmg, poiseDmg, heavy) {
@@ -89,7 +89,7 @@
   // Returns true if the hit connected
   function hitPlayer(dmg, src, kbStrength, parryable, attacker) {
     if (G.state === 'dead' || G.state === 'won' || G.state === 'intro' || G.shop) return false;
-    dmg *= (attacker && attacker.isCreep) ? attacker.mult * G.env.creepDmg : G.dmgMult;
+    dmg *= (attacker && attacker.isCreep) ? attacker.mult * G.env.creepDmg : (attacker && attacker.pow) ? attacker.pow : G.dmgMult;
     if (P.iframe > 0) { floatText('dodged', player.position.clone().add(new THREE.Vector3(0, 2.2, 0)), 'word'); return false; }
     const facingSrc = Math.abs(angDiff(P.facing, yawTo(player.position, src))) < 1.9;
     if (P.block && facingSrc) {

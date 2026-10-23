@@ -24,7 +24,7 @@
     return `${lab} \u00b7 ${W.name}: ${W.task} (${ST.prog[w].filter(v => v >= 1).length}/3).`;
   }
   function objectiveText() {
-    const ev = eventText(), t = (ev ? ev + ' ' : '') + chapterText(G.world);
+    const ev = [royalHuntText(), eventText()].filter(Boolean).join(' '), t = (ev ? ev + ' ' : '') + chapterText(G.world);
     return G.storm ? `Rift storm \u00b7 ${fmtTime(Math.ceil(Math.max(0, G.storm.t)))} until it lets go. ${t}` : t;
   }
   function worldPrompt() {

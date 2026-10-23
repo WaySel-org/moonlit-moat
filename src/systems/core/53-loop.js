@@ -25,7 +25,8 @@
     const inMoat = G.world === 'moat';
     if (inMoat) { updateBoss(dt); updatePods(dt); }
     updateBolts(dt);
-    if (inMoat) { royals.forEach(r => updateRoyal(r, dt)); updateShots(dt); updateDragon(dt); }
+    royals.forEach(r => updateRoyal(r, dt)); updateShots(dt);
+    if (inMoat) updateDragon(dt);
     updateFireworks(dt);
     updatePatches(dt);
     creeps.forEach(c => updateCreep(c, dt));

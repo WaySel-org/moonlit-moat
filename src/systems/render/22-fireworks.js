@@ -74,6 +74,7 @@
 
   function resetRoyals() {
     royals.forEach(r => {
+      if (r.field) return;
       Object.assign(r, { hp: r.max, poise: 100, state: 'idle', t: 0, atk: null, cool: 1.2, facing: 0, flash: 0, alive: true, active: false, enraged: false, blinkCd: 0 });
       r.pos.copy(r.home); r.body.rotation.set(0, 0, 0); r.body.position.y = r.hover; r.g.scale.setScalar(1.15); r.pivot.rotation.set(0, 0, 0); r.tele.hide();
       if (r.off) r.off.rotation.set(0, 0, 0);
@@ -111,7 +112,7 @@
     recalc();
     Object.assign(G, { state: 'explore', hitstop: 0, slow: 0, shake: 0, lock: false, parries: 0, hitsTaken: 0, wardenDown: false, target: null, dmgMult: 1, runStart: uTime.value, shop: false });
     resetVitals(); player.position.copy(SPAWN);
-    resetWarden(); resetRoyals(); resetDragon();
+    resetWarden(); resetRoyals(); resetDragon(); resetRoyalField(); G.wardenRevives = 0;
     wards.forEach(w => { w.visible = true; w.material.opacity = 0.7; });
     chests.forEach(c => { c.tier = c.maze ? 3 : 1; c.open = false; c.refill = 0; c.tierT = 0; chestLook(c); });
     creeps.forEach((c, i) => { c.alive = false; c.g.visible = false; c.tele.hide(); c.bar.hidden = true; c.respawn = 1 + i * 0.5; });
@@ -138,7 +139,7 @@
       if (G.hunt && G.hunt.echo) { B.state = 'dead'; boss.visible = false; hideTele(); ui.bossbar.hidden = true; }
       Object.assign(G, { hitstop: 0, slow: 0, shake: 0, lock: false, target: null, shop: false, hunt: null, huntClock: 0 });
       if (G.wardenDown) {
-        resetRoyals(); G.state = 'interlude'; player.position.set(1.5, 0, -16); ui.obj.textContent = OBJ_CLIMB;
+        resetRoyals(); if (royals.some(r => !r.field)) royalsToField(false); G.state = 'interlude'; player.position.set(1.5, 0, -16); ui.obj.textContent = OBJ_CLIMB;
       } else {
         resetWarden(); G.state = 'explore'; player.position.copy(SPAWN); ui.obj.textContent = OBJ_START;
       }

@@ -49,6 +49,8 @@
   "world/45-rift-storms.js",
   "world/46-world-system.js",
   "world/46b-stages-and-events.js",
+  "world/46c-realm-parity.js",
+  "actors/bosses/46d-royal-hunt.js",
   "ui/47-minimap.js",
   "core/48-content.js",
   "core/49-pause.js",

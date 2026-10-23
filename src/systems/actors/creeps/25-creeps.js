@@ -106,7 +106,7 @@
       const A = c.atk; A.t += dt;
       c.tele.circle(A.at.x, A.at.y, A.at.z, 2.8, A.t / 1.1);
       if (A.t >= 1.1) {
-        c.tele.hide(); c.atk = null; c.cool = (2.2 + Math.random()) * (c.storyBoss ? 0.65 : 1);
+        c.tele.hide(); c.atk = null; c.cool = (2.2 + Math.random()) * (c.storyBoss ? (c.enraged ? 0.42 : 0.65) : 1);
         sfx('boom'); G.shake = Math.max(G.shake, 0.4);
         for (let i = 0; i < 70; i++) { fwColor.setHSL(c.godHue + Math.random() * 0.05, 0.8, 0.75); fwParticle(A.at.x + (Math.random() - 0.5) * 2, A.at.y + Math.random() * 10, A.at.z + (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 2, -6 - Math.random() * 6, (Math.random() - 0.5) * 2, fwColor, 0.6, true); }
         if (flatDist(player.position, A.at) < 3.1 && Math.abs(player.position.y - A.at.y) < 2) hitPlayer(30, A.at, 9, false, c);
@@ -152,7 +152,7 @@
     const p = c.storyBoss ? c.camp.clone() : (c.ancient || c.neutral) ? c.camp.clone().add(new THREE.Vector3((Math.random() - 0.5) * 2, 0, (Math.random() - 0.5) * 2)) : (c.realm === 'spirit' ? spiritSpot(c) : WORLDS[c.realm] ? worldSpot(c) : creepSpot());
     G.world = w0; G.realm = r0;
     if (!p) { c.respawn = 2; return; }
-    c.elite = false;
+    c.elite = false; c.enraged = false;
     c.lv = worldTier() + (c.storyBoss ? stageOf(c.storyBoss) - 1 : c.ai === 'godling' ? 3 : c.ancient ? 2 : (Math.random() < 0.3 ? 1 : 0)); c.max = 1; c.age = 0;
     creepStats(c);
     c.alive = true; c.g.visible = c.realm === realmKey(); c.pos.copy(p); c.home.copy(p); c.wander.copy(p);
@@ -183,9 +183,10 @@
       if (flatDist(c.pos, player.position) < 22) floatText(`${CREEP_NAME[c.type]} reached Lv ${c.lv}`, c.pos.clone().add(new THREE.Vector3(0, 2.2, 0)), 'word', '#ffd36a');
     }
     const d = flatDist(player.position, c.pos);
-    if (flatDist(c.pos, c.home) > (c.ancient ? 12 : 26)) c.leash = true;
+    if (G.royalHunt && !c.storyBoss) c.leash = false;
+    else if (flatDist(c.pos, c.home) > (c.ancient ? 12 : 26)) c.leash = true;
     if (c.leash && flatDist(c.pos, c.home) < 3) c.leash = false;
-    const aggro = (c.neutral ? (c.provoked || d < 3.5) : d < 11) && player.position.y < 2 && !c.leash && G.state !== 'dead' && G.state !== 'won';
+    const aggro = (G.royalHunt && !c.storyBoss ? true : c.neutral ? (c.provoked || d < 3.5) : d < 11) && player.position.y < 2 && !c.leash && G.state !== 'dead' && G.state !== 'won';
     c.stun = Math.max(0, c.stun - dt);
     const groundY = Math.min(0, groundAt(c.pos.x, c.pos.z));
     if (c.ai === 'godling') { updateGodling(c, dt, d, groundY); }
@@ -255,6 +256,7 @@
     sfx('hit'); G.hitstop = Math.max(G.hitstop, 0.03);
     creepMove(c, new THREE.Vector3(c.pos.x - player.position.x, 0, c.pos.z - player.position.z).normalize(), heavy ? 1.2 : 0.4);
     if (c.atk && heavy) { c.atk = null; c.tele.hide(); }
+    guardianRage(c);
     if (c.hp <= 0) killCreep(c);
   }
   function killCreep(c) {

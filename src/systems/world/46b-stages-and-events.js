@@ -74,7 +74,7 @@
   [wispMesh, shrineMesh, riftMesh].forEach(m => { m.visible = false; tag(m, 1); });
   const meteorGeo = new THREE.SphereGeometry(0.45, 8, 6), meteorMat = bas(0xffb070);
 
-  const canEvent = () => (G.state === 'explore' || G.state === 'interlude') && G.realm === 'material' && !G.hunt && !G.story.pending && !storyBossEngaged() && P.act !== 'leap';
+  const canEvent = () => (G.state === 'explore' || G.state === 'interlude') && G.realm === 'material' && !G.hunt && !G.royalHunt && !G.story.pending && !storyBossEngaged() && P.act !== 'leap';
   const here = () => player.position;
   // An open spot on the ground somewhere between r0 and r1 metres from the hero
   function ringSpot(r0, r1) {
