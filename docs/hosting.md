@@ -4,11 +4,12 @@ Owner role: **Veilwarden**.
 
 ## Build
 ```bash
-python3 tools/build.py      # validates content, assembles dist/, checks the size budget, syntax-checks game.js
+npm ci --ignore-scripts     # once: installs esbuild, pinned in package-lock.json (build time only)
+python3 tools/build.py      # validates content, minifies, assembles dist/, checks the size budget, syntax-checks game.js
 python3 tools/measure.py    # what a phone downloads on a first and a repeat visit, with a slow-4G timing model
 ```
 - `dist/index.html` is the only file with a fixed name. Everything it loads lives in `dist/a/` named `<name>.<hash>.<ext>`, where the hash comes from the file's bytes.
-- The first load (HTML, CSS, scripts, preloaded font) must stay under `BUDGET_KB` gzip in `tools/build.py`, or the build fails.
+- The first load (HTML, CSS, scripts, preloaded font) must stay under `BUDGET_KB` gzip in `tools/build.py`, or the build fails. Without esbuild the build still works, unminified, with a warning and no budget check; CI and the Docker image always minify.
 
 ## Local
 - `python3 -m http.server 8765 --directory dist`, or the Claude app preview config `moonlit-moat` in `.claude/launch.json`.

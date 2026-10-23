@@ -31,6 +31,7 @@ Humans and agents work side by side here. This file tells you how to find your w
 
 ## 3. Commands
 ```bash
+npm ci --ignore-scripts                                  # once: esbuild for minifying (optional locally)
 python3 tools/build.py                                   # validate content, assemble dist/, syntax-check
 python3 -m http.server 8765 --directory dist             # play at http://localhost:8765
 docker build -t moonlit-moat . && docker run --rm -p 8080:8080 moonlit-moat   # container, health at /healthz

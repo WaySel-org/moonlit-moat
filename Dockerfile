@@ -2,13 +2,21 @@
 # Moonlit Moat: static game served by unprivileged nginx.
 #   make image && make run        ->  http://localhost:8080   (health: /healthz)
 
+ARG NODE_IMAGE=node:22-alpine
 ARG PYTHON_IMAGE=python:3.12-alpine
 # 1.30 is nginx's current stable branch; 1.27 is retired and frozen on an unpatched Alpine.
 ARG NGINX_IMAGE=nginxinc/nginx-unprivileged:1.30-alpine
 
-# ---- build: validate content and assemble dist/ (no network, no extra packages)
+# ---- tools: esbuild, exactly as pinned in package-lock.json (build time only, never shipped)
+FROM ${NODE_IMAGE} AS tools
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci --ignore-scripts --no-audit --no-fund
+
+# ---- build: validate content, minify and assemble dist/ (no network here)
 FROM ${PYTHON_IMAGE} AS build
 WORKDIR /app
+COPY --from=tools /app/node_modules ./node_modules
 COPY tools ./tools
 COPY src ./src
 COPY content ./content

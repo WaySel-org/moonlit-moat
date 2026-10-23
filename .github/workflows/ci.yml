@@ -26,7 +26,9 @@ jobs:
         with: { python-version: '3.12' }
       - uses: actions/setup-node@v4
         with: { node-version: '20' }
-      - name: Build (validates content, syntax-checks game.js)
+      - name: Install build tools (esbuild, pinned)
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Build (validates content, minifies, checks the size budget, syntax-checks game.js)
         run: python3 tools/build.py
       - uses: actions/upload-artifact@v4
         with: { name: dist, path: dist, retention-days: 7 }

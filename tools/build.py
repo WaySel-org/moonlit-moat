@@ -11,8 +11,10 @@ Steps
 4. Write dist/index.html (it is the only file that names the hashed ones) and dist/healthz.
 5. Write dist/vercel.json: security headers for every path (deploy/headers.json) and cache rules
    (deploy/cache.json): everything under /a/ is immutable, everything else revalidates.
-6. Write .gz copies of text files for nginx's gzip_static, then check the first-load size budget.
-7. Syntax-check game.js with node if it is installed.
+6. Minify game.js with esbuild (pinned in package.json; `npm ci --ignore-scripts` installs it).
+   Without it the build still works, unminified, with a warning and no budget check.
+7. Write .gz copies of text files for nginx's gzip_static, then check the first-load size budget.
+8. Syntax-check game.js with node if it is installed.
 
 Files under dist/a/ are named by a hash of their bytes, so a file only changes name when it changes,
 and browsers can keep it for a year without asking again.
@@ -25,9 +27,12 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC, CONTENT, DIST = ROOT / 'src', ROOT / 'content', ROOT / 'dist'
 ASSETS = DIST / 'a'
 FONTS = ROOT / 'vendor' / 'fonts'
-# Gzip bytes a phone fetches before the first frame (HTML, CSS, scripts, preloaded font).
-# Today's size plus a little room; PR 3 (minify + slim three.js) brings it down to 160.
-BUDGET_KB = 260
+# esbuild's native binary (node_modules/@esbuild/<platform>/bin/esbuild) runs without Node,
+# so the Python-only Docker build stage can use it too.
+ESBUILD = next(iter(sorted((ROOT / 'node_modules' / '@esbuild').glob('*/bin/esbuild'))), None)
+# Gzip bytes a phone fetches before the first frame (HTML, CSS, scripts, preloaded font), minified.
+# three.js is about 145 of it; raise this only on purpose, and say so in the PR.
+BUDGET_KB = 240
 
 REQUIRED = {
     'character': ['id', 'name', 'kind', 'world', 'originality'],
@@ -84,6 +89,16 @@ def font_faces():
     return '\n'.join(rules) + '\n', urls
 
 
+def minify(js):
+    """Minify with esbuild if it is installed; otherwise return js unchanged."""
+    if ESBUILD is None: return None
+    r = subprocess.run([str(ESBUILD), '--minify', '--target=es2019', '--charset=utf8', '--log-level=warning'],
+                       input=js, capture_output=True, text=True)
+    if r.returncode != 0:
+        sys.stderr.write(r.stderr); raise SystemExit('esbuild could not minify game.js')
+    return r.stdout
+
+
 def clean_dist():
     DIST.mkdir(exist_ok=True)
     for child in DIST.iterdir():
@@ -103,7 +118,11 @@ def build():
         parts.append(f'  // ===== src/systems/{rel} =====\n{code}')
     game_js = ('window.MM_CONTENT = ' + json.dumps(content, separators=(',', ':')) + ';\n'
                '(function () {\n' + '\n'.join(parts) + '})();\n')
-    game = emit('game.js', game_js)
+    small = minify(game_js)
+    if small is None:
+        print('warning: esbuild not installed (npm ci --ignore-scripts), so game.js is not minified '
+              'and the size budget is not checked', file=sys.stderr)
+    game = emit('game.js', small or game_js)
     three = emit('three.js', (ROOT / 'vendor' / 'three.min.js').read_bytes())
     faces, fonts = font_faces()
     styles = emit('styles.css', '[hidden]{display:none!important}\n' + faces + (SRC / 'styles' / 'game.css').read_text())
@@ -134,7 +153,7 @@ def build():
 
     first_load = [DIST / 'index.html', DIST / styles, DIST / three, DIST / game, DIST / fonts['400']]
     size = sum(len(gzip.compress(f.read_bytes(), 9)) for f in first_load) / 1024
-    if size > BUDGET_KB:
+    if small is not None and size > BUDGET_KB:
         raise SystemExit(f'first load is {size:.1f} KB gzip, over the {BUDGET_KB} KB budget (tools/build.py BUDGET_KB)')
 
     if shutil.which('node'):

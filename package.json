@@ -1,0 +1,8 @@
+{
+  "name": "moonlit-moat-build",
+  "private": true,
+  "description": "Build-time tools only. Nothing here ships to players.",
+  "devDependencies": {
+    "esbuild": "0.25.0"
+  }
+}
