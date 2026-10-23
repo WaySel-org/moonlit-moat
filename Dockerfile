@@ -12,9 +12,11 @@ COPY tools ./tools
 COPY src ./src
 COPY content ./content
 COPY vendor ./vendor
-COPY deploy/headers.json ./deploy/headers.json
+COPY deploy/headers.json deploy/cache.json ./deploy/
 RUN python3 tools/build.py \
  && python3 tools/nginx_headers.py > /security-headers.conf \
+ && python3 tools/nginx_headers.py cache assets > /cache-assets.conf \
+ && python3 tools/nginx_headers.py cache default > /cache-default.conf \
  && rm -rf dist/.vercel
 
 # ---- runtime: unprivileged nginx, read-only friendly, port 8080
@@ -30,7 +32,7 @@ LABEL org.opencontainers.image.title="Moonlit Moat" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${REVISION}"
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /security-headers.conf /etc/nginx/snippets/security-headers.conf
+COPY --from=build /security-headers.conf /cache-assets.conf /cache-default.conf /etc/nginx/snippets/
 COPY --from=build /app/dist /usr/share/nginx/html
 USER 101
 EXPOSE 8080

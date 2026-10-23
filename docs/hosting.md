@@ -4,8 +4,11 @@ Owner role: **Veilwarden**.
 
 ## Build
 ```bash
-python3 tools/build.py      # validates content, assembles dist/, syntax-checks game.js
+python3 tools/build.py      # validates content, assembles dist/, checks the size budget, syntax-checks game.js
+python3 tools/measure.py    # what a phone downloads on a first and a repeat visit, with a slow-4G timing model
 ```
+- `dist/index.html` is the only file with a fixed name. Everything it loads lives in `dist/a/` named `<name>.<hash>.<ext>`, where the hash comes from the file's bytes.
+- The first load (HTML, CSS, scripts, preloaded font) must stay under `BUDGET_KB` gzip in `tools/build.py`, or the build fails.
 
 ## Local
 - `python3 -m http.server 8765 --directory dist`, or the Claude app preview config `moonlit-moat` in `.claude/launch.json`.
@@ -25,7 +28,7 @@ python3 tools/build.py      # validates content, assembles dist/, syntax-checks 
 | `make lint-chart` / `make template` | Lint or render the Helm chart |
 
 - **Image:** multi-stage, `python:3.12-alpine` builds `dist/`, `nginxinc/nginx-unprivileged:1.27-alpine` serves it as user 101 on port 8080 with `/healthz`. OCI labels carry version and git revision. `.dockerignore` keeps the context to what the build needs.
-- **CI** (`.github/workflows/ci.yml`): validate content → hadolint → build → smoke test (health, page, game.js, security headers, non-root user) → Trivy scan → Helm lint and render.
+- **CI** (`.github/workflows/ci.yml`): validate content → hadolint → build → smoke test (health, page, hashed game file, security and cache headers, gzip, non-root user) → Trivy scan → Helm lint and render.
 - **Publish** (push to `main` or a `v*` tag): `linux/amd64` + `linux/arm64` images to `ghcr.io/waysel-org/moonlit-moat` tagged `sha-…`, `latest` (main) and semver (tags), with SBOM and max provenance attestations, keyless cosign signature.
 - **Kubernetes:** Helm chart `deploy/helm/moonlit-moat` (Deployment with rolling updates and topology spread, Service, HPA 2–10, PodDisruptionBudget, deny-by-default NetworkPolicy, optional Ingress), or plain manifests in `deploy/k8s/`.
   ```bash
@@ -33,5 +36,8 @@ python3 tools/build.py      # validates content, assembles dist/, syntax-checks 
   ```
 - **Verify a published image:** `cosign verify ghcr.io/waysel-org/moonlit-moat:latest --certificate-identity-regexp 'https://github.com/WaySel-org/moonlit-moat/.*' --certificate-oidc-issuer https://token.actions.githubusercontent.com`
 
+## Cache rules
+Single source: `deploy/cache.json`. Files under `/a/` are `immutable` for a year: a returning visitor's browser uses its copy without asking. Everything else (`index.html`, `healthz`) is `max-age=0, must-revalidate`, so a release reaches players on their next visit. The build writes both rules into `dist/vercel.json`; `tools/nginx_headers.py cache assets|default` writes them for nginx.
+
 ## Security headers
-Single source: `deploy/headers.json`. Written into `dist/vercel.json` by the build and into nginx by `tools/nginx_headers.py`. CSP allows only same-origin scripts, no inline scripts, no framing; HSTS two years; camera, microphone, location and payments disabled.
+Single source: `deploy/headers.json`. Written into `dist/vercel.json` by the build and into nginx by `tools/nginx_headers.py`. CSP allows only same-origin scripts, styles and fonts, no inline scripts, no framing, no outside servers; HSTS two years; camera, microphone, location and payments disabled.

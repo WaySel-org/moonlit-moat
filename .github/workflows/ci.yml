@@ -58,11 +58,17 @@ jobs:
           for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8080/healthz && break; sleep 1; done
           curl -fsS http://127.0.0.1:8080/healthz | grep -q ok
           curl -fsS http://127.0.0.1:8080/ | grep -q '<title>Moonlit Moat</title>'
-          curl -fsS http://127.0.0.1:8080/game.js | head -c 100
           curl -fsSI http://127.0.0.1:8080/ | tee headers.txt
           grep -qi "content-security-policy: default-src 'self'" headers.txt
           grep -qi 'x-frame-options: DENY' headers.txt
           grep -qi 'strict-transport-security' headers.txt
+          grep -qi 'cache-control: public, max-age=0, must-revalidate' headers.txt
+          GAME=$(curl -fsS http://127.0.0.1:8080/ | grep -o 'a/game\.[0-9a-f]*\.js')
+          curl -fsS -H 'Accept-Encoding: gzip' -D game-headers.txt -o /dev/null "http://127.0.0.1:8080/$GAME"
+          grep -qi 'cache-control: public, max-age=31536000, immutable' game-headers.txt
+          grep -qi 'content-encoding: gzip' game-headers.txt
+          grep -qi "content-security-policy: default-src 'self'" game-headers.txt
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/a/missing.js)" = 404
           docker inspect --format '{{.Config.User}}' moonlit-moat:ci | grep -qx 101
           docker logs mm
       - name: Vulnerability scan
