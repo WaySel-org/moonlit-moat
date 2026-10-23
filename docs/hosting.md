@@ -18,6 +18,7 @@ python3 tools/measure.py    # what a phone downloads on a first and a repeat vis
 - Vercel project `moonlit-moat` on the `waysel` account. The link lives in `dist/.vercel/` (kept across builds, never committed).
 - Deploy only when the maintainers ask: `python3 tools/build.py && cd dist && vercel deploy --prod`.
 - Domain play.waysel.com is attached to the project. waysel.com DNS is on Vercel; a wildcard already points there, so no records were added. Remove with `vercel domains rm play.waysel.com`.
+- Preview deploys (`cd dist && vercel deploy`, no `--prod`) sit behind Vercel login. The project has a "Protection Bypass for Automation" secret (created 2026-10-23, kept on purpose) so tools can read previews: `vercel curl <path> --deployment <preview-url> -- -sI` uses it automatically. For CI, store it as the `VERCEL_AUTOMATION_BYPASS_SECRET` secret, never in the repo. Revoke or rotate it in the Vercel dashboard: moonlit-moat → Settings → Deployment Protection.
 
 ## Containers
 | Command | What it does |
