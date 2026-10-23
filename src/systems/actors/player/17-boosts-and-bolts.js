@@ -57,7 +57,7 @@
       let done = b.t > b.life;
       if (!done) {
         const hit = live.find(t => flatDist(b.m.position, t.pos) < t.radius + 0.3 && b.m.position.y > t.pos.y - 0.5 && b.m.position.y < t.pos.y + t.hitY * 2);
-        if (hit) { done = true; damageEnemy(hit, b.dmg, b.poise, b.heavy); }
+        if (hit) { done = true; strike(hit, b.dmg, b.poise, b.heavy, { spell: b.geo !== daggerGeo }); }
       }
       if (!done && G.world === 'moat' && dragon.state === 'fly' && dragon.g.visible) {
         const dc = dragon.g.position;

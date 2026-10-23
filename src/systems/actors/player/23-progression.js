@@ -6,14 +6,14 @@
     P.manaMax = 100 + 10 * PR.spi + (PR.warden ? 50 : 0);
     P.stMax = 100 + 6 * PR.agi;
     PR.dmg = (1 + 0.06 * PR.str + 0.04 * (PR.level - 1) + 0.12 * PR.weapon) * (PR.warden ? 1.25 : 1);
-    PR.spell = (1 + 0.08 * PR.spi + 0.04 * (PR.level - 1)) * (PR.warden ? 1.15 : 1);
+    PR.spell = (1 + 0.08 * PR.spi + 0.04 * (PR.level - 1)) * (PR.warden ? 1.15 : 1) * (1 + relicBonus('spell'));
     PR.speed = 1 + 0.03 * PR.agi + (PR.warden ? 0.1 : 0);
     updateSwordLook();
     P.hp = Math.min(P.hp, P.max); P.mana = Math.min(P.mana, P.manaMax); P.armor = Math.min(P.armor, P.armorMax); P.st = Math.min(P.st, P.stMax);
     renderHero();
   }
   function reward(xp, gold, at) {
-    xp = Math.round(xp * G.env.xp); gold = Math.round(gold * (G.fortune > 0 ? 2 : 1));
+    xp = Math.round(xp * G.env.xp * (1 + relicBonus('xp'))); gold = Math.round(gold * (G.fortune > 0 ? 2 : 1) * (1 + relicBonus('gold')));
     PR.gold += gold; PR.xp += xp;
     floatText(`+${xp} XP${gold ? `  +${gold} gold` : ''}`, at, 'word', '#ffd36a');
     if (gold) sfx('coin');
@@ -36,6 +36,9 @@
     set('g_weapon', `+${PR.weapon} \u00b7 ${SWORDS[swordTier].name}`); set('g_armor', `+${PR.armorLv}`); set('g_flask', PR.flaskMax);
     const gw = document.getElementById('g_warden'); gw.textContent = PR.warden ? 'Earned' : 'Not yet earned'; gw.className = PR.warden ? 'gold' : 'muted';
     document.querySelectorAll('.attr button').forEach(b => { b.disabled = !PR.points; });
+    set('c_dmg', `\u00d7${PR.dmg.toFixed(2)}`); set('c_spell', `\u00d7${PR.spell.toFixed(2)}`);
+    set('c_crit', `${Math.round(critChance() * 100)}%`); set('c_speed', `\u00d7${PR.speed.toFixed(2)}`);
+    renderRelics();
   }
   document.querySelectorAll('.attr button').forEach(b => b.addEventListener('click', () => {
     if (!PR.points) return;

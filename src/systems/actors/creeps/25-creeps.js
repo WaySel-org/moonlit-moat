@@ -22,12 +22,45 @@
     body.add(new THREE.Mesh(new THREE.SphereGeometry(0.5, 10, 8), new THREE.MeshBasicMaterial({ color: 0x3a7aa8, transparent: true, opacity: 0.35, depthWrite: false })));
     return { g, body, mat, core };
   }
+  // Fen Stalker: a lean four-legged hunter that circles, then lunges down a lane. Its bite poisons.
+  function buildStalker() {
+    const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
+    const mat = new THREE.MeshLambertMaterial({ color: 0x4a523a, flatShading: true, emissive: 0x000000 });
+    const torso = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.42, 1.3), mat); torso.position.y = 0.7; body.add(torso);
+    const headM = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.6, 6), mat); headM.rotation.x = Math.PI / 2; headM.position.set(0, 0.78, 0.9); body.add(headM);
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0xb8ff6a });
+    [-0.09, 0.09].forEach(x => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.05, 5, 4), eyeMat); e.position.set(x, 0.86, 1.0); body.add(e); });
+    const legs = [];
+    [[-0.22, 0.45], [0.22, 0.45], [-0.22, -0.45], [0.22, -0.45]].forEach(([x, z]) => { const l = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.7, 0.08), mat); l.position.set(x, 0.35, z); body.add(l); legs.push(l); });
+    const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.05, 0.9, 4), mat); tail.position.set(0, 0.8, -0.95); tail.rotation.x = 1.1; body.add(tail);
+    return { g, body, mat, legs, eyeMat };
+  }
+  // Thornback: a slow, spiked shell-walker. Its front is a shield; the shell opens when it is staggered.
+  function buildThornback() {
+    const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
+    const mat = new THREE.MeshLambertMaterial({ color: 0x5d6156, flatShading: true, emissive: 0x000000 });
+    const shell = new THREE.Mesh(new THREE.SphereGeometry(0.8, 10, 7), mat); shell.scale.set(1.15, 0.62, 1.3); shell.position.y = 0.55; body.add(shell);
+    const spikeMat = new THREE.MeshLambertMaterial({ color: 0x8a8f84, flatShading: true });
+    for (let i = 0; i < 9; i++) {
+      const a = (i / 9) * TAU, r = 0.45 + (i % 2) * 0.25;
+      const s = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.55, 5), spikeMat);
+      s.position.set(Math.cos(a) * r, 0.95 + (i % 2) * 0.1, Math.sin(a) * r * 1.2); s.rotation.set(Math.sin(a) * 0.5, 0, -Math.cos(a) * 0.5); body.add(s);
+    }
+    const headM = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.3, 0.45), mat); headM.position.set(0, 0.45, 1.05); body.add(headM);
+    [-0.12, 0.12].forEach(x => { const e = new THREE.Mesh(new THREE.SphereGeometry(0.05, 5, 4), creepEyeMat); e.position.set(x, 0.52, 1.28); body.add(e); });
+    const legs = [];
+    [[-0.6, 0.5], [0.6, 0.5], [-0.6, -0.5], [0.6, -0.5]].forEach(([x, z]) => { const l = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.4, 0.22), mat); l.position.set(x, 0.2, z); body.add(l); legs.push(l); });
+    return { g, body, mat, legs, spikeMat };
+  }
+  const ROSTER = [].concat(Array(11).fill('crawler'), Array(7).fill('wisp'), Array(5).fill('stalker'), Array(4).fill('thornback'));
+  const BUILD = { crawler: buildCrawler, wisp: buildWisp, stalker: buildStalker, thornback: buildThornback };
+  const CREEP_AI = { crawler: 'melee', wisp: 'ranged', stalker: 'stalker', thornback: 'guard' };
   const ANCIENT_CAMPS = ANCIENT_CELLS.map(([i, j], k) => [MAZE.x0 + (i + 0.5) * MAZE.cell, MAZE.z0 + (j + 0.5) * MAZE.cell, k % 3 === 1 ? 'wisp' : 'crawler'])
     .concat([[48, -44, 'crawler'], [38, 46, 'wisp'], [-60, 56, 'crawler']]);
-  for (let i = 0; i < 18 + ANCIENT_CAMPS.length; i++) {
-    const camp = ANCIENT_CAMPS[i - 18];
-    const type = camp ? camp[2] : (i < 11 ? 'crawler' : 'wisp');
-    const parts = type === 'crawler' ? buildCrawler() : buildWisp();
+  for (let i = 0; i < ROSTER.length + ANCIENT_CAMPS.length; i++) {
+    const camp = ANCIENT_CAMPS[i - ROSTER.length];
+    const type = camp ? camp[2] : ROSTER[i];
+    const parts = BUILD[type]();
     parts.g.visible = false; scene.add(parts.g);
     const bar = document.createElement('div'); bar.className = 'cbar'; bar.hidden = true; bar.innerHTML = '<span></span><div class="ct"><i></i></div>'; $('#cbars').appendChild(bar);
     if (camp && type === 'wisp') parts.mat.color.setHex(0xffc860);
@@ -37,7 +70,7 @@
       ancient: !!camp, camp: camp ? new THREE.Vector3(camp[0], 0, camp[1]) : null, age: 0 }));
     if (camp) creeps[creeps.length - 1].respawn = 3 + i;
   }
-  creeps.forEach(c => { c.realm = 'material'; c.ai = c.type === 'crawler' ? 'melee' : 'ranged'; });
+  creeps.forEach(c => { c.realm = 'material'; c.ai = CREEP_AI[c.type]; if (c.type === 'thornback') { c.guard = true; c.radius = 0.85; } });
   // Spirit-realm roster: original spirits and two fallen godlings
   const spiritMat = (col, op) => new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: op || 0.85, depthWrite: false });
   const SPIRIT_BUILD = {
@@ -120,6 +153,74 @@
       if (c.cool <= 0) c.atk = { t: 0, at: player.position.clone().setY(Math.max(0, P.y)) };
     } else creepWander(c, dt, 1.0);
   }
+  function pushPlayerOut(c, r) {
+    if (Math.abs(player.position.y - c.pos.y) >= 1.5) return;
+    const dx = player.position.x - c.pos.x, dz = player.position.z - c.pos.z, dd = Math.hypot(dx, dz);
+    if (dd < r && dd > 1e-4) movePlayer(dx / dd * (r - dd), dz / dd * (r - dd));
+  }
+  // Fen Stalker: keeps five to seven metres away, circling, then lunges nine metres down a telegraphed lane
+  function updateStalker(c, dt, d, groundY, aggro) {
+    const tt = uTime.value;
+    c.pos.y = groundY;
+    if (c.atk) {
+      const A = c.atk; A.t += dt;
+      if (A.stage === 'wind') {
+        if (A.t < 0.3) c.facing += clamp(angDiff(c.facing, yawTo(c.pos, player.position)), -4 * dt, 4 * dt);
+        c.tele.lane(c.pos, c.facing, 9, 1.5, A.t / 0.6, c.pos.y);
+        if (A.t >= 0.6) { A.stage = 'dash'; A.t = 0; c.tele.hide(); sfx('swoosh'); }
+      } else if (A.stage === 'dash') {
+        const ok = creepMove(c, fwdOf(c.facing), 26 * dt);
+        if (Math.random() < 0.6) burst(c.pos.x, c.pos.y + 0.3, c.pos.z, 1, 2);
+        if (!A.hit && flatDist(player.position, c.pos) < 1.4 && Math.abs(player.position.y - c.pos.y) < 1.5) {
+          A.hit = true;
+          if (hitPlayer(12, c.pos, 8, true, c)) poisonHero(2 * c.mult * G.env.creepDmg, 6);
+        }
+        if (A.t >= 0.35 || !ok) { A.stage = 'rec'; A.t = 0; }
+      } else if (A.t >= 1.0) { c.atk = null; c.cool = 2.0 + Math.random() * 1.2; }
+    } else if (c.stun <= 0) {
+      if (aggro) {
+        c.facing += clamp(angDiff(c.facing, yawTo(c.pos, player.position)), -5 * dt, 5 * dt);
+        const to = new THREE.Vector3(player.position.x - c.pos.x, 0, player.position.z - c.pos.z).normalize();
+        const mv = new THREE.Vector3(-to.z, 0, to.x).multiplyScalar(c.orbit || 1).addScaledVector(to, d > 7 ? 1 : d < 5 ? -1 : 0).normalize();
+        if (!creepMove(c, mv, 4.2 * dt)) c.orbit = -(c.orbit || 1);
+        c.cool -= dt;
+        if (c.cool <= 0 && d > 2.5 && d < 10) c.atk = { t: 0, stage: 'wind', hit: false };
+      } else creepWander(c, dt, 1.6);
+    }
+    const moving = !c.atk && c.stun <= 0;
+    c.legs.forEach((l, i) => { l.rotation.x = moving ? Math.sin(tt * 16 + i * 1.6) * 0.5 : 0; });
+    c.body.position.y = c.atk && c.atk.stage === 'wind' ? -0.12 * Math.min(1, c.atk.t / 0.6) : 0;
+    pushPlayerOut(c, 0.9);
+  }
+  // Thornback: slow to turn, so you can get behind it; slams the ground in front of it
+  function updateGuard(c, dt, d, groundY, aggro) {
+    const tt = uTime.value;
+    c.pos.y = groundY;
+    if (c.atk) {
+      const A = c.atk; A.t += dt;
+      const front = c.pos.clone().addScaledVector(fwdOf(c.facing), 1.4);
+      if (A.stage === 'wind') {
+        c.tele.circle(front.x, c.pos.y, front.z, 2.1, A.t / 0.85);
+        c.body.position.y = 0.25 * Math.sin(Math.min(1, A.t / 0.85) * Math.PI / 2);
+        if (A.t >= 0.85) {
+          A.stage = 'rec'; A.t = 0; c.tele.hide(); c.body.position.y = 0;
+          burst(front.x, c.pos.y + 0.3, front.z, 16, 5); G.shake = Math.max(G.shake, 0.2); sfx('boom');
+          if (flatDist(player.position, front) < 2.4 && Math.abs(player.position.y - c.pos.y) < 1.5) hitPlayer(18, front, 11, true, c);
+        }
+      } else if (A.t >= 0.9) { c.atk = null; c.cool = 1.4 + Math.random() * 0.8; }
+    } else if (c.stun <= 0) {
+      if (aggro) {
+        c.facing += clamp(angDiff(c.facing, yawTo(c.pos, player.position)), -2.2 * dt, 2.2 * dt);
+        if (d > 2.2) creepMove(c, fwdOf(c.facing), 2.3 * dt);
+        c.cool -= dt;
+        if (d < 3.0 && c.cool <= 0) c.atk = { t: 0, stage: 'wind' };
+      } else creepWander(c, dt, 0.9);
+    }
+    const moving = !c.atk && c.stun <= 0;
+    c.legs.forEach((l, i) => { l.rotation.x = moving ? Math.sin(tt * 7 + i * 1.6) * 0.35 : 0; });
+    c.spikeMat.color.setHex(c.stun > 0 ? 0xd8c070 : 0x8a8f84);
+    pushPlayerOut(c, 1.3);
+  }
   function creepSpot() {
     for (let i = 0; i < 40; i++) {
       const x = -74 + Math.random() * 148, z = -74 + Math.random() * 140;
@@ -131,8 +232,10 @@
     }
     return null;
   }
-  const CREEP_NAME = { crawler: 'Mire Crawler', wisp: 'Ash Wisp', lantern: 'Hollow Lantern', tide: 'Tide Shade', ember: 'Ember Wraith', godling: 'Fallen Godling' };
-  const CREEP_BASE = { crawler: 60, wisp: 42, lantern: 34, tide: 46, ember: 50, godling: 900 };
+  const CREEP_NAME = { crawler: 'Mire Crawler', wisp: 'Ash Wisp', stalker: 'Fen Stalker', thornback: 'Thornback', lantern: 'Hollow Lantern', tide: 'Tide Shade', ember: 'Ember Wraith', godling: 'Fallen Godling' };
+  const CREEP_BASE = { crawler: 60, wisp: 42, stalker: 46, thornback: 120, lantern: 34, tide: 46, ember: 50, godling: 900 };
+  const CREEP_XP = { crawler: 22, wisp: 18, stalker: 24, thornback: 34 };
+  const CREEP_BAR_H = { crawler: 1.4, stalker: 1.3, thornback: 1.7 };
   function creepTitle(c) {
     const cat = c.elite ? 'Elite ' : c.ancient ? 'Ancient ' : (c.lv > worldTier() ? 'Veteran ' : '');
     return `${cat}${c.godName || CREEP_NAME[c.type]} \u00b7 Lv ${c.lv}`;
@@ -156,8 +259,8 @@
     c.lv = worldTier() + (c.storyBoss ? stageOf(c.storyBoss) - 1 : c.ai === 'godling' ? 3 : c.ancient ? 2 : (Math.random() < 0.3 ? 1 : 0)); c.max = 1; c.age = 0;
     creepStats(c);
     c.alive = true; c.g.visible = c.realm === realmKey(); c.pos.copy(p); c.home.copy(p); c.wander.copy(p);
-    c.atk = null; c.cool = 1; c.stun = 0; c.leash = false;
-    c.g.scale.setScalar((c.ancient ? 1.8 : 1) * (c.type === 'crawler' ? 1 + (c.lv - 1) * 0.08 : 1));
+    c.atk = null; c.cool = 1; c.stun = 0; c.leash = false; c.rend = 0; c.orbit = Math.random() < 0.5 ? 1 : -1;
+    c.g.scale.setScalar((c.ancient ? 1.8 : 1) * (c.type === 'crawler' || c.type === 'thornback' ? 1 + (c.lv - 1) * 0.08 : 1));
   }
   function creepMove(c, dir, amt) {
     const nx = c.pos.x + dir.x * amt, nz = c.pos.z + dir.z * amt;
@@ -175,7 +278,7 @@
     const tt = uTime.value;
     c.flash = Math.max(0, c.flash - dt * 6);
     const glowA = c.ancient ? 0.22 + 0.08 * Math.sin(tt * 3) : 0;
-    if (c.type === 'crawler') c.mat.emissive.setRGB(c.flash + glowA, c.flash * 0.8 + glowA * 0.6, c.flash * 0.6);
+    if (c.mat && c.mat.emissive) c.mat.emissive.setRGB(c.flash + glowA, c.flash * 0.8 + glowA * 0.6, c.flash * 0.6);
     // Creeps grow stronger the longer they live
     c.age += dt;
     if (c.age > 75 && !c.storyBoss && c.lv < worldTier() + (c.ancient ? 4 : 3)) {
@@ -189,6 +292,8 @@
     c.stun = Math.max(0, c.stun - dt);
     const groundY = Math.min(0, groundAt(c.pos.x, c.pos.z));
     if (c.ai === 'godling') { updateGodling(c, dt, d, groundY); }
+    else if (c.ai === 'stalker') updateStalker(c, dt, d, groundY, aggro);
+    else if (c.ai === 'guard') updateGuard(c, dt, d, groundY, aggro);
     else if (c.ai === 'melee') {
       c.pos.y = groundY + (c.float ? c.float + Math.sin(tt * 3 + c.home.z) * 0.15 : 0);
       if (c.atk) {
@@ -248,12 +353,14 @@
   function damageCreep(c, dmg, poiseDmg, heavy) {
     if (!c.alive) return;
     if (c.neutral) provokeCamp(c);
+    // A Thornback's shell: hits on its front land at a third unless it is staggered or struck from behind
+    if (c.guard && c.stun <= 0 && !behindTarget(c)) { dmg *= 0.3; floatText('guarded', c.pos.clone().add(new THREE.Vector3(0, 2.0, 0)), 'word', '#9fb0b8'); }
     const out = Math.round(dmg * (0.9 + Math.random() * 0.2) * (P.buffDmg > 0 ? 1.5 : 1));
-    c.hp -= out; c.flash = 1; if (heavy) c.stun = 0.5;
+    c.hp -= out; c.flash = 1; if (heavy) c.stun = c.guard ? 1.2 : 0.5;
     const at = c.pos.clone().add(new THREE.Vector3(0, 1, 0));
     burst(at.x, at.y, at.z, 8, 4); floatText(String(out), at, heavy ? 'big' : '', P.buffDmg > 0 ? '#ff3b3b' : null);
     sfx('hit'); G.hitstop = Math.max(G.hitstop, 0.03);
-    creepMove(c, new THREE.Vector3(c.pos.x - player.position.x, 0, c.pos.z - player.position.z).normalize(), heavy ? 1.2 : 0.4);
+    creepMove(c, new THREE.Vector3(c.pos.x - player.position.x, 0, c.pos.z - player.position.z).normalize(), (heavy ? 1.2 : 0.4) * (c.guard ? 0.3 : 1));
     if (c.atk && heavy) { c.atk = null; c.tele.hide(); }
     if (c.hp <= 0) killCreep(c);
   }
@@ -265,8 +372,9 @@
     if (c.ai === 'godling') floatText(`${c.godName} falls`, c.pos.clone().add(new THREE.Vector3(0, 4, 0)), 'word', '#e0c8ff');
     if (c.ancient) { floatText('Ancient slain', c.pos.clone().add(new THREE.Vector3(0, 2.6, 0)), 'word', '#ff9a4a'); G.shake = Math.max(G.shake, 0.3); }
     burst(c.pos.x, c.pos.y + 0.6, c.pos.z, 24, 5);
-    reward((c.type === 'crawler' ? 22 : 18) * c.mult * (c.neutral ? 1.5 : 1) * (c.ancient ? 6 : 1) * (c.ai === 'godling' ? 14 : 1), (4 + Math.random() * 6) * c.mult * (c.ancient ? 5 : 1) * (c.ai === 'godling' ? 10 : 1), c.pos.clone().add(new THREE.Vector3(0, 1.8, 0)));
+    reward((CREEP_XP[c.type] || 18) * c.mult * (c.neutral ? 1.5 : 1) * (c.ancient ? 6 : 1) * (c.ai === 'godling' ? 14 : 1), (4 + Math.random() * 6) * c.mult * (c.ancient ? 5 : 1) * (c.ai === 'godling' ? 10 : 1), c.pos.clone().add(new THREE.Vector3(0, 1.8, 0)));
     if (c.ancient) spawnLoot(c.pos.x + 1, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
+    if (c.ai === 'godling' || (c.ancient && Math.random() < 0.4)) dropRelic(c.pos.x - 1.2, c.pos.z + 1);
     if (Math.random() < 0.2) spawnLoot(c.pos.x, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
     if (c.elite) eliteDown(c);
     if (c.storyBoss) completeChapter(c.storyBoss);

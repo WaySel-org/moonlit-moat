@@ -55,6 +55,14 @@
     <div class="row"><span>Armour plating</span><span id="g_armor">+0</span></div>
     <div class="row"><span>Flasks</span><span id="g_flask">3</span></div>
     <div class="row"><span>Warden's Might</span><span id="g_warden" class="muted">Not yet earned</span></div>
+    <div class="combat">
+      <div class="row"><span>Weapon damage</span><span id="c_dmg">&times;1.00</span></div>
+      <div class="row"><span>Spell damage</span><span id="c_spell">&times;1.00</span></div>
+      <div class="row"><span>Crit chance</span><span id="c_crit">5%</span></div>
+      <div class="row"><span>Move speed</span><span id="c_speed">&times;1.00</span></div>
+      <p class="muted">Crits hit 1.6&times;. Hits from behind a creep hit 1.35&times;. The first hit after a parry (Riposte) hits 2&times;. A perfect dodge grants Flow: every hit crits for a short while.</p>
+    </div>
+    <div id="relics"></div>
     <p class="muted">Spend gold at the Moon Shrine beside the path near the start.</p>
   </div>
 </details>
@@ -142,9 +150,9 @@
       <summary>How to fight</summary>
       <dl>
         <dt>J</dt><dd>Light attack. Press again in rhythm for a three-hit combo.</dd>
-        <dt>K</dt><dd>Heavy attack. Slow, but breaks his guard fast.</dd>
-        <dt>Space</dt><dd>Roll. You can't be hit for the first part of it.</dd>
-        <dt>Shift</dt><dd>Block. Tap it just before a hit lands to parry and stun him.</dd>
+        <dt>K</dt><dd>Heavy attack. Slow, but breaks guards fast and makes the target Rend (bleed) for four seconds, up to three stacks.</dd>
+        <dt>Space</dt><dd>Roll. You can't be hit for the first part of it. Roll through an attack that would have landed and you enter Flow: stamina returns twice as fast and every hit crits for a few seconds.</dd>
+        <dt>Shift</dt><dd>Block. Tap it just before a hit lands to parry and stun him. Your next hit within two seconds is a Riposte for double damage.</dd>
         <dt>F</dt><dd>Drink a flask. Three per fight, and you stand still while drinking.</dd>
         <dt>C</dt><dd>Cast a moon bolt. Costs 30 mana and homes in on him.</dd>
         <dt>R</dt><dd>Lock the camera on him, or let it go.</dd>
@@ -157,6 +165,7 @@
       </dl>
       <p style="margin:8px 0 0">After the Warden falls, the red ward on the stairs beside the gate breaks. Climb to the roof to face two queens. Vesthra the Gorgon sweeps her tail all around her, lunges, and fires a stone gaze down a long red lane: turn your back or roll before it lands, or you are frozen in place. Nyxara the Thorn Empress floats out of reach, throws fans of thorns, calls a burst of briars under your feet, and vanishes to the far side of the roof when you get close. Kill one and the other gets faster. Die on the roof and you start again at the foot of the stairs.</p>
       <p style="margin:8px 0 0">Cinderwing the dragon circles the castle setting off fireworks. It leaves you alone unless you hit it. Hit it and it fights back for a while with fireballs and fire breath. Drive it off and it drops a big reward, then returns a few minutes later.</p>
+      <p style="margin:8px 0 0">Hits from behind a creep are backstabs and hit harder. Fen Stalkers circle you and lunge down a red lane; their bite poisons, and poison ticks through armour until a flask cures it. Thornbacks guard their front: a hit on the shell does a third of its damage, so parry or heavy-hit them to stagger, or get behind them. Relics are passive keepsakes you can carry three of; they drop from gilded and crystal chests, ancients, elites, godlings and the Warden. Drop one from the hero sheet to swap it.</p>
       <p style="margin:8px 0 0">Crawlers and wisps roam the meadow. Kill them for gold and experience, and sometimes a pod. Each level gives two attribute points (P). Treasure chests (E) are spread across the map and upgrade from wooden to iron, gilded and crystal the longer you leave them. The world tier rises every two minutes, so the bosses get stronger the longer you wait.</p>
       <p style="margin:8px 0 0">The Sundering: the World Heart has cracked and every world holds a shard. The Gate Warden guards the moat's. Beat it and the World Gate beside the Moon Shrine opens onto Veyra, a violet grove under three moons: walk over three Lumen Seeds, then face the Hive Matron. Next is Neon Verge, a smog-lit city: stand beside three relay terminals for three seconds each to hack them, then face Director Halvane. Last is Ashfall, a dead town under falling ash: press E beside three survivors to lead them out, then face the Rot Sovereign. Each guardian you beat carries you on to the next world, and you can travel back through any World Gate (not mid-fight, during a hunt or from the spirit realm).</p>
       <p style="margin:8px 0 0">Every few minutes a rift storm may tear you into another world, open or sealed, for 75 seconds before dropping you back where you were. After the last shard the game keeps going: tiers rise, the Warden hunts and the Veil still opens.</p>

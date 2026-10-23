@@ -40,7 +40,7 @@
     if (P.act === null) {
       if (name === 'drink' && P.flasks <= 0) { P.buffer = null; return; }
       const say = (t, c) => { P.buffer = null; floatText(t, player.position.clone().add(new THREE.Vector3(0, 2.3, 0)), 'word', c || '#4a7bff'); };
-      if (name === 'cast' && P.mana < 30) return say('not enough mana');
+      if (name === 'cast' && P.mana < boltCost()) return say('not enough mana');
       if (name === 'throw' && (P.cd.z > 0 || P.st < 6)) { P.buffer = null; return; }
       if (name === 'volley') { if (PR.level < 3) return say('Arc Volley unlocks at level 3', '#ffd36a'); if (P.cd.v > 0) { P.buffer = null; return; } if (P.mana < 50) return say('not enough mana'); }
       if (P.mount && name === 'volley') return say('Not while riding', '#ffd36a');
@@ -62,7 +62,7 @@
       const d = flatDist(player.position, t.pos);
       const ang = Math.abs(angDiff(P.facing, yawTo(player.position, t.pos)));
       if (d > range + t.radius || ang > arc / 2) return;
-      damageEnemy(t, dmg * PR.dmg * (G.env.dmg || 1) * (G.realm === 'spirit' ? 1.3 : 1), poiseDmg, heavy);
+      strike(t, dmg * PR.dmg * (G.env.dmg || 1) * (G.realm === 'spirit' ? 1.3 : 1), poiseDmg, heavy);
     });
   }
   function damageBoss(dmg, poiseDmg, heavy) {
@@ -90,7 +90,16 @@
   function hitPlayer(dmg, src, kbStrength, parryable, attacker) {
     if (G.state === 'dead' || G.state === 'won' || G.state === 'intro' || G.shop) return false;
     dmg *= (attacker && attacker.isCreep) ? attacker.mult * G.env.creepDmg : G.dmgMult;
-    if (P.iframe > 0) { floatText('dodged', player.position.clone().add(new THREE.Vector3(0, 2.2, 0)), 'word'); return false; }
+    if (P.iframe > 0) {
+      // A perfect dodge: the hit would have landed mid-roll. Flow follows.
+      if (P.act === 'roll' && !P.flowed) {
+        P.flowed = true; P.flow = FLOW_TIME + relicBonus('flow'); P.st = Math.min(P.stMax, P.st + 15);
+        sfx('swoosh'); burst(player.position.x, player.position.y + 1, player.position.z, 16, 4);
+        floatText('FLOW', player.position.clone().add(new THREE.Vector3(0, 2.6, 0)), 'word', '#bff6ff');
+      } else floatText('dodged', player.position.clone().add(new THREE.Vector3(0, 2.2, 0)), 'word');
+      return false;
+    }
+    P.calm = 0;
     const facingSrc = Math.abs(angDiff(P.facing, yawTo(player.position, src))) < 1.9;
     if (P.block && facingSrc) {
       if (parryable && P.blockT < 0.2) {
@@ -98,6 +107,8 @@
         const at = player.position.clone().add(fwdOf(P.facing).multiplyScalar(0.7)).setY(1.2);
         burst(at.x, at.y, at.z, 30, 8);
         floatText('PARRY', player.position.clone().add(new THREE.Vector3(0, 2.4, 0)), 'word');
+        P.riposte = RIPOSTE_TIME;
+        if (relicHas('ward')) { P.mana = Math.min(P.manaMax, P.mana + 25); P.st = P.stMax; floatText('Wardstone', player.position.clone().add(new THREE.Vector3(0, 2.9, 0)), 'word', '#bff6ff'); }
         if (attacker && attacker.isCreep) { attacker.stun = 1.3; attacker.atk = null; attacker.tele.hide(); }
         else if (attacker) staggerRoyal(attacker, 1.3, 'STUNNED'); else staggerBoss(1.3, 'STUNNED');
         return false;

@@ -1,7 +1,7 @@
   // ---------- Boss behaviour ----------
   function startFight() {
     const tier = worldTier(), m = tierMult(tier);
-    B.max = Math.round(1500 * m); B.hp = B.max; G.dmgMult = 1.35 + 0.2 * (tier - 1); G.bossTier = tier;
+    B.max = Math.round(1500 * m); B.hp = B.max; G.dmgMult = 1.35 + 0.2 * (tier - 1); G.bossTier = tier; WARDEN.rend = 0;
     ui.bname.textContent = `The Gate Warden \u00b7 Lv ${tier + 2}`;
     G.state = 'intro'; B.state = 'leap'; B.t = 0; B.dur = 1.4;
     B.from.copy(boss.position);
@@ -239,6 +239,7 @@
     const m = tierMult(G.bossTier || 1);
     PR.warden = true; recalc(); P.armor = P.armorMax; P.mana = P.manaMax;
     reward(300 * m, 160 * m, boss.position.clone().add(new THREE.Vector3(0, 4, 0)));
+    dropRelic(boss.position.x + 2, boss.position.z + 1);
     completeChapter('moat');
     setTimeout(() => {
       if (G.state !== 'interlude') return;

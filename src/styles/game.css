@@ -75,7 +75,7 @@ html, body { height: 100%; margin: 0; background: var(--bg); color: var(--fg); f
 #pbars .thin { height: 4px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 0; }
 .chip { font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; padding: 2px 6px; border-radius: 3px; border: 1px solid currentColor; font-variant-numeric: tabular-nums; }
-.chip.red { color: var(--b-red); } .chip.yellow { color: var(--b-yellow); }
+.chip.red { color: var(--b-red); } .chip.yellow { color: var(--b-yellow); } .chip.cyan { color: #bff6ff; } .chip.orange { color: #ff9a4a; } .chip.green { color: #7fdc5a; }
 .legend { display: grid; gap: 4px; margin: 8px 0 0; padding: 0; list-style: none; }
 .legend li { display: flex; gap: 8px; align-items: baseline; }
 .legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex: none; }
@@ -175,6 +175,14 @@ output { font-variant-numeric: tabular-nums; color: var(--fg); min-width: 44px; 
 .cbar .ct { width: 40px; height: 4px; background: rgba(0,0,0,.65); border: 1px solid var(--line); }
 .cbar.anc .ct { width: 70px; height: 5px; border-color: #ff9a4a; }
 .cbar i { display: block; height: 100%; background: var(--blood); }
+.cbar.relic span { font-weight: 600; letter-spacing: 0.04em; }
+#relics { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 10px; }
+.relic { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: center; }
+.relic span { font-weight: 600; }
+.relic small { grid-column: 1 / span 2; color: var(--muted); font-size: 10px; line-height: 1.4; }
+.relic button { font: inherit; font-size: 10px; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 2px 7px; cursor: pointer; }
+.relic button:hover { color: var(--moon); border-color: var(--moon); }
+.combat { display: grid; gap: 4px; border-top: 1px solid var(--line); padding-top: 10px; }
 @media (pointer: coarse) { #skills { display: none; } #prompt { bottom: calc(190px + env(safe-area-inset-bottom, 0px)); } }
 #pausebtn { position: fixed; right: 16px; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); font: inherit; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--moon); background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; cursor: pointer; }
 #pause { position: fixed; inset: 0; display: grid; place-items: center; padding-inline: 16px; background: rgba(0,0,0,.55); z-index: 4; }

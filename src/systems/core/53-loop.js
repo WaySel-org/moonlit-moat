@@ -22,6 +22,7 @@
 
 
     const pr = updatePlayer(dt);
+    updateStatus(dt); updateRend(dt);
     const inMoat = G.world === 'moat';
     if (inMoat) { updateBoss(dt); updatePods(dt); }
     updateBolts(dt);
@@ -31,7 +32,7 @@
     creeps.forEach(c => updateCreep(c, dt));
     updateCreepShots(dt);
     if (inMoat) updateChests(dt);
-    updateLoot(dt);
+    updateLoot(dt); updateRelics(dt, real);
     updateFxRings(dt);
     if (inMoat) updateTraps(dt);
     updateSwooshes(dt);
@@ -174,7 +175,8 @@
       ui.lockmark.hidden = !mp.ok;
       ui.lockmark.style.transform = `translate(${mp.x}px, ${mp.y}px) translate(-50%, -100%)`;
     }
-    const chips = (P.buffDmg > 0 ? `<span class="chip red">Damage ${Math.ceil(P.buffDmg)}s</span>` : '') + (P.buffAgi > 0 ? `<span class="chip yellow">Agility ${Math.ceil(P.buffAgi)}s</span>` : '');
+    const chips = (P.buffDmg > 0 ? `<span class="chip red">Damage ${Math.ceil(P.buffDmg)}s</span>` : '') + (P.buffAgi > 0 ? `<span class="chip yellow">Agility ${Math.ceil(P.buffAgi)}s</span>` : '')
+      + (P.flow > 0 ? `<span class="chip cyan">Flow ${P.flow.toFixed(1)}s</span>` : '') + (P.riposte > 0 ? `<span class="chip orange">Riposte ${P.riposte.toFixed(1)}s</span>` : '') + (P.poison > 0 ? `<span class="chip green">Poison ${Math.ceil(P.poison)}s</span>` : '');
     if (chips !== ui.chipsHTML) { ui.chips.innerHTML = chips; ui.chipsHTML = chips; }
     if (bannerTimer > 0) { bannerTimer -= real; if (bannerTimer <= 0 && ui.banner.className === 'title') ui.banner.hidden = true; }
   }

@@ -1,0 +1,14 @@
+{
+  "gameId": "stalker",
+  "name": "Fen Stalker",
+  "kind": "creep",
+  "world": "moat",
+  "stats": {
+    "baseHealth": 46
+  },
+  "ai": "stalker",
+  "behaviour": "Circles the hero at five to seven metres, then lunges nine metres down a telegraphed lane. Its bite poisons for six seconds; a flask cures it.",
+  "look": "Lean four-legged hunter, mossy dark hide, pale green eyes, whip tail.",
+  "id": "fen-stalker",
+  "originality": "original"
+}

@@ -1,0 +1,14 @@
+{
+  "gameId": "thornback",
+  "name": "Thornback",
+  "kind": "creep",
+  "world": "moat",
+  "stats": {
+    "baseHealth": 120
+  },
+  "ai": "guard",
+  "behaviour": "Slow and slow to turn. Its front is a shield: hits on the shell land at a third of their damage until it is staggered by a heavy hit, a crit or a parry, or struck from behind. Slams the ground in front of it.",
+  "look": "Low spiked shell-walker the colour of wet stone; the spikes turn gold while it is staggered.",
+  "id": "thornback",
+  "originality": "original"
+}

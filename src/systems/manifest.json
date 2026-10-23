@@ -18,11 +18,13 @@
   "actors/player/16-player-actions.js",
   "actors/player/17-boosts-and-bolts.js",
   "actors/player/18-targeting-and-combat.js",
+  "actors/player/18b-combat-depth.js",
   "actors/bosses/19-warden-behaviour.js",
   "actors/bosses/20-rooftop-royals.js",
   "actors/bosses/21-cinderwing.js",
   "render/22-fireworks.js",
   "actors/player/23-progression.js",
+  "actors/player/23b-relics.js",
   "actors/player/24-warden-leap.js",
   "actors/creeps/25-creeps.js",
   "actors/creeps/25b-neutral-camps.js",
@@ -55,5 +57,6 @@
   "core/50-input.js",
   "ui/51-renderer-controls.js",
   "actors/player/52-player-update.js",
-  "core/53-loop.js"
+  "core/53-loop.js",
+  "core/54-debug.js"
 ]

@@ -9,17 +9,17 @@
     if (name === 'light') { P.actDur = P.combo === 2 ? 0.46 : 0.32; sfx('swing'); }
     else if (name === 'heavy') { P.actDur = 0.68; P.combo = 0; }
     else if (name === 'roll') {
-      P.actDur = 0.42; P.iframe = 0.3; P.combo = 0; sfx('roll');
+      P.actDur = 0.42; P.iframe = 0.3; P.combo = 0; P.flowed = false; sfx('roll');
       const mv = moveInput();
       P.rollDir.copy(mv.lengthSq() > 0 ? mv.normalize() : fwdOf(P.facing));
       P.facing = Math.atan2(P.rollDir.x, P.rollDir.z);
     }
     else if (name === 'drink') { P.actDur = 0.95; P.healed = false; P.combo = 0; }
-    else if (name === 'cast') { P.actDur = 0.45; P.mana -= 30; P.combo = 0; sfx('cast'); }
+    else if (name === 'cast') { P.actDur = 0.45; P.mana -= boltCost(); P.combo = 0; sfx('cast'); }
     else if (name === 'mp1' || name === 'mp2') { if (!startMountPower(name)) { P.act = null; return false; } return true; }
     else if (name === 'throw') { P.actDur = 0.28; P.st -= 10; P.stDelay = 0.5; P.cd.z = 0.45; P.combo = 0; sfx('swing'); }
     else if (name === 'volley') { P.actDur = 0.5; P.mana -= 50; P.cd.v = 4; P.combo = 0; sfx('cast'); }
     else if (name === 'leap') { if (!planLeap()) { P.act = null; return false; } P.actDur = 0.75; P.mana -= 25; P.cd.x = 6; P.iframe = 0.8; P.combo = 0; P.kb.set(0, 0, 0); sfx('roar'); }
-    if (COST[name]) { P.st -= COST[name] * (name === 'roll' && P.buffAgi > 0 ? 0.5 : 1); P.stDelay = 0.7; }
+    if (COST[name]) { const cost = name === 'roll' && relicHas('step') ? COST.roll - 10 : COST[name]; P.st -= cost * (name === 'roll' && P.buffAgi > 0 ? 0.5 : 1); P.stDelay = 0.7; }
     return true;
   }

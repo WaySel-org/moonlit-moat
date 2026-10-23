@@ -41,7 +41,7 @@
     const agi = P.buffAgi > 0;
     P.buffDmg = Math.max(0, P.buffDmg - dt); P.buffAgi = Math.max(0, P.buffAgi - dt);
     P.stDelay -= dt;
-    if (P.stDelay <= 0 && P.act !== 'roll') P.st = Math.min(P.stMax, P.st + dt * (P.block ? 14 : 34) * (agi ? 1.5 : 1));
+    if (P.stDelay <= 0 && P.act !== 'roll') P.st = Math.min(P.stMax, P.st + dt * (P.block ? 14 : 34) * (agi ? 1.5 : 1) * (P.flow > 0 ? 2 : 1));
     P.mana = Math.min(P.manaMax, P.mana + dt * (1.5 + 0.15 * PR.spi) * G.env.mana);
     P.cd.z = Math.max(0, P.cd.z - dt); P.cd.v = Math.max(0, P.cd.v - dt); P.cd.x = Math.max(0, P.cd.x - dt);
     P.cd.mp1 = Math.max(0, P.cd.mp1 - dt); P.cd.mp2 = Math.max(0, P.cd.mp2 - dt);
@@ -75,11 +75,12 @@
         if (P.chargeDmg) {
           liveTargets().forEach(t => {
             if (P.chargeHits.has(t) || Math.abs(t.pos.y - player.position.y) > 2.5 || flatDist(player.position, t.pos) > 2.2 + t.radius) return;
-            P.chargeHits.add(t); damageEnemy(t, P.chargeDmg, 25, true);
+            P.chargeHits.add(t); strike(t, P.chargeDmg, 25, true);
           });
           if (Math.random() < 0.8) burst(player.position.x, player.position.y + 0.5, player.position.z, 2, 3);
         }
         movePlayer(P.rollDir.x * sp * dt, P.rollDir.z * sp * dt);
+        if (relicHas('ember') && !P.chargeDmg && k < 0.8 && Math.random() < dt * 9) addPatch(player.position.x, P.y, player.position.z, 0.9, true);
         if (!P.mount) { pBody.rotation.x = k * TAU; pBody.position.y = -0.25 * Math.sin(k * Math.PI); }
       } else if (P.act === 'gore') {
         if (!P.hitDone && k > 0.4) {
@@ -88,7 +89,7 @@
           liveTargets().forEach(t => {
             if (Math.abs(t.pos.y - player.position.y) > 2.5) return;
             const d = flatDist(player.position, t.pos), ang = Math.abs(angDiff(P.facing, yawTo(player.position, t.pos)));
-            if (P.goreBig ? d < 4.2 + t.radius : (d < 3.6 + t.radius && ang < 1.3)) damageEnemy(t, bt.dmg * (P.goreBig ? 1.4 : 1) * PR.dmg, 30, true);
+            if (P.goreBig ? d < 4.2 + t.radius : (d < 3.6 + t.radius && ang < 1.3)) strike(t, bt.dmg * (P.goreBig ? 1.4 : 1) * PR.dmg, 30, true);
           });
           if (P.goreBig) { const m = new THREE.Mesh(waveGeo, new THREE.MeshBasicMaterial({ color: 0xfff0c8, transparent: true, opacity: 0.9, depthWrite: false })); m.position.set(player.position.x, P.y + 0.06, player.position.z); scene.add(m); fxRings.push({ m, r: 0.4 }); sfx('boom'); }
         }
@@ -113,9 +114,10 @@
         if (!P.hitDone && kk >= 1) { P.hitDone = true; P.y = P.leapTo.y; landLeap(); }
       } else if (P.act === 'drink') {
         if (!P.healed && k > 0.55) {
-          P.healed = true; P.hp = Math.min(P.max, P.hp + 38); sfx('drink');
+          P.healed = true; const heal = flaskHeal(); P.hp = Math.min(P.max, P.hp + heal); sfx('drink');
+          if (P.poison > 0) { P.poison = 0; floatText('poison cured', player.position.clone().add(new THREE.Vector3(0, 2.8, 0)), 'word', '#7fdc5a'); }
           burst(player.position.x, 1.2, player.position.z, 18, 3);
-          floatText('+38', player.position.clone().add(new THREE.Vector3(0, 2.2, 0)), '');
+          floatText(`+${heal}`, player.position.clone().add(new THREE.Vector3(0, 2.2, 0)), '');
         }
       }
       if (P.actT >= P.actDur) {

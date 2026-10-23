@@ -28,13 +28,13 @@
     const lbl = (id, t) => { const sp = document.querySelector('#' + id + ' span'); if (sp.textContent !== t) sp.textContent = t; };
     lbl('sk_c', mpw ? mpw.mp1.short : 'Bolt'); lbl('sk_x', mpw ? mpw.mp2.short : 'Leap');
     if (mpw) sk('sk_c', false, P.cd.mp1 / mpw.mp1.cd, P.mana < mpw.mp1.mana);
-    else sk('sk_c', false, 0, P.mana < 30);
+    else sk('sk_c', false, 0, P.mana < boltCost());
     sk('sk_v', PR.level < 3, P.cd.v / 4, P.mana < 50);
     if (mpw) sk('sk_x', false, P.cd.mp2 / mpw.mp2.cd, P.mana < mpw.mp2.mana);
     else sk('sk_x', !PR.warden, P.cd.x / 6, P.mana < 25);
     creeps.forEach(c => {
       if (!c.alive || c.realm !== realmKey() || flatDist(c.pos, player.position) > (c.ancient || c.ai === 'godling' ? 34 : 22)) { c.bar.hidden = true; return; }
-      const sp = project(c.pos.clone().setY(c.pos.y + (c.type === 'crawler' ? 1.4 : 0.8) * (c.ancient ? 1.8 : 1)));
+      const sp = project(c.pos.clone().setY(c.pos.y + (CREEP_BAR_H[c.type] || 0.8) * (c.ancient ? 1.8 : 1)));
       c.bar.hidden = !sp.ok;
       if (!c.bar.hidden) {
         c.bar.style.transform = `translate(${sp.x}px, ${sp.y}px) translate(-50%, -100%)`;

@@ -84,7 +84,7 @@
       if (Math.abs(t.pos.y - player.position.y) > 2.5) return;
       if (flatDist(player.position, t.pos) > range + t.radius) return;
       if (arc < TAU && Math.abs(angDiff(P.facing, yawTo(player.position, t.pos))) > arc / 2) return;
-      damageEnemy(t, dmg, poise, true);
+      strike(t, dmg, poise, true);
       if (knock && t.isCreep && t.alive) creepMove(t, new THREE.Vector3(t.pos.x - player.position.x, 0, t.pos.z - player.position.z).normalize(), knock);
     });
   }
