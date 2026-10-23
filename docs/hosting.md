@@ -28,7 +28,7 @@ python3 tools/measure.py    # what a phone downloads on a first and a repeat vis
 | `make scan` | Trivy scan, fails on fixable critical/high issues |
 | `make lint-chart` / `make template` | Lint or render the Helm chart |
 
-- **Image:** multi-stage, `python:3.12-alpine` builds `dist/`, `nginxinc/nginx-unprivileged:1.27-alpine` serves it as user 101 on port 8080 with `/healthz`. OCI labels carry version and git revision. `.dockerignore` keeps the context to what the build needs.
+- **Image:** multi-stage, `python:3.12-alpine` builds `dist/`, `nginxinc/nginx-unprivileged:1.30-alpine` (with `apk upgrade` at build time) serves it as user 101 on port 8080 with `/healthz`. OCI labels carry version and git revision. `.dockerignore` keeps the context to what the build needs.
 - **CI** (`.github/workflows/ci.yml`): validate content → hadolint → build → smoke test (health, page, hashed game file, security and cache headers, gzip, non-root user) → Trivy scan → Helm lint and render.
 - **Publish** (push to `main` or a `v*` tag): `linux/amd64` + `linux/arm64` images to `ghcr.io/waysel-org/moonlit-moat` tagged `sha-…`, `latest` (main) and semver (tags), with SBOM and max provenance attestations, keyless cosign signature.
 - **Kubernetes:** Helm chart `deploy/helm/moonlit-moat` (Deployment with rolling updates and topology spread, Service, HPA 2–10, PodDisruptionBudget, deny-by-default NetworkPolicy, optional Ingress), or plain manifests in `deploy/k8s/`.
