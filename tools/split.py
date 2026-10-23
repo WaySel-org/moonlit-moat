@@ -63,6 +63,7 @@ DOMAINS = [
     ('World system', 'world', 'world-system'),
     ('World select', 'ui', 'world-select'),
     ('Rift storms', 'world', 'rift-storms'),
+    ('Stages and events', 'world', 'stages-and-events'),
     ('Veyra', 'world/veyra', 'veyra'),
     ('Neon Verge', 'world/neon-verge', 'neon-verge'),
     ('Ashfall', 'world/ashfall', 'ashfall'),

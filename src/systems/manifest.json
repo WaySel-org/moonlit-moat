@@ -48,6 +48,7 @@
   "ui/44-world-select.js",
   "world/45-rift-storms.js",
   "world/46-world-system.js",
+  "world/46b-stages-and-events.js",
   "ui/47-minimap.js",
   "core/48-content.js",
   "core/49-pause.js",

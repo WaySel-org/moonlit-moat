@@ -1,9 +1,10 @@
   // ---------- World system: story progression and travel ----------
-  function freshStory() { return { unlocked: { moat: true }, shards: {}, step: { moat: 0, veyra: 0, neon: 0, ash: 0 }, prog: { veyra: [0, 0, 0], neon: [0, 0, 0], ash: [0, 0, 0] }, pending: null }; }
+  function freshStory() { return { unlocked: { moat: true }, shards: {}, step: { moat: 0, veyra: 0, neon: 0, ash: 0 }, prog: { veyra: [0, 0, 0], neon: [0, 0, 0], ash: [0, 0, 0] }, stage: { veyra: 1, neon: 1, ash: 1 }, nextStage: {}, lastEvent: null, pending: null }; }
   G.story = freshStory(); G.lastPos = {}; G.storm = null; G.stormClock = 0;
   const hudTitle = $('#hud h1');
   function resetStory() {
     if (G.world !== 'moat') showWorld('moat');
+    endEvent(true); G.eventClock = 0;
     G.story = freshStory(); G.lastPos = {}; G.storm = null; G.stormClock = 0;
     Object.values(WORLDS).forEach(W => W.objs.forEach(o => W.objLook(o, false)));
   }
@@ -17,12 +18,13 @@
       return ST.shards.moat ? `${base} The World Gate beside the shrine leads to the other shards.` : base;
     }
     if (!ST.unlocked[w]) return `${W.name} is still sealed. Its shard sleeps until you open the way.`;
-    if (ST.step[w] === 2) return `${W.name}: ${SHARD[w]} is yours.${next && !G.storm && ST.unlocked[next] && !ST.shards[next] ? ` Use the World Gate to reach ${WNAME[next]}.` : ''}`;
-    if (ST.step[w] === 1) return `Chapter ${n} \u00b7 ${W.name}: ${W.bossName} has risen. Defeat it to claim ${SHARD[w]}.`;
-    return `Chapter ${n} \u00b7 ${W.name}: ${W.task} (${ST.prog[w].filter(v => v >= 1).length}/3).`;
+    const lab = stageOf(w) > 1 ? `Stage ${stageOf(w)}` : `Chapter ${n}`;
+    if (ST.step[w] === 2) return `${W.name}: ${SHARD[w]} is yours.${G.world === w ? stageText(w) : ''}${next && !G.storm && ST.unlocked[next] && !ST.shards[next] ? ` Use the World Gate to reach ${WNAME[next]}.` : ''}`;
+    if (ST.step[w] === 1) return `${lab} \u00b7 ${W.name}: ${W.bossName} has risen. Defeat it to claim ${SHARD[w]}.`;
+    return `${lab} \u00b7 ${W.name}: ${W.task} (${ST.prog[w].filter(v => v >= 1).length}/3).`;
   }
   function objectiveText() {
-    const t = chapterText(G.world);
+    const ev = eventText(), t = (ev ? ev + ' ' : '') + chapterText(G.world);
     return G.storm ? `Rift storm \u00b7 ${fmtTime(Math.ceil(Math.max(0, G.storm.t)))} until it lets go. ${t}` : t;
   }
   function worldPrompt() {
@@ -62,7 +64,7 @@
   }
   // A shard is taken: open the next world and, after a banner, carry the hero there
   function completeChapter(w) {
-    const ST = G.story; if (ST.shards[w]) return;
+    const ST = G.story; if (ST.shards[w]) { stageClear(w); return; }
     ST.shards[w] = true; ST.step[w] = 2;
     const next = CHAPTERS[CHAPTERS.indexOf(w) + 1];
     if (next) ST.unlocked[next] = true;
@@ -108,6 +110,7 @@
   function enterWorld(to, at, mode) {
     if (mode === 'gate' || mode === 'story' || mode === 'stormIn') G.lastPos[G.world] = { x: player.position.x, z: player.position.z };
     if (P.mount) dismount(true);
+    endEvent(true);
     if (G.realm === 'spirit') setRealm('material', true);
     // Anything still in flight belongs to the world being left
     bolts.forEach(b => { scene.remove(b.m); b.m.material.dispose(); }); bolts.length = 0;

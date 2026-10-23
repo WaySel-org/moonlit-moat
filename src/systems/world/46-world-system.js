@@ -37,4 +37,5 @@
       G.stormClock += dt;
       if (G.stormClock >= 300 && canStorm()) { G.stormClock = 0; if (Math.random() < 0.35) startStorm(); }
     }
+    updateStages(real); updateEvents(dt, real);
   }

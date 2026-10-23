@@ -134,7 +134,7 @@
   const CREEP_NAME = { crawler: 'Mire Crawler', wisp: 'Ash Wisp', lantern: 'Hollow Lantern', tide: 'Tide Shade', ember: 'Ember Wraith', godling: 'Fallen Godling' };
   const CREEP_BASE = { crawler: 60, wisp: 42, lantern: 34, tide: 46, ember: 50, godling: 900 };
   function creepTitle(c) {
-    const cat = c.ancient ? 'Ancient ' : (c.lv > worldTier() ? 'Veteran ' : '');
+    const cat = c.elite ? 'Elite ' : c.ancient ? 'Ancient ' : (c.lv > worldTier() ? 'Veteran ' : '');
     return `${cat}${c.godName || CREEP_NAME[c.type]} \u00b7 Lv ${c.lv}`;
   }
   function creepStats(c) {
@@ -142,7 +142,7 @@
     const ratio = c.max > 1 ? c.hp / c.max : 1;
     c.max = Math.round((CREEP_BASE[c.type] || 50) * (c.ancient ? 4 : 1) * (1 + 0.35 * (c.lv - 1)));
     c.hp = Math.max(1, Math.round(c.max * ratio));
-    c.bar.className = 'cbar' + (c.ancient || c.storyBoss ? ' anc' : (c.lv > worldTier() ? ' vet' : ''));
+    c.bar.className = 'cbar' + (c.ancient || c.storyBoss || c.elite ? ' anc' : (c.lv > worldTier() ? ' vet' : ''));
   }
   function spawnCreep(c) {
     if (c.storyBoss && G.story.step[c.storyBoss] !== 1) { c.respawn = 2; return; }
@@ -152,7 +152,8 @@
     const p = c.storyBoss ? c.camp.clone() : (c.ancient || c.neutral) ? c.camp.clone().add(new THREE.Vector3((Math.random() - 0.5) * 2, 0, (Math.random() - 0.5) * 2)) : (c.realm === 'spirit' ? spiritSpot(c) : WORLDS[c.realm] ? worldSpot(c) : creepSpot());
     G.world = w0; G.realm = r0;
     if (!p) { c.respawn = 2; return; }
-    c.lv = worldTier() + (c.storyBoss ? 0 : c.ai === 'godling' ? 3 : c.ancient ? 2 : (Math.random() < 0.3 ? 1 : 0)); c.max = 1; c.age = 0;
+    c.elite = false;
+    c.lv = worldTier() + (c.storyBoss ? stageOf(c.storyBoss) - 1 : c.ai === 'godling' ? 3 : c.ancient ? 2 : (Math.random() < 0.3 ? 1 : 0)); c.max = 1; c.age = 0;
     creepStats(c);
     c.alive = true; c.g.visible = c.realm === realmKey(); c.pos.copy(p); c.home.copy(p); c.wander.copy(p);
     c.atk = null; c.cool = 1; c.stun = 0; c.leash = false;
@@ -267,6 +268,7 @@
     reward((c.type === 'crawler' ? 22 : 18) * c.mult * (c.neutral ? 1.5 : 1) * (c.ancient ? 6 : 1) * (c.ai === 'godling' ? 14 : 1), (4 + Math.random() * 6) * c.mult * (c.ancient ? 5 : 1) * (c.ai === 'godling' ? 10 : 1), c.pos.clone().add(new THREE.Vector3(0, 1.8, 0)));
     if (c.ancient) spawnLoot(c.pos.x + 1, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
     if (Math.random() < 0.2) spawnLoot(c.pos.x, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
+    if (c.elite) eliteDown(c);
     if (c.storyBoss) completeChapter(c.storyBoss);
     if (G.target === c) G.target = null;
   }

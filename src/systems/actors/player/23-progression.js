@@ -13,7 +13,7 @@
     renderHero();
   }
   function reward(xp, gold, at) {
-    xp = Math.round(xp * G.env.xp); gold = Math.round(gold);
+    xp = Math.round(xp * G.env.xp); gold = Math.round(gold * (G.fortune > 0 ? 2 : 1));
     PR.gold += gold; PR.xp += xp;
     floatText(`+${xp} XP${gold ? `  +${gold} gold` : ''}`, at, 'word', '#ffd36a');
     if (gold) sfx('coin');

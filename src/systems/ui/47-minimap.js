@@ -41,6 +41,7 @@
         if (B.state !== 'dead' && boss.visible) dot(boss.position.x, boss.position.z, big ? 5 : 3.5, '#ff6a4a');
       }
     }
+    const em = eventMark(); if (em && G.realm === 'material') { dot(em.x, em.z, big ? 6 : 4, em.col); c.strokeStyle = em.col; c.lineWidth = 1; c.beginPath(); c.arc(X(em.x), Z(em.z), (big ? 10 : 7) + Math.sin(uTime.value * 6) * 2, 0, TAU); c.stroke(); }
     const rk = realmKey();
     creeps.forEach(cr => { if (cr.alive && cr.realm === rk) dot(cr.pos.x, cr.pos.z, cr.ai === 'godling' ? (big ? 5 : 3.5) : cr.ancient ? (big ? 3.5 : 2.5) : (big ? 2 : 1.3), cr.ai === 'godling' ? '#e0a0ff' : cr.ancient ? '#ff9a4a' : '#ff5a4a'); });
     // you: an arrow pointing where you face
