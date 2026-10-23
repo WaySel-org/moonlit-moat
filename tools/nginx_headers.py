@@ -9,7 +9,8 @@ import json, pathlib, sys
 
 DEPLOY = pathlib.Path(__file__).resolve().parent.parent / 'deploy'
 if sys.argv[1:2] == ['cache']:
-    print(f'add_header Cache-Control "{json.loads((DEPLOY / "cache.json").read_text())[sys.argv[2]]["cache-control"]}" always;')
+    # No `always`: nginx then sends it only on success, so an error page is never cached for a year.
+    print(f'add_header Cache-Control "{json.loads((DEPLOY / "cache.json").read_text())[sys.argv[2]]["cache-control"]}";')
 else:
     for key, value in json.loads((DEPLOY / 'headers.json').read_text()).items():
         print(f'add_header {key} "{value}" always;')

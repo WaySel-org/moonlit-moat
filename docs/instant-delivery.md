@@ -157,3 +157,8 @@ Measured with `python3 tools/measure.py` (slow-4G model: 150 ms RTT, 1.6 Mbps; B
 
 - PR 1: IBM Plex Mono 400 and 600 bundled from `vendor/fonts/` (the same Latin subsets Google served; weight 500 was never used and is dropped). CSP now `style-src 'self' 'unsafe-inline'; font-src 'self'`; both Google origins gone.
 - PR 2: everything but `index.html` lives in `dist/a/` with content hashes and `immutable` caching (`deploy/cache.json`, written to Vercel and nginx). `content.js` folded into `game.js`. `.gz` files beside text assets for nginx `gzip_static`. Build fails over `BUDGET_KB` (260 KB gzip now; 160 KB after PR 3).
+
+### Live check on a Vercel preview (2026-10-23)
+- Every path carries the full security header set and the tightened CSP. `index.html` and `healthz` send `max-age=0, must-revalidate`; every file under `/a/` sends `max-age=31536000, immutable`; text is compressed.
+- A missing `/a/` file returns 404 but still carries `immutable` on Vercel, which cannot vary headers by status. Harmless there because Vercel deploys are atomic (the HTML never points at a file the same deploy lacks). nginx now sends the cache rule on success only.
+- **Vercel's Brotli is light.** Served sizes are about gzip size, not the Brotli level 11 sizes `tools/measure.py` assumes: `game.js` 85.8 KB on the wire vs 67.7 KB at Brotli 11; `three.js` 152 KB. Real first-load bytes from Vercel are about 268 KB, not 212 KB. Before and after were measured the same way, so the comparison above holds. For PR 3 this means minifying matters more than the compression setting, and serving pre-compressed Brotli would need a different host setup.
