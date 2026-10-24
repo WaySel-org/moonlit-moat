@@ -1,0 +1,16 @@
+{
+  "gameId": "oni",
+  "name": "The Oni",
+  "kind": "creep",
+  "world": "moat",
+  "mythic": true,
+  "stats": {
+    "baseHealth": 520
+  },
+  "ai": "melee",
+  "wakes": "world tier 1",
+  "look": "Red-skinned horned brute with an iron club.",
+  "id": "mythic-oni",
+  "originality": "original",
+  "source": "Japanese folklore (public-domain myth; this design is original)"
+}

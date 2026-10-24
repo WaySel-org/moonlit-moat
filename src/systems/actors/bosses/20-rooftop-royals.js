@@ -297,11 +297,11 @@
   }
   function startRoyal() {
     const tier = worldTier(), m = tierMult(tier);
-    G.dmgMult = 1 + 0.2 * (tier - 1); G.bossTier = tier;
+    G.dmgMult = (1 + 0.2 * (tier - 1)) * (1 + 0.25 * G.ascension); G.bossTier = tier;
     // Wherever they were feeding, they answer the throne at their full farmed strength
     endRoyalHunt(true);
     royals.forEach((r, i) => {
-      Object.assign(r, { field: false, alive: true, enraged: false, atk: null, t: 0 }); r.lv = Math.max(r.lv, tier + 2); r.max = 0; royalStats(r); r.hp = r.max;
+      Object.assign(r, { field: false, alive: true, enraged: false, atk: null, t: 0 }); r.lv = Math.max(r.lv, tier + 2 + 2 * G.ascension); r.max = 0; royalStats(r); r.hp = r.max;
       r.pos.copy(r.home); r.g.visible = true; r.g.scale.setScalar(1.15); r.body.rotation.set(0, 0, 0); r.tele.hide(); royalBars[i].bar.hidden = true;
       ui['rname' + i].textContent = `${r.kind === 'gorgon' ? 'Vesthra, the Gorgon' : 'Nyxara, the Thorn Empress'} \u00b7 Lv ${r.lv}`;
     });

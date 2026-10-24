@@ -6,7 +6,7 @@
     if (inMoat && HITTABLE.includes(B.state)) out.push(WARDEN);
     royals.forEach(r => { if (r.field ? r.alive && r.g.visible && flatDist(r.pos, player.position) < 30 : inMoat && r.active && r.alive) out.push(r); });
     raiders.forEach(r => { if (r.alive && r.g.visible && flatDist(r.pos, player.position) < 40) out.push(r); });
-    creeps.forEach(c => { if (c.alive && c.realm === rk && flatDist(c.pos, player.position) < (c.ai === 'godling' ? 40 : 26)) out.push(c); });
+    creeps.forEach(c => { if (c.alive && c.realm === rk && flatDist(c.pos, player.position) < (c.ai === 'godling' || c.mythic ? 40 : 26)) out.push(c); });
     return out;
   }
   function nearestTarget(list, from) {

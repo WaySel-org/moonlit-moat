@@ -264,9 +264,9 @@
     }
     setTimeout(() => showBanner('You fell', text, 'lose', 'Try again'), 1100);
   }
+  // The queens falling is not the end: it is an Ascension (see world/moat/46c-ascension.js)
   function winGame() {
-    G.state = 'won'; G.lock = false; G.slow = 1.2;
+    G.lock = false; G.slow = 1.2; G.target = null;
     shots.forEach(s => scene.remove(s.m)); shots.length = 0;
-    const secs = uTime.value - G.fightStart;
-    setTimeout(() => showBanner('The crown falls', `Warden, Gorgon and Empress defeated in ${fmtTime(secs)}. ${G.hitsTaken} hits taken, ${G.parries} parries.`, 'win', 'Play again'), 1600);
+    ascend(uTime.value - G.fightStart);
   }

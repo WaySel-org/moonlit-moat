@@ -48,3 +48,8 @@ Built in one long Claude session, 2026-10-11 to 2026-10-23.
 - **Relics**: ten original passive keepsakes, three slots, dropped by gilded and crystal chests, ancients, elites, godlings, the Warden and cleared stages. Drop one from the hero sheet to swap.
 - Hero sheet shows derived combat stats (weapon and spell multipliers, crit chance, speed) and the carried relics.
 - `#debug` in the URL exposes `window.MM_DEBUG` for play-tests and the planned CI smoke test.
+
+## Ascension and mythics (2026-10-24)
+- Beating the Gorgon and the Empress no longer ends the game. It triggers an **Ascension**: the moat's edge moves out by 22 m (up to 168 m), revealing pre-built rings of forest, stone circles and two crystal-tier chests; creeps hit 15% harder per Ascension; after a three-minute lull the queens rise again in the field (the royal hunt from PR 4) two levels stronger, and on the throne they start at least two levels higher and hit 25% harder per Ascension.
+- **Mythics**: a director wakes a named mythical creature far from the castle every 45 to 120 s (sooner with tier and Ascension), up to a cap. Seven from public-domain myth unlock by world tier; three original tyrants unlock by Ascension. Each drops a relic and a bounty and is marked on the map.
+- Wasay asked to use Dota 2, League of Legends, Bleach, One Piece and Dragon Ball characters; that was declined (copyrighted, and the repo's originality rule) and myth-based and original creatures were built instead.

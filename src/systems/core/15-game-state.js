@@ -1,5 +1,5 @@
   // ---------- Game state ----------
-  const G = { world: 'moat', realm: 'material', state: 'explore', hitstop: 0, slow: 0, shake: 0, lock: false, fightStart: 0, parries: 0, hitsTaken: 0, wardenDown: false, target: null, dmgMult: 1, runStart: 0, shop: false };
+  const G = { edge: 80, ascension: 0, royalLull: 0, world: 'moat', realm: 'material', state: 'explore', hitstop: 0, slow: 0, shake: 0, lock: false, fightStart: 0, parries: 0, hitsTaken: 0, wardenDown: false, target: null, dmgMult: 1, runStart: 0, shop: false };
   const worldTier = () => 1 + Math.floor(Math.max(0, uTime.value - G.runStart) / 120);
   const tierMult = t => 1 + 0.3 * (t - 1);
   const P = { hp: 100, max: 100, st: 100, stMax: 100, stDelay: 0, flasks: 3, act: null, actT: 0, actDur: 0, combo: 0, hitDone: false, buffer: null, bufferT: 0,
@@ -57,7 +57,7 @@
     return false;
   }
   function clampArena(v, zMin) {
-    if (G.hunt) { const before = v.x + v.z * 1000; v.x = clamp(v.x, -78, 78); v.z = clamp(v.z, -78, 70); return before !== v.x + v.z * 1000; }
+    if (G.hunt) { const before = v.x + v.z * 1000, e = G.edge - 2; v.x = clamp(v.x, -e, e); v.z = clamp(v.z, -e, e - 8); return before !== v.x + v.z * 1000; }
     const before = v.x + v.z * 1000;
     v.x = clamp(v.x, -40, 40); v.z = clamp(v.z, zMin, 36);
     return before !== v.x + v.z * 1000;

@@ -1,0 +1,16 @@
+{
+  "gameId": "basilisk",
+  "name": "The Basilisk",
+  "kind": "creep",
+  "world": "moat",
+  "mythic": true,
+  "stats": {
+    "baseHealth": 600
+  },
+  "ai": "guard",
+  "wakes": "world tier 2",
+  "look": "Crowned serpent king; its armoured front takes a third damage until staggered or struck from behind.",
+  "id": "mythic-basilisk",
+  "originality": "original",
+  "source": "European folklore (public-domain myth; this design is original)"
+}

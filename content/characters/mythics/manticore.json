@@ -1,0 +1,16 @@
+{
+  "gameId": "manticore",
+  "name": "The Manticore",
+  "kind": "creep",
+  "world": "moat",
+  "mythic": true,
+  "stats": {
+    "baseHealth": 380
+  },
+  "ai": "ranged",
+  "wakes": "world tier 2",
+  "look": "Lion with a scorpion tail; its spines poison.",
+  "id": "mythic-manticore",
+  "originality": "original",
+  "source": "Persian myth (public-domain myth; this design is original)"
+}

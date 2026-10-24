@@ -109,7 +109,7 @@
     if (G.realm === 'spirit') setRealm('material', true);
     resetStory();
     Object.assign(PR, { level: 1, xp: 0, gold: 0, points: 0, str: 0, vit: 0, agi: 0, spi: 0, weapon: 0, armorLv: 0, flaskMax: 3, warden: false, relics: [] });
-    clearGroundRelics(); WARDEN.rend = 0;
+    clearGroundRelics(); WARDEN.rend = 0; resetAscension();
     recalc();
     Object.assign(G, { state: 'explore', hitstop: 0, slow: 0, shake: 0, lock: false, parries: 0, hitsTaken: 0, wardenDown: false, target: null, dmgMult: 1, runStart: uTime.value, shop: false });
     resetVitals(); player.position.copy(SPAWN);

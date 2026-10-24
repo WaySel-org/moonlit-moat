@@ -93,6 +93,19 @@ def clean_dist():
     ASSETS.mkdir()
 
 
+def strip_line_comments(code, rel):
+    """Drop lines that hold only a // comment: the source keeps its notes, players do not download them.
+    A line is kept if it sits inside a multi-line template literal (an odd number of backticks before it)."""
+    out, ticks = [], 0
+    for line in code.split('\n'):
+        if line.lstrip().startswith('//') and ticks % 2 == 0:
+            continue
+        code_part = line.split('//')[0] if "'" not in line and '"' not in line and '`' not in line else line
+        ticks += code_part.count('`') - code_part.count('\\`')
+        out.append(line)
+    return '\n'.join(out)
+
+
 def build():
     content = load_content()
     clean_dist()
@@ -100,7 +113,7 @@ def build():
     manifest = json.loads((SRC / 'systems' / 'manifest.json').read_text())
     parts = []
     for rel in manifest:
-        code = (SRC / 'systems' / rel).read_text()
+        code = strip_line_comments((SRC / 'systems' / rel).read_text(), rel)
         parts.append(f'  // ===== src/systems/{rel} =====\n{code}')
     game_js = ('window.MM_CONTENT = ' + json.dumps(content, separators=(',', ':')) + ';\n'
                '(function () {\n' + '\n'.join(parts) + '})();\n')

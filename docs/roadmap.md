@@ -13,6 +13,9 @@
 ## Not yet released to play.waysel.com
 - The spirit realm, spirit enemies, godlings, souls, the map, and this restructure.
 
+## Watch
+- First-load size is 259.9 KB of the 260 KB gzip budget after the mythics; the next feature needs a size pass or a budget decision (Veilwarden).
+
 ## Ideas welcome
 - New worlds and Shardkeepers, more mounts and environments, accessibility and controller support, balance passes.
 - More relics and creep types for the other worlds; Rend on the rooftop royals; a save of the hero between visits.

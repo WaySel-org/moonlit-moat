@@ -1,0 +1,15 @@
+{
+  "gameId": "saltmarrow",
+  "name": "Admiral Saltmarrow",
+  "kind": "creep",
+  "world": "moat",
+  "mythic": true,
+  "stats": {
+    "baseHealth": 900
+  },
+  "ai": "melee",
+  "wakes": "Ascension 1",
+  "look": "A drowned admiral in a rotted coat and bicorne, barnacled, dragging a brass anchor.",
+  "id": "mythic-saltmarrow",
+  "originality": "original"
+}

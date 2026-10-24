@@ -1,0 +1,16 @@
+{
+  "gameId": "hydra",
+  "name": "The Hydra",
+  "kind": "creep",
+  "world": "moat",
+  "mythic": true,
+  "stats": {
+    "baseHealth": 1400
+  },
+  "ai": "godling",
+  "wakes": "world tier 4",
+  "look": "Five-headed serpent on one body; strikes wherever you stand.",
+  "id": "mythic-hydra",
+  "originality": "original",
+  "source": "Greek myth (public-domain myth; this design is original)"
+}

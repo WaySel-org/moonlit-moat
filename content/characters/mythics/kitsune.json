@@ -1,0 +1,16 @@
+{
+  "gameId": "kitsune",
+  "name": "The Kitsune",
+  "kind": "creep",
+  "world": "moat",
+  "mythic": true,
+  "stats": {
+    "baseHealth": 340
+  },
+  "ai": "ranged",
+  "wakes": "world tier 3",
+  "look": "Pale nine-tailed fox spirit that keeps its distance and throws foxfire.",
+  "id": "mythic-kitsune",
+  "originality": "original",
+  "source": "Japanese folklore (public-domain myth; this design is original)"
+}

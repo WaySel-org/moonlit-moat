@@ -63,7 +63,7 @@
   // Walkable height at any point. 99 means solid.
   function groundAt(x, z) {
     if (G.world !== 'moat') return WORLDS[G.world].ground(x, z);
-    const LIM = G.realm === 'spirit' ? 116 : 80;
+    const LIM = G.realm === 'spirit' ? Math.max(116, G.edge + 20) : G.edge;
     if (Math.abs(x) > LIM || z > LIM - 8 || z < -LIM) return 99;
     if (mazeSolid(x, z)) return 99;
     const kh = keepHeight(x, z); if (kh !== null) return kh;

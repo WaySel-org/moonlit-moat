@@ -176,6 +176,8 @@ output { font-variant-numeric: tabular-nums; color: var(--fg); min-width: 44px; 
 .cbar.anc .ct { width: 70px; height: 5px; border-color: #ff9a4a; }
 .cbar i { display: block; height: 100%; background: var(--blood); }
 .cbar.relic span { font-weight: 600; letter-spacing: 0.04em; }
+.cbar.myth span { color: #ff6a5a; }
+.cbar.myth .ct { width: 96px; border-color: #ff6a5a; }
 #relics { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 10px; }
 .relic { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: center; }
 .relic span { font-weight: 600; }

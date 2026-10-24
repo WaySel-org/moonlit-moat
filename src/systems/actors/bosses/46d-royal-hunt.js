@@ -2,7 +2,7 @@
   // The royals no longer wait on the roof. They walk the land feeding on creeps and grow a level every few kills.
   // They leave the hero alone unless struck. Every five minutes they hunt: they and every creep where the hero
   // stands give chase, and they follow through World Gates, rifts and the Veil. Survive 60 seconds or bring them down.
-  // A royal brought down in the field rises two minutes later, two levels stronger. The roof fight still ends the run.
+  // A royal brought down in the field rises two minutes later, two levels stronger. Winning the roof fight is an Ascension (world/moat/46c-ascension.js).
   const ROYAL_BASE = { gorgon: 2400, empress: 1900 }, HUNT_EVERY = 300, HUNT_LEN = 60;
   const PLACE_NAME = { material: 'the moat', spirit: 'the Veil' };
   const placeName = k => PLACE_NAME[k] || WNAME[k];
@@ -67,7 +67,7 @@
   function farm(r, dt) {
     if (!r.prey || !r.prey.alive || r.prey.realm !== r.where) {
       r.prey = null; let bd = 45;
-      creeps.forEach(c => { if (c.alive && c.realm === r.where && !c.storyBoss && c.ai !== 'godling') { const d = flatDist(c.pos, r.pos); if (d < bd) { bd = d; r.prey = c; } } });
+      creeps.forEach(c => { if (c.alive && c.realm === r.where && !c.storyBoss && !c.mythic && c.ai !== 'godling') { const d = flatDist(c.pos, r.pos); if (d < bd) { bd = d; r.prey = c; } } });
     }
     if (r.cool > 0.8) r.pivot.rotation.x *= 0.9;
     if (!r.prey) return;
