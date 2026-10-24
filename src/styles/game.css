@@ -193,3 +193,32 @@ output { font-variant-numeric: tabular-nums; color: var(--fg); min-width: 44px; 
 @media (pointer: coarse) { #pausebtn { top: calc(16px + env(safe-area-inset-top, 0px)); bottom: auto; right: auto; left: 50%; transform: translateX(-50%); } }
 #err { position: fixed; inset: 0; display: grid; place-items: center; padding-inline: 16px; text-align: center; color: var(--fg); }
 @media (prefers-reduced-motion: reduce) { .track .ghost, #flash { transition: none; } }
+
+/* Gear strip and inventory */
+#gear { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(66px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 6px; max-width: calc(100vw - 32px); z-index: 2; }
+#gear button { display: grid; gap: 3px; min-width: 92px; max-width: 150px; padding: 6px 8px; font: inherit; font-size: 10px; text-align: left; color: var(--fg); background: var(--panel); border: 1px solid #3a4a4e; border-radius: 5px; cursor: pointer; }
+#gear button b { color: var(--moon); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#gear button small { color: #8fa29b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#gear button.ready { border-color: #9fe8ff; box-shadow: 0 0 10px rgba(159,232,255,.45); }
+.edge { display: block; height: 4px; background: rgba(0,0,0,.6); border: 1px solid var(--line); border-radius: 2px; overflow: hidden; }
+.edge b { display: block; height: 100%; background: #9fe8ff; }
+#inv { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.45); z-index: 6; padding: 16px; }
+#inv[hidden] { display: none; }
+#inv .card { width: min(440px, 100%); max-height: calc(100vh - 32px); overflow: auto; box-sizing: border-box; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 18px; display: grid; gap: 10px; font-size: 12px; }
+#inv h2 { margin: 0; font-size: 14px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--moon); }
+#inv h3 { margin: 4px 0 0; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--moon); }
+#inv .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+#inv .slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+#inv .slots.bag { grid-template-columns: repeat(4, 1fr); }
+#inv .cell { position: relative; }
+#inv .slot { width: 100%; min-height: 58px; display: grid; align-content: start; gap: 3px; padding: 6px; font: inherit; font-size: 10px; text-align: left; color: var(--fg); background: rgba(0,0,0,.35); border: 1px solid #3a4a4e; border-radius: 4px; cursor: pointer; }
+#inv .slot span { color: var(--moon); font-weight: 600; }
+#inv .slot small { color: #8fa29b; }
+#inv .slot.sword { border-color: #6a8a9a; }
+#inv .slot.charm { border-color: #7a6a9a; }
+#inv .slot.empty { cursor: default; opacity: .5; }
+#inv .x { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; padding: 0; font: inherit; font-size: 12px; line-height: 1; color: var(--fg); background: rgba(0,0,0,.6); border: 1px solid var(--line); border-radius: 3px; cursor: pointer; }
+#inv .close { justify-self: end; font: inherit; color: var(--moon); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 6px 12px; cursor: pointer; }
+@media (pointer: coarse) { #gear { bottom: auto; top: calc(56px + env(safe-area-inset-top, 0px)); } #gear button { min-width: 0; } }
+@media (max-width: 560px) { #inv .slots.bag { grid-template-columns: repeat(2, 1fr); } #gear button:nth-child(n+2):nth-child(-n+3) { display: none; } }
+#skills .sk { background: var(--panel); border-color: #3a4a4e; }

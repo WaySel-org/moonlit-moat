@@ -88,19 +88,19 @@
 
   const shots = [];
   const shotGeo = new THREE.ConeGeometry(0.12, 0.5, 5).rotateX(Math.PI / 2), shotMat = new THREE.MeshBasicMaterial({ color: 0xff4a7a });
-  function spawnShot(x, y, z, a, speed) {
+  function spawnShot(x, y, z, a, speed, owner) {
     const m = new THREE.Mesh(shotGeo, shotMat); m.position.set(x, y, z); m.rotation.y = a; scene.add(m);
-    shots.push({ m, v: new THREE.Vector3(Math.sin(a) * speed, 0, Math.cos(a) * speed), t: 0 });
+    shots.push({ m, v: new THREE.Vector3(Math.sin(a) * speed, 0, Math.cos(a) * speed), t: 0, owner, field: !!(owner && owner.field), y: y - 0.7 });
   }
   function updateShots(dt) {
     for (let i = shots.length - 1; i >= 0; i--) {
       const s = shots[i]; s.t += dt;
       s.m.position.addScaledVector(s.v, dt);
-      s.m.position.y += (ROOF.y + 1.2 - s.m.position.y) * Math.min(1, dt * 4);
+      s.m.position.y += ((s.field ? s.y : ROOF.y) + 1.2 - s.m.position.y) * Math.min(1, dt * 4);
       if (Math.random() < 0.5) burst(s.m.position.x, s.m.position.y, s.m.position.z, 1, 1);
-      let done = s.t > 3 || Math.abs(s.m.position.x) > 16 || s.m.position.z > -17 || s.m.position.z < -31;
+      let done = s.t > 3 || !s.field && (Math.abs(s.m.position.x) > 16 || s.m.position.z > -17 || s.m.position.z < -31);
       if (!done && flatDist(s.m.position, player.position) < 0.65 && Math.abs(player.position.y + 1 - s.m.position.y) < 1.3) {
-        done = true; hitPlayer(14, s.m.position, 6, false);
+        done = true; hitPlayer(14, s.m.position, 6, false, s.owner);
       }
       if (done) { scene.remove(s.m); shots.splice(i, 1); }
     }
@@ -114,6 +114,7 @@
   const playerOnRoof = () => Math.abs(player.position.y - ROOF.y) < 1.5;
 
   function beginRoyalAttack(r, d) {
+    if (uTime.value > (r.kitAt || 3) && Math.random() < 0.4) { royalKit(r); return; }
     const en = r.enraged;
     if (r.kind === 'gorgon') {
       if (d < 3.4) r.atk = { name: 'coil', wind: en ? 0.5 : 0.72, rec: en ? 0.5 : 0.75 };
@@ -131,17 +132,18 @@
 
   function updateRoyalAttack(r, dt) {
     const A = r.atk; A.t += dt;
-    const done = () => { r.atk = null; r.state = 'chase'; r.tele.hide(); r.cool = (r.enraged ? 0.5 : 0.9) + Math.random() * 0.7; r.pivot.rotation.set(0, 0, 0); };
+    const RY = r.field ? r.pos.y : ROOF.y, reach = () => r.field ? Math.abs(player.position.y - r.pos.y) < 2 : playerOnRoof();
+    const done = () => { r.atk = null; r.state = 'chase'; r.tele.hide(); r.cool = (r.enraged ? 0.3 : 0.55) + Math.random() * 0.45; r.pivot.rotation.set(0, 0, 0); };
     if (A.name === 'coil') {
       // Tail sweep all around her
       if (A.stage === 'wind') {
         r.facing -= dt * 1.2;
         r.pivot.rotation.x = r.off.rotation.x = -1.4 * ease(A.t / A.wind);
-        r.tele.circle(r.pos.x, ROOF.y, r.pos.z, 3.0, A.t / A.wind);
+        r.tele.circle(r.pos.x, RY, r.pos.z, 3.0, A.t / A.wind);
         if (A.t >= A.wind) {
           A.stage = 'rec'; A.t = 0; r.tele.hide(); r.spin = 0;
-          sfx('swing'); G.shake = Math.max(G.shake, 0.3); burst(r.pos.x, ROOF.y + 0.3, r.pos.z, 24, 6);
-          if (flatDist(player.position, r.pos) < 3.3 && playerOnRoof()) hitPlayer(22, r.pos, 10, true, r);
+          sfx('swing'); G.shake = Math.max(G.shake, 0.3); burst(r.pos.x, RY + 0.3, r.pos.z, 24, 6);
+          if (flatDist(player.position, r.pos) < 3.3 && reach()) hitPlayer(22, r.pos, 10, true, r);
         }
       } else {
         r.facing += dt * 14 * Math.max(0, 1 - A.t / 0.35);
@@ -154,15 +156,15 @@
         if (A.t < A.wind * 0.7) royalTurn(r, player.position, 5, dt);
         const k = A.t / A.wind;
         r.eyeMat.color.setRGB(0.85 + 0.15 * k, 1, 0.35 + 0.65 * k);
-        r.tele.lane(r.pos, r.facing, 11, 2.2, k, ROOF.y);
+        r.tele.lane(r.pos, r.facing, 11, 2.2, k, RY);
         if (A.t >= A.wind) {
           A.stage = 'rec'; A.t = 0; r.tele.hide(); r.eyeMat.color.setHex(0xd8ff5a); sfx('parry');
           const f = fwdOf(r.facing), rx = player.position.x - r.pos.x, rz = player.position.z - r.pos.z;
           const along = rx * f.x + rz * f.z, perp = Math.abs(rx * f.z - rz * f.x);
-          if (along > 0 && along < 11.5 && perp < 1.4 && playerOnRoof() && P.iframe <= 0) {
+          if (along > 0 && along < 11.5 && perp < 1.4 && reach() && P.iframe <= 0) {
             const lookingAtHer = Math.abs(angDiff(P.facing, yawTo(player.position, r.pos))) < 1.6;
             const at = player.position.clone().add(new THREE.Vector3(0, 2.4, 0));
-            if (lookingAtHer) { P.stone = 1.5; floatText('PETRIFIED', at, 'word', '#c8c8c0'); hitPlayer(8, r.pos, 0, false); }
+            if (lookingAtHer) { P.stone = 1.5; floatText('PETRIFIED', at, 'word', '#c8c8c0'); hitPlayer(8, r.pos, 0, false, r); }
             else floatText('looked away', at, 'word', '#d8ff5a');
           }
         }
@@ -170,11 +172,11 @@
     } else if (A.name === 'bash') {
       if (A.stage === 'wind') {
         if (A.t < A.wind - 0.12) royalTurn(r, player.position, 6, dt);
-        r.tele.lane(r.pos, r.facing, 7, 1.8, A.t / A.wind, ROOF.y);
+        r.tele.lane(r.pos, r.facing, 7, 1.8, A.t / A.wind, RY);
         if (A.t >= A.wind) { A.stage = 'act'; A.t = 0; r.tele.hide(); sfx('roll'); }
       } else if (A.stage === 'act') {
-        royalStep(r, fwdOf(r.facing), 13 * dt);
-        if (!A.hit && flatDist(player.position, r.pos) < 1.5 && playerOnRoof()) { A.hit = true; hitPlayer(18, r.pos, 12, true, r); }
+        if (r.field) fieldStep(r, fwdOf(r.facing), 13 * dt); else royalStep(r, fwdOf(r.facing), 13 * dt);
+        if (!A.hit && flatDist(player.position, r.pos) < 1.5 && reach()) { A.hit = true; hitPlayer(18, r.pos, 12, true, r); }
         if (A.t >= A.act) { A.stage = 'rec'; A.t = 0; }
       } else if (A.t >= A.rec) done();
     } else if (A.name === 'orbs') {
@@ -183,8 +185,8 @@
         r.pivot.rotation.x = -1.2 * ease(A.t / A.wind);
         if (A.t >= A.wind) {
           A.stage = 'rec'; A.t = 0;
-          const n = r.enraged ? 5 : 3, base = yawTo(r.pos, player.position);
-          for (let i = 0; i < n; i++) { const a = base + (i - (n - 1) / 2) * 0.22; spawnShot(r.pos.x + Math.sin(a) * 0.8, ROOF.y + 1.9, r.pos.z + Math.cos(a) * 0.8, a, 9); }
+          const n = r.enraged ? 7 : 5, base = yawTo(r.pos, player.position);
+          for (let i = 0; i < n; i++) { const a = base + (i - (n - 1) / 2) * 0.22; spawnShot(r.pos.x + Math.sin(a) * 0.8, RY + 1.9, r.pos.z + Math.cos(a) * 0.8, a, 9, r); }
           sfx('cast');
         }
       } else if (A.t >= A.rec) done();
@@ -192,24 +194,26 @@
       if (A.stage === 'wind') {
         royalTurn(r, player.position, 6, dt);
         r.pivot.rotation.x = -1.8;
-        r.tele.circle(A.at.x, ROOF.y, A.at.z, 2.4, A.t / A.wind);
+        r.tele.circle(A.at.x, RY, A.at.z, 2.4, A.t / A.wind);
         if (A.t >= A.wind) {
           A.stage = 'rec'; A.t = 0; r.tele.hide(); sfx('boom'); G.shake = Math.max(G.shake, 0.35);
-          burst(A.at.x, ROOF.y + 0.3, A.at.z, 34, 8);
-          if (flatDist(player.position, A.at) < 2.75 && playerOnRoof()) hitPlayer(26, A.at, 8, false, r);
+          burst(A.at.x, RY + 0.3, A.at.z, 34, 8);
+          if (flatDist(player.position, A.at) < 2.75 && reach()) hitPlayer(26, A.at, 8, false, r);
         }
       } else if (A.t >= A.rec) done();
     } else if (A.name === 'blink') {
       if (A.stage === 'wind') {
         r.g.scale.setScalar(1.15 * (1 - ease(A.t / A.wind) * 0.9));
         if (A.t >= A.wind) {
-          burst(r.pos.x, ROOF.y + 1, r.pos.z, 20, 5);
+          burst(r.pos.x, RY + 1, r.pos.z, 20, 5);
           let best = null, bd = -1;
           for (let i = 0; i < 10; i++) {
-            const v = new THREE.Vector3(ROOF.x0 + Math.random() * (ROOF.x1 - ROOF.x0), ROOF.y, ROOF.z0 + Math.random() * (ROOF.z1 - ROOF.z0));
+            const v = r.field ? ringSpot(7, 11) : new THREE.Vector3(ROOF.x0 + Math.random() * (ROOF.x1 - ROOF.x0), RY, ROOF.z0 + Math.random() * (ROOF.z1 - ROOF.z0));
+            if (!v) continue;
+            if (r.field) v.y = Math.max(0, groundAt(v.x, v.z));
             const dd = flatDist(v, player.position); if (dd > bd) { bd = dd; best = v; }
           }
-          r.pos.copy(best); burst(best.x, ROOF.y + 1, best.z, 20, 5);
+          if (best) r.pos.copy(best); burst(best.x, RY + 1, best.z, 20, 5);
           A.stage = 'appear'; A.t = 0; r.blinkCd = 5; sfx('parry');
         }
       } else {
@@ -230,6 +234,8 @@
       s.position.set(Math.cos(a) * 1.1, 1.6 + Math.sin(tt * 2 + i) * 0.3, Math.sin(a) * 1.1); s.rotation.set(0, -a, Math.PI / 2);
     });
     if (r.state === 'dead') { r.t += dt; r.body.rotation.x = -Math.min(1.5, r.t * 1.4); r.body.position.y = Math.max(0, r.body.position.y - dt); return; }
+    if (r.field) { updateFieldRoyal(r, dt); r.g.rotation.y = r.facing; return; }
+    r.g.visible = G.world === 'moat';
     if (!r.active) {
       r.body.position.y = r.hover + Math.sin(tt * 1.5 + (r.kind === 'gorgon' ? 0 : 1)) * (r.hover ? 0.12 : 0.03);
       if (G.wardenDown && playerOnRoof()) royalTurn(r, player.position, 2, dt);
@@ -262,6 +268,7 @@
   }
 
   function damageRoyal(r, dmg, poiseDmg, heavy) {
+    if (r.field) r.provoked = 12;
     const out = Math.round(dmg * (0.9 + Math.random() * 0.2) * (r.state === 'stagger' ? 1.5 : 1) * (P.buffDmg > 0 ? 1.5 : 1));
     r.hp = Math.max(0, r.hp - out); r.flash = 1;
     G.hitstop = heavy ? 0.1 : 0.05; G.shake = Math.max(G.shake, heavy ? 0.3 : 0.12);
@@ -279,6 +286,7 @@
     floatText(word, r.pos.clone().add(new THREE.Vector3(0, 3.6, 0)), 'word');
   }
   function killRoyal(r) {
+    if (r.field) { fieldRoyalDown(r); return; }
     r.alive = false; r.state = 'dead'; r.t = 0; r.atk = null; r.tele.hide(); r.g.scale.setScalar(1.15);
     sfx('roar'); G.slow = 0.6;
     burst(r.pos.x, ROOF.y + 1.5, r.pos.z, 40, 7);
@@ -290,7 +298,13 @@
   function startRoyal() {
     const tier = worldTier(), m = tierMult(tier);
     G.dmgMult = 1 + 0.2 * (tier - 1); G.bossTier = tier;
-    royals.forEach((r, i) => { r.max = Math.round((r.kind === 'gorgon' ? 440 : 320) * m); r.hp = r.max; ui['rname' + i].textContent = `${r.kind === 'gorgon' ? 'Vesthra, the Gorgon' : 'Nyxara, the Thorn Empress'} \u00b7 Lv ${tier}`; });
+    // Wherever they were feeding, they answer the throne at their full farmed strength
+    endRoyalHunt(true);
+    royals.forEach((r, i) => {
+      Object.assign(r, { field: false, alive: true, enraged: false, atk: null, t: 0 }); r.lv = Math.max(r.lv, tier + 2); r.max = 0; royalStats(r); r.hp = r.max;
+      r.pos.copy(r.home); r.g.visible = true; r.g.scale.setScalar(1.15); r.body.rotation.set(0, 0, 0); r.tele.hide(); royalBars[i].bar.hidden = true;
+      ui['rname' + i].textContent = `${r.kind === 'gorgon' ? 'Vesthra, the Gorgon' : 'Nyxara, the Thorn Empress'} \u00b7 Lv ${r.lv}`;
+    });
     G.state = 'royal'; G.lock = true; G.target = null;
     royals.forEach(r => { r.active = true; r.state = 'chase'; r.cool = 1.2 + Math.random(); });
     showBanner('The Gorgon and the Empress', '', 'title'); bannerTimer = 2.2;

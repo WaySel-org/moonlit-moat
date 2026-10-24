@@ -1,6 +1,6 @@
   // ---------- Boss behaviour ----------
   function startFight() {
-    const tier = worldTier(), m = tierMult(tier);
+    const tier = worldTier(), m = tierMult(tier) * (1 + 0.35 * (G.wardenRevives || 0));
     B.max = Math.round(1500 * m); B.hp = B.max; G.dmgMult = 1.35 + 0.2 * (tier - 1); G.bossTier = tier; WARDEN.rend = 0;
     ui.bname.textContent = `The Gate Warden \u00b7 Lv ${tier + 2}`;
     G.state = 'intro'; B.state = 'leap'; B.t = 0; B.dur = 1.4;
@@ -222,17 +222,18 @@
   const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.round(s) % 60).padStart(2, '0')}`;
   function killBoss() {
     if (G.hunt && G.hunt.echo) {
-      // The Warden's echo: a reward, but nothing else changes
+      // The risen Warden: a bigger reward each time, and it will rise again stronger
+      G.wardenRevives = (G.wardenRevives || 0) + 1;
       B.state = 'dead'; B.t = 0; B.atk = null; hideTele(); B.spin = 0;
       const m = tierMult(G.bossTier || 1);
       G.state = G.hunt.prev; G.hunt = null; G.slow = 1.0; G.lock = false; G.target = null; G.dmgMult = 1; sfx('roar');
       waves.forEach(w => { scene.remove(w.m); w.m.material.dispose(); }); waves.length = 0;
-      reward(160 * m, 140 * m, boss.position.clone().add(new THREE.Vector3(0, 4, 0)));
+      reward(260 * m, 200 * m, boss.position.clone().add(new THREE.Vector3(0, 4, 0)));
       ui.bossbar.hidden = true; ui.hud.hidden = false;
       setTimeout(() => { if (B.state === 'dead') boss.visible = false; }, 3000);
       return;
     }
-    G.hunt = null;
+    G.hunt = null; G.wardenRevives = (G.wardenRevives || 0) + 1;
     B.state = 'dead'; B.t = 0; B.atk = null; hideTele(); B.spin = 0;
     G.state = 'interlude'; G.wardenDown = true; G.slow = 1.4; G.lock = false; G.target = null; sfx('roar');
     waves.forEach(w => { scene.remove(w.m); w.m.material.dispose(); }); waves.length = 0;

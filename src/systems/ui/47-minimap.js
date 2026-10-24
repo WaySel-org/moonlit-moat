@@ -21,6 +21,7 @@
         if (pr[i] >= 1) { c.strokeStyle = 'rgba(190,200,190,0.75)'; c.lineWidth = 1; c.beginPath(); c.arc(X(o.p.x), Z(o.p.z), big ? 4 : 2.5, 0, TAU); c.stroke(); }
         else dot(o.p.x, o.p.z, big ? 5 : 3.2, open ? W.objCol : 'rgba(150,150,150,0.75)');
       });
+      NEUTRAL_CAMPS.forEach(cp => cp.world === W.id && dot(cp.x, cp.z, big ? 4.5 : 3, cp.alive ? '#7fdc8a' : 'rgba(127,220,138,0.35)'));
       dot(W.gate.x, W.gate.z, big ? 5 : 3, '#ffe6a8');
       if (G.story.step[W.id] === 1) { c.strokeStyle = '#e0a0ff'; c.lineWidth = 1.5; c.beginPath(); c.arc(X(W.boss.x), Z(W.boss.z), big ? 9 : 5, 0, TAU); c.stroke(); }
     } else {
@@ -34,7 +35,7 @@
       RIFTS.forEach(r => dot(r.x, r.z, big ? 4 : 2.5, '#c8a0ff'));
       if (G.realm === 'material') {
         dot(SHRINE.x, SHRINE.z, big ? 4 : 2.5, '#bfe8ff');
-        NEUTRAL_CAMPS.forEach(cp => dot(cp.x, cp.z, big ? 4.5 : 3, cp.alive ? '#7fdc8a' : 'rgba(127,220,138,0.35)'));
+        NEUTRAL_CAMPS.forEach(cp => cp.world === 'moat' && dot(cp.x, cp.z, big ? 4.5 : 3, cp.alive ? '#7fdc8a' : 'rgba(127,220,138,0.35)'));
         dot(MOAT_GATE.x, MOAT_GATE.z, big ? 4 : 2.5, '#ffe6a8');
         SANCTUARIES.forEach(sn => dot(sn.x, sn.z, big ? 4 : 2.5, '#9fe8ff'));
         chests.forEach(ch => { if (!ch.open) dot(ch.x, ch.z, big ? 3 : 2, '#ffd36a'); });
@@ -42,6 +43,8 @@
       }
     }
     const em = eventMark(); if (em && G.realm === 'material') { dot(em.x, em.z, big ? 6 : 4, em.col); c.strokeStyle = em.col; c.lineWidth = 1; c.beginPath(); c.arc(X(em.x), Z(em.z), (big ? 10 : 7) + Math.sin(uTime.value * 6) * 2, 0, TAU); c.stroke(); }
+    raiders.forEach(r => { if (r.alive && r.g.visible) dot(r.pos.x, r.pos.z, big ? 7 : 5, '#ff9a3a'); });
+    royals.forEach(r => { if (r.field && r.alive && r.g.visible) dot(r.pos.x, r.pos.z, big ? 6.5 : 4.5, '#ff7ad8'); });
     const rk = realmKey();
     creeps.forEach(cr => { if (cr.alive && cr.realm === rk) dot(cr.pos.x, cr.pos.z, cr.ai === 'godling' ? (big ? 5 : 3.5) : cr.ancient ? (big ? 3.5 : 2.5) : (big ? 2 : 1.3), cr.ai === 'godling' ? '#e0a0ff' : cr.ancient ? '#ff9a4a' : '#ff5a4a'); });
     // you: an arrow pointing where you face

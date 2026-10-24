@@ -41,7 +41,7 @@
   ];
   let swordTier = 0;
   function updateSwordLook() {
-    const next = Math.min(4, Math.floor(PR.weapon / 2 + (PR.level - 1) / 4) + (PR.warden ? 1 : 0));
+    const next = Math.min(4, Math.floor(PR.weapon / 2 + (PR.level - 1) / 4) + (PR.warden ? 1 : 0) + (PR.inv ? PR.inv.sword.rank : 0));
     if (next > swordTier && typeof floatText === 'function' && uTime.value > 1) floatText(`Your sword became a ${SWORDS[next].name}`, player.position.clone().add(new THREE.Vector3(0, 3.4, 0)), 'word', '#bff6ff');
     swordTier = next;
     const sw = SWORDS[swordTier];

@@ -4,7 +4,8 @@
     const out = [];
     const rk = realmKey(), inMoat = G.world === 'moat';
     if (inMoat && HITTABLE.includes(B.state)) out.push(WARDEN);
-    royals.forEach(r => { if (inMoat && r.active && r.alive) out.push(r); });
+    royals.forEach(r => { if (r.field ? r.alive && r.g.visible && flatDist(r.pos, player.position) < 30 : inMoat && r.active && r.alive) out.push(r); });
+    raiders.forEach(r => { if (r.alive && r.g.visible && flatDist(r.pos, player.position) < 40) out.push(r); });
     creeps.forEach(c => { if (c.alive && c.realm === rk && flatDist(c.pos, player.position) < (c.ai === 'godling' ? 40 : 26)) out.push(c); });
     return out;
   }
@@ -17,12 +18,12 @@
     const live = liveTargets();
     if (!live.length) return null;
     if (!G.target || !live.includes(G.target)) {
-      const bosses = live.filter(t => !t.isCreep);
+      const bosses = live.filter(t => !t.isCreep && !(t.field && !G.royalHunt && !(t.provoked > 0)));
       G.target = nearestTarget(bosses.length ? bosses : live, player.position);
     }
     return G.target;
   }
-  function damageEnemy(t, dmg, poiseDmg, heavy) { if (t.isWarden) damageBoss(dmg, poiseDmg, heavy); else if (t.isCreep) damageCreep(t, dmg, poiseDmg, heavy); else damageRoyal(t, dmg, poiseDmg, heavy); }
+  function damageEnemy(t, dmg, poiseDmg, heavy) { if (t.isWarden) damageBoss(dmg, poiseDmg, heavy); else if (t.isCreep) damageCreep(t, dmg, poiseDmg, heavy); else if (t.isRaider) damageRaider(t, dmg, poiseDmg, heavy); else damageRoyal(t, dmg, poiseDmg, heavy); }
 
   // Moves the player, sliding along walls and refusing ledges taller than a step
   function movePlayer(dx, dz) {
@@ -62,7 +63,7 @@
       const d = flatDist(player.position, t.pos);
       const ang = Math.abs(angDiff(P.facing, yawTo(player.position, t.pos)));
       if (d > range + t.radius || ang > arc / 2) return;
-      strike(t, dmg * PR.dmg * (G.env.dmg || 1) * (G.realm === 'spirit' ? 1.3 : 1), poiseDmg, heavy);
+      strike(t, dmg * PR.dmg * (G.env.dmg || 1), poiseDmg, heavy); gearOnHit(dmg * PR.dmg);
     });
   }
   function damageBoss(dmg, poiseDmg, heavy) {
@@ -89,7 +90,7 @@
   // Returns true if the hit connected
   function hitPlayer(dmg, src, kbStrength, parryable, attacker) {
     if (G.state === 'dead' || G.state === 'won' || G.state === 'intro' || G.shop) return false;
-    dmg *= (attacker && attacker.isCreep) ? attacker.mult * G.env.creepDmg : G.dmgMult;
+    dmg *= (attacker && attacker.isCreep) ? attacker.mult * G.env.creepDmg : (attacker && attacker.pow) ? attacker.pow : G.dmgMult;
     if (P.iframe > 0) {
       // A perfect dodge: the hit would have landed mid-roll. Flow follows.
       if (P.act === 'roll' && !P.flowed) {
@@ -110,6 +111,7 @@
         P.riposte = RIPOSTE_TIME;
         if (relicHas('ward')) { P.mana = Math.min(P.manaMax, P.mana + 25); P.st = P.stMax; floatText('Wardstone', player.position.clone().add(new THREE.Vector3(0, 2.9, 0)), 'word', '#bff6ff'); }
         if (attacker && attacker.isCreep) { attacker.stun = 1.3; attacker.atk = null; attacker.tele.hide(); }
+        else if (attacker && attacker.isRaider) { attacker.state = 'rest'; attacker.t = 0; attacker.tele.hide(); }
         else if (attacker) staggerRoyal(attacker, 1.3, 'STUNNED'); else staggerBoss(1.3, 'STUNNED');
         return false;
       }
