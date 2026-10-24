@@ -143,6 +143,7 @@
     reward(90 * m, 110 * m, c.pos.clone().add(new THREE.Vector3(0, 2.6, 0)));
     spawnLoot(c.pos.x + 1, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
     spawnLoot(c.pos.x - 1, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
+    dropGear(c.pos, 1, 0.6);
     if (E && E.elite === c) endEvent(false, 'The elite is down and the ambush breaks. Bounty paid.');
   }
   function eventText() {

@@ -3,7 +3,7 @@
   // They leave the hero alone unless struck. Every five minutes they hunt: they and every creep where the hero
   // stands give chase, and they follow through World Gates, rifts and the Veil. Survive 60 seconds or bring them down.
   // A royal brought down in the field rises two minutes later, two levels stronger. The roof fight still ends the run.
-  const ROYAL_BASE = { gorgon: 1600, empress: 1250 }, HUNT_EVERY = 300, HUNT_LEN = 60;
+  const ROYAL_BASE = { gorgon: 2400, empress: 1900 }, HUNT_EVERY = 300, HUNT_LEN = 60;
   const PLACE_NAME = { material: 'the moat', spirit: 'the Veil' };
   const placeName = k => PLACE_NAME[k] || WNAME[k];
   G.royalHunt = null; G.royalClock = 0;
@@ -11,7 +11,7 @@
     const ratio = r.max > 0 ? r.hp / r.max : 1;
     r.max = Math.round(ROYAL_BASE[r.kind] * (1 + 0.35 * (r.lv - 1)));
     r.hp = Math.max(1, Math.round(r.max * ratio));
-    r.pow = 1.5 + 0.18 * (r.lv - 1);
+    r.pow = 1.9 + 0.2 * (r.lv - 1);
   }
   // A spot on open moat ground beside one of its neutral camps
   function royalHome(i) {
@@ -111,6 +111,7 @@
     sfx('roar'); G.slow = 0.5; burst(r.pos.x, r.pos.y + 1.5, r.pos.z, 40, 7);
     const m = 1 + 0.35 * (r.lv - 1);
     reward(260 * m, 160 * m, r.pos.clone().add(new THREE.Vector3(0, 3, 0)));
+    dropGear(r.pos, 2); swordFeed(10);
     [1, -1].forEach(s => spawnLoot(r.pos.x + s, r.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]));
     if (G.target === r) G.target = null;
     const other = royals.find(o => o.alive && o.field);

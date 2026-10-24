@@ -112,7 +112,7 @@
     recalc();
     Object.assign(G, { state: 'explore', hitstop: 0, slow: 0, shake: 0, lock: false, parries: 0, hitsTaken: 0, wardenDown: false, target: null, dmgMult: 1, runStart: uTime.value, shop: false });
     resetVitals(); player.position.copy(SPAWN);
-    resetWarden(); resetRoyals(); resetDragon(); resetRoyalField(); G.wardenRevives = 0;
+    resetWarden(); resetRoyals(); resetDragon(); resetRoyalField(); G.wardenRevives = 0; resetArsenal(); resetTrouble();
     wards.forEach(w => { w.visible = true; w.material.opacity = 0.7; });
     chests.forEach(c => { c.tier = c.maze ? 3 : 1; c.open = false; c.refill = 0; c.tierT = 0; chestLook(c); });
     creeps.forEach((c, i) => { c.alive = false; c.g.visible = false; c.tele.hide(); c.bar.hidden = true; c.respawn = 1 + i * 0.5; });

@@ -102,6 +102,7 @@
     c.pos.y = groundY + 1.0 + Math.sin(tt * 1.5 + c.home.x) * 0.3;
     if (c.halo) c.halo.rotation.z += dt * 1.5;
     if (c.stun > 0) return;
+    if (c.storyBoss && !c.atk) bossKit(c, dt, d);
     if (c.atk) {
       const A = c.atk; A.t += dt;
       c.tele.circle(A.at.x, A.at.y, A.at.z, 2.8, A.t / 1.1);
@@ -183,10 +184,10 @@
       if (flatDist(c.pos, player.position) < 22) floatText(`${CREEP_NAME[c.type]} reached Lv ${c.lv}`, c.pos.clone().add(new THREE.Vector3(0, 2.2, 0)), 'word', '#ffd36a');
     }
     const d = flatDist(player.position, c.pos);
-    if (G.royalHunt && !c.storyBoss) c.leash = false;
+    if (c.wave || G.royalHunt && !c.storyBoss) c.leash = false;
     else if (flatDist(c.pos, c.home) > (c.ancient ? 12 : 26)) c.leash = true;
     if (c.leash && flatDist(c.pos, c.home) < 3) c.leash = false;
-    const aggro = (G.royalHunt && !c.storyBoss ? true : c.neutral ? (c.provoked || d < 3.5) : d < 11) && player.position.y < 2 && !c.leash && G.state !== 'dead' && G.state !== 'won';
+    const aggro = (c.wave || G.royalHunt && !c.storyBoss ? true : c.neutral ? (c.provoked || d < 3.5) : d < 11) && player.position.y < 2 && !c.leash && G.state !== 'dead' && G.state !== 'won';
     c.stun = Math.max(0, c.stun - dt);
     const groundY = Math.min(0, groundAt(c.pos.x, c.pos.z));
     if (c.ai === 'godling') { updateGodling(c, dt, d, groundY); }
@@ -261,7 +262,7 @@
   }
   function killCreep(c) {
     c.alive = false; c.g.visible = false; c.tele.hide(); c.atk = null; c.bar.hidden = true;
-    c.respawn = c.neutral ? Infinity : c.ai === 'godling' ? 120 : c.ancient ? 60 : 7 + Math.random() * 6;
+    c.respawn = c.neutral || c.wave ? Infinity : c.ai === 'godling' ? 120 : c.ancient ? 60 : 7 + Math.random() * 6;
     if (c.neutral) campCreepDied(c);
     spawnSoul(c.pos.x, c.pos.y, c.pos.z, c.ai === 'godling' ? 0.4 : c.ancient ? 0.15 : 0.06);
     if (c.ai === 'godling') floatText(`${c.godName} falls`, c.pos.clone().add(new THREE.Vector3(0, 4, 0)), 'word', '#e0c8ff');
@@ -270,6 +271,9 @@
     reward((c.type === 'crawler' ? 22 : 18) * c.mult * (c.neutral ? 1.5 : 1) * (c.ancient ? 6 : 1) * (c.ai === 'godling' ? 14 : 1), (4 + Math.random() * 6) * c.mult * (c.ancient ? 5 : 1) * (c.ai === 'godling' ? 10 : 1), c.pos.clone().add(new THREE.Vector3(0, 1.8, 0)));
     if (c.ancient) spawnLoot(c.pos.x + 1, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
     if (Math.random() < 0.2) spawnLoot(c.pos.x, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
+    swordFeed(c.storyBoss ? 15 : c.ancient ? 5 : c.elite ? 4 : 1);
+    if (c.ancient) dropGear(c.pos, 1, 0.3);
+    if (c.storyBoss) dropGear(c.pos, 2);
     if (c.elite) eliteDown(c);
     if (c.storyBoss) completeChapter(c.storyBoss);
     if (G.target === c) G.target = null;

@@ -34,7 +34,7 @@
     P.hp = P.max; P.mana = P.manaMax; P.flasks = PR.flaskMax; sfx('drink');
     renderShop();
   }
-  function closeShop() { G.shop = false; G.gateUI = false; ui.shop.hidden = true; document.getElementById('worlds').hidden = true; if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }
+  function closeShop() { G.shop = false; G.gateUI = false; G.invUI = false; document.getElementById('inv').hidden = true; ui.shop.hidden = true; document.getElementById('worlds').hidden = true; if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); }
   document.getElementById('shopclose').addEventListener('click', closeShop);
 
   function nearestInteract() {

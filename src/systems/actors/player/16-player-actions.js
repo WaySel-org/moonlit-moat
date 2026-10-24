@@ -4,6 +4,7 @@
   function startAct(name) {
     if (G.state === 'dead' || G.state === 'won') return false;
     if (COST[name] && P.st <= 0) return false;
+    if (P.jh > 0) return name === 'light' || name === 'heavy' ? airAttack(name) : false;
     P.act = name; P.actT = 0; P.hitDone = false;
     if ((name === 'light' || name === 'heavy') && P.mount) { P.act = 'gore'; P.actDur = name === 'heavy' ? 0.6 : 0.42; P.goreBig = name === 'heavy'; P.combo = 0; sfx('swoosh'); return true; }
     if (name === 'light') { P.actDur = P.combo === 2 ? 0.46 : 0.32; sfx('swing'); }

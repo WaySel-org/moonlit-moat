@@ -11,7 +11,9 @@
     } else if (P.act === 'heavy') {
       if (k < 0.55) { x = 0.6 - 2.8 * ease(k / 0.55); y = 0; }
       else { x = -2.2 + 3.4 * ease((k - 0.55) / 0.15); y = 0; bright = k < 0.75; }
-    } else if (P.block) { x = -0.35; y = 1.25; }
+    } else if (P.act === 'airslash') { x = -1.8 + 2.9 * ease(k); y = 0; bright = true; }
+    else if (P.act === 'plunge') { x = 1.5; y = 0; bright = true; }
+    else if (P.block) { x = -0.35; y = 1.25; }
     else if (P.act === 'drink') { x = 1.2; y = -0.7; }
     else if (P.act === 'cast' || P.act === 'volley') { x = -0.9 + 0.8 * ease(k / 0.5); y = 0; bright = true; }
     else if (P.act === 'throw') { x = -0.2; y = -1.2 + 2.4 * ease(k / 0.5); }
@@ -145,8 +147,9 @@
     cloakMat.emissive.setRGB(P.act === 'hurt' ? 0.6 : 0, 0, 0);
     lanternLight.intensity = P.act === 'drink' ? 2.4 : 1.3;
 
+    airTick(dt);
     const dl = Math.hypot(player.position.x - LAKE.x, player.position.z - LAKE.z);
-    player.position.y = P.act === 'leap' ? P.leapY : P.y;
+    player.position.y = P.act === 'leap' ? P.leapY : P.y + P.jh;
     poseSword();
     return { moving, dl };
   }

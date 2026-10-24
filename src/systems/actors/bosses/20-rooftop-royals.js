@@ -114,6 +114,7 @@
   const playerOnRoof = () => Math.abs(player.position.y - ROOF.y) < 1.5;
 
   function beginRoyalAttack(r, d) {
+    if (uTime.value > (r.kitAt || 3) && Math.random() < 0.4) { royalKit(r); return; }
     const en = r.enraged;
     if (r.kind === 'gorgon') {
       if (d < 3.4) r.atk = { name: 'coil', wind: en ? 0.5 : 0.72, rec: en ? 0.5 : 0.75 };
@@ -132,7 +133,7 @@
   function updateRoyalAttack(r, dt) {
     const A = r.atk; A.t += dt;
     const RY = r.field ? r.pos.y : ROOF.y, reach = () => r.field ? Math.abs(player.position.y - r.pos.y) < 2 : playerOnRoof();
-    const done = () => { r.atk = null; r.state = 'chase'; r.tele.hide(); r.cool = (r.enraged ? 0.5 : 0.9) + Math.random() * 0.7; r.pivot.rotation.set(0, 0, 0); };
+    const done = () => { r.atk = null; r.state = 'chase'; r.tele.hide(); r.cool = (r.enraged ? 0.3 : 0.55) + Math.random() * 0.45; r.pivot.rotation.set(0, 0, 0); };
     if (A.name === 'coil') {
       // Tail sweep all around her
       if (A.stage === 'wind') {
@@ -184,7 +185,7 @@
         r.pivot.rotation.x = -1.2 * ease(A.t / A.wind);
         if (A.t >= A.wind) {
           A.stage = 'rec'; A.t = 0;
-          const n = r.enraged ? 5 : 3, base = yawTo(r.pos, player.position);
+          const n = r.enraged ? 7 : 5, base = yawTo(r.pos, player.position);
           for (let i = 0; i < n; i++) { const a = base + (i - (n - 1) / 2) * 0.22; spawnShot(r.pos.x + Math.sin(a) * 0.8, RY + 1.9, r.pos.z + Math.cos(a) * 0.8, a, 9, r); }
           sfx('cast');
         }

@@ -4,10 +4,11 @@
     P.max = 100 + 14 * (PR.level - 1) + 12 * PR.vit;
     P.armorMax = 60 + 20 * PR.armorLv + (PR.warden ? 40 : 0);
     P.manaMax = 100 + 10 * PR.spi + (PR.warden ? 50 : 0);
-    P.stMax = 100 + 6 * PR.agi;
+    P.stMax = 100 + 6 * PR.agi + 8 * (PR.level - 1);
     PR.dmg = (1 + 0.06 * PR.str + 0.04 * (PR.level - 1) + 0.12 * PR.weapon) * (PR.warden ? 1.25 : 1);
     PR.spell = (1 + 0.08 * PR.spi + 0.04 * (PR.level - 1)) * (PR.warden ? 1.15 : 1);
     PR.speed = 1 + 0.03 * PR.agi + (PR.warden ? 0.1 : 0);
+    applyGear();
     updateSwordLook();
     P.hp = Math.min(P.hp, P.max); P.mana = Math.min(P.mana, P.manaMax); P.armor = Math.min(P.armor, P.armorMax); P.st = Math.min(P.st, P.stMax);
     renderHero();

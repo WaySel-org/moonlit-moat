@@ -5,6 +5,7 @@
     const rk = realmKey(), inMoat = G.world === 'moat';
     if (inMoat && HITTABLE.includes(B.state)) out.push(WARDEN);
     royals.forEach(r => { if (r.field ? r.alive && r.g.visible && flatDist(r.pos, player.position) < 30 : inMoat && r.active && r.alive) out.push(r); });
+    raiders.forEach(r => { if (r.alive && r.g.visible && flatDist(r.pos, player.position) < 40) out.push(r); });
     creeps.forEach(c => { if (c.alive && c.realm === rk && flatDist(c.pos, player.position) < (c.ai === 'godling' ? 40 : 26)) out.push(c); });
     return out;
   }
@@ -22,7 +23,7 @@
     }
     return G.target;
   }
-  function damageEnemy(t, dmg, poiseDmg, heavy) { if (t.isWarden) damageBoss(dmg, poiseDmg, heavy); else if (t.isCreep) damageCreep(t, dmg, poiseDmg, heavy); else damageRoyal(t, dmg, poiseDmg, heavy); }
+  function damageEnemy(t, dmg, poiseDmg, heavy) { if (t.isWarden) damageBoss(dmg, poiseDmg, heavy); else if (t.isCreep) damageCreep(t, dmg, poiseDmg, heavy); else if (t.isRaider) damageRaider(t, dmg, poiseDmg, heavy); else damageRoyal(t, dmg, poiseDmg, heavy); }
 
   // Moves the player, sliding along walls and refusing ledges taller than a step
   function movePlayer(dx, dz) {
@@ -62,7 +63,7 @@
       const d = flatDist(player.position, t.pos);
       const ang = Math.abs(angDiff(P.facing, yawTo(player.position, t.pos)));
       if (d > range + t.radius || ang > arc / 2) return;
-      damageEnemy(t, dmg * PR.dmg * (G.env.dmg || 1), poiseDmg, heavy);
+      damageEnemy(t, dmg * PR.dmg * (G.env.dmg || 1), poiseDmg, heavy); gearOnHit(dmg * PR.dmg);
     });
   }
   function damageBoss(dmg, poiseDmg, heavy) {
