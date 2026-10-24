@@ -11,7 +11,9 @@
     } else if (P.act === 'heavy') {
       if (k < 0.55) { x = 0.6 - 2.8 * ease(k / 0.55); y = 0; }
       else { x = -2.2 + 3.4 * ease((k - 0.55) / 0.15); y = 0; bright = k < 0.75; }
-    } else if (P.block) { x = -0.35; y = 1.25; }
+    } else if (P.act === 'airslash') { x = -1.8 + 2.9 * ease(k); y = 0; bright = true; }
+    else if (P.act === 'plunge') { x = 1.5; y = 0; bright = true; }
+    else if (P.block) { x = -0.35; y = 1.25; }
     else if (P.act === 'drink') { x = 1.2; y = -0.7; }
     else if (P.act === 'cast' || P.act === 'volley') { x = -0.9 + 0.8 * ease(k / 0.5); y = 0; bright = true; }
     else if (P.act === 'throw') { x = -0.2; y = -1.2 + 2.4 * ease(k / 0.5); }
@@ -41,7 +43,7 @@
     const agi = P.buffAgi > 0;
     P.buffDmg = Math.max(0, P.buffDmg - dt); P.buffAgi = Math.max(0, P.buffAgi - dt);
     P.stDelay -= dt;
-    if (P.stDelay <= 0 && P.act !== 'roll') P.st = Math.min(P.stMax, P.st + dt * (P.block ? 14 : 34) * (agi ? 1.5 : 1) * (P.flow > 0 ? 2 : 1));
+    if (P.stDelay <= 0 && P.act !== 'roll') P.st = Math.min(P.stMax, P.st + dt * (P.block ? 14 : 34 + 3 * (PR.level - 1) + 1.5 * PR.agi) * (agi ? 1.5 : 1) * (P.flow > 0 ? 2 : 1));
     P.mana = Math.min(P.manaMax, P.mana + dt * (1.5 + 0.15 * PR.spi) * G.env.mana);
     P.cd.z = Math.max(0, P.cd.z - dt); P.cd.v = Math.max(0, P.cd.v - dt); P.cd.x = Math.max(0, P.cd.x - dt);
     P.cd.mp1 = Math.max(0, P.cd.mp1 - dt); P.cd.mp2 = Math.max(0, P.cd.mp2 - dt);
@@ -147,8 +149,9 @@
     cloakMat.emissive.setRGB(P.act === 'hurt' ? 0.6 : 0, 0, 0);
     lanternLight.intensity = P.act === 'drink' ? 2.4 : 1.3;
 
+    airTick(dt);
     const dl = Math.hypot(player.position.x - LAKE.x, player.position.z - LAKE.z);
-    player.position.y = P.act === 'leap' ? P.leapY : P.y;
+    player.position.y = P.act === 'leap' ? P.leapY : P.y + P.jh;
     poseSword();
     return { moving, dl };
   }

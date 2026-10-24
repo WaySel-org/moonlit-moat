@@ -74,7 +74,7 @@
   [wispMesh, shrineMesh, riftMesh].forEach(m => { m.visible = false; tag(m, 1); });
   const meteorGeo = new THREE.SphereGeometry(0.45, 8, 6), meteorMat = bas(0xffb070);
 
-  const canEvent = () => (G.state === 'explore' || G.state === 'interlude') && G.realm === 'material' && !G.hunt && !G.story.pending && !storyBossEngaged() && P.act !== 'leap';
+  const canEvent = () => (G.state === 'explore' || G.state === 'interlude') && G.realm === 'material' && !G.hunt && !G.royalHunt && !G.story.pending && !storyBossEngaged() && P.act !== 'leap';
   const here = () => player.position;
   // An open spot on the ground somewhere between r0 and r1 metres from the hero
   function ringSpot(r0, r1) {
@@ -143,6 +143,7 @@
     reward(90 * m, 110 * m, c.pos.clone().add(new THREE.Vector3(0, 2.6, 0)));
     spawnLoot(c.pos.x + 1, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
     spawnLoot(c.pos.x - 1, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
+    dropGear(c.pos, 1, 0.6);
     dropRelic(c.pos.x, c.pos.z + 1.2);
     if (E && E.elite === c) endEvent(false, 'The elite is down and the ambush breaks. Bounty paid.');
   }

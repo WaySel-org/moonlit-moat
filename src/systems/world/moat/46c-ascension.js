@@ -1,8 +1,9 @@
   // ---------- Ascension: the queens falling grows the world instead of ending the game ----------
   // Each time the Gorgon and the Empress fall, the Ascension count rises. The edge of the moat's land
   // moves out (80 m, then 102, 124, 146, up to 168), revealing a ring of new forest, ruins and chests.
-  // Creeps hit 15% harder per Ascension, mythics wake more often, and after a three-minute lull the
-  // queens return to the roof, half again as tough and a quarter harder-hitting per Ascension.
+  // Creeps hit 15% harder per Ascension and mythics wake more often. After a three-minute lull the queens
+  // rise again in the field (royal hunt, 46d) two levels stronger; climbing the roof calls them to the throne,
+  // where they start at least two levels higher per Ascension and hit a quarter harder per Ascension.
   const EDGE_BASE = 80, EDGE_STEP = 22, EDGE_MAX = 168, ROYAL_LULL = 180;
   const edgeFor = a => Math.min(EDGE_MAX, EDGE_BASE + EDGE_STEP * a);
 
@@ -76,7 +77,7 @@
     for (let i = 0; i < 6; i++) launchFirework(player.position.clone().add(new THREE.Vector3((Math.random() - 0.5) * 10, 1, (Math.random() - 0.5) * 10)));
     G.mythClock = Math.max(G.mythClock, mythInterval() - 20);
     setTimeout(() => {
-      showBanner(`Ascension ${a}`, `The queens fell in ${fmtTime(secs)}. ${grew ? `The land breaks open: its edge moves out to ${G.edge} m, with new forest, ruins and chests.` : 'The land can grow no further, but it grows wilder.'} Older creatures wake in the wild. The Gorgon and the Empress return to the roof in ${fmtTime(ROYAL_LULL)}, stronger. +2 attribute points.`, 'title');
+      showBanner(`Ascension ${a}`, `The queens fell in ${fmtTime(secs)}. ${grew ? `The land breaks open: its edge moves out to ${G.edge} m, with new forest, ruins and chests.` : 'The land can grow no further, but it grows wilder.'} Older creatures wake in the wild. The Gorgon and the Empress rise again in the land in ${fmtTime(ROYAL_LULL)}, stronger. +2 attribute points.`, 'title');
       bannerTimer = 8;
     }, 1400);
   }
@@ -85,15 +86,16 @@
     if (!(G.royalLull > 0) || G.state === 'dead') return;
     G.royalLull -= real;
     if (G.royalLull > 0) return;
-    G.royalLull = 0; resetRoyals();
-    if (G.world === 'moat') { showBanner('The queens return', `Vesthra and Nyxara stand on the roof again, stronger for Ascension ${G.ascension}. Climb when you are ready.`, 'title'); bannerTimer = 4; sfx('roar'); }
+    G.royalLull = 0;
+    royals.forEach(r => { r.lv += 2; }); royalsToField(false);
+    showBanner('The queens rise again', `Vesthra and Nyxara walk the land again, two levels stronger. Climb the roof to call them to the throne for Ascension ${G.ascension + 1}.`, 'title'); bannerTimer = 4; sfx('roar');
   }
 
   function ascensionText() {
     if (!G.ascension) return null;
     return G.royalLull > 0
-      ? `Ascension ${G.ascension} · the queens return in ${fmtTime(Math.ceil(G.royalLull))}. Explore the new edge of the land and hunt the mythics.`
-      : `Ascension ${G.ascension} · the Gorgon and the Empress wait on the roof, stronger. Climb when you are ready.`;
+      ? `Ascension ${G.ascension} · the queens rise again in ${fmtTime(Math.ceil(G.royalLull))}. Explore the new edge of the land and hunt the mythics.`
+      : `Ascension ${G.ascension} · the queens roam the land, stronger. Climb the roof to call them to the throne for Ascension ${G.ascension + 1}.`;
   }
 
   function resetAscension() {

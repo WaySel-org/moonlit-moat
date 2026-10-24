@@ -14,6 +14,9 @@
     else if (code === 'KeyX') request('leap');
     else if (code === 'KeyE') interact();
     else if (code === 'KeyQ') toggleRealm();
+    else if (code === 'KeyG') jump();
+    else if (code === 'KeyI') openInv();
+    else if (code === 'KeyU') upgradeSword();
     else if (code === 'KeyM') ui.minimap.classList.toggle('big');
     else if (code === 'KeyP') { ui.heroEl.open = !ui.heroEl.open; }
     else if (code === 'KeyR') { G.lock = !G.lock; if (!G.lock) G.target = null; }
@@ -26,11 +29,11 @@
   }
   window.addEventListener('keydown', ev => {
     if (!ui.banner.hidden && !ui.bbtn.hidden && (ev.code === 'Enter' || ev.code === 'KeyR')) { ev.preventDefault(); restart(); return; }
-    if (G.shop && (ev.code === 'KeyE' || ev.code === 'Escape')) { ev.preventDefault(); closeShop(); return; }
+    if (G.shop && (ev.code === 'KeyE' || ev.code === 'Escape' || (ev.code === 'KeyI' && G.invUI))) { ev.preventDefault(); closeShop(); return; }
     if (ev.code === 'Escape') { ev.preventDefault(); togglePause(); return; }
     if (G.paused) return;
     if (ev.target.closest && ev.target.closest('input, button, summary')) return;
-    const handled = HELD.includes(ev.code) || ['KeyJ', 'KeyK', 'Space', 'KeyF', 'KeyR', 'KeyC', 'KeyT', 'KeyZ', 'KeyV', 'KeyX', 'KeyE', 'KeyP', 'KeyQ', 'KeyM'].includes(ev.code);
+    const handled = HELD.includes(ev.code) || ['KeyJ', 'KeyK', 'Space', 'KeyF', 'KeyR', 'KeyC', 'KeyT', 'KeyZ', 'KeyV', 'KeyX', 'KeyE', 'KeyP', 'KeyQ', 'KeyM', 'KeyG', 'KeyI', 'KeyU'].includes(ev.code);
     if (!handled) return;
     ev.preventDefault();
     if (ev.repeat) return;

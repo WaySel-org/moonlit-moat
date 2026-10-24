@@ -4,10 +4,11 @@
     P.max = 100 + 14 * (PR.level - 1) + 12 * PR.vit;
     P.armorMax = 60 + 20 * PR.armorLv + (PR.warden ? 40 : 0);
     P.manaMax = 100 + 10 * PR.spi + (PR.warden ? 50 : 0);
-    P.stMax = 100 + 6 * PR.agi;
+    P.stMax = 100 + 6 * PR.agi + 15 * (PR.level - 1);
     PR.dmg = (1 + 0.06 * PR.str + 0.04 * (PR.level - 1) + 0.12 * PR.weapon) * (PR.warden ? 1.25 : 1);
     PR.spell = (1 + 0.08 * PR.spi + 0.04 * (PR.level - 1)) * (PR.warden ? 1.15 : 1) * (1 + relicBonus('spell'));
     PR.speed = 1 + 0.03 * PR.agi + (PR.warden ? 0.1 : 0);
+    applyGear();
     updateSwordLook();
     P.hp = Math.min(P.hp, P.max); P.mana = Math.min(P.mana, P.manaMax); P.armor = Math.min(P.armor, P.armorMax); P.st = Math.min(P.st, P.stMax);
     renderHero();
@@ -20,7 +21,7 @@
     let up = false;
     while (PR.xp >= xpNext()) { PR.xp -= xpNext(); PR.level++; PR.points += 2; up = true; }
     if (up) {
-      recalc(); P.hp = P.max; P.mana = P.manaMax; P.flasks = PR.flaskMax;
+      recalc(); P.hp = P.max; P.mana = P.manaMax; P.st = P.stMax; P.flasks = PR.flaskMax;
       sfx('parry'); burst(player.position.x, player.position.y + 1.5, player.position.z, 40, 6);
       floatText(`LEVEL ${PR.level}  +2 points (P)`, player.position.clone().add(new THREE.Vector3(0, 3.2, 0)), 'word', '#ffd36a');
       if (PR.level === 3) floatText('Arc Volley learned (V)', player.position.clone().add(new THREE.Vector3(0, 3.8, 0)), 'word', '#c8a9ff');

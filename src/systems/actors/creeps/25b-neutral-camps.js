@@ -38,8 +38,8 @@
     let restocked = 0;
     NEUTRAL_CAMPS.forEach(cp => {
       if (cp.alive) return;
-      cp.alive = true; restocked++;
+      cp.alive = true; if ((cp.world || 'moat') === G.world) restocked++;
       cp.members.forEach(m => { m.respawn = 0.05; m.provoked = false; });
     });
-    if (restocked && G.world === 'moat') floatText(`${restocked} neutral camp${restocked > 1 ? 's' : ''} restocked`, player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', '#7fdc8a');
+    if (restocked) floatText(`${restocked} neutral camp${restocked > 1 ? 's' : ''} restocked`, player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', '#7fdc8a');
   }

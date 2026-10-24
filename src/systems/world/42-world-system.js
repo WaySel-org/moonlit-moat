@@ -121,8 +121,8 @@
       ancient: false, camp: null, age: 0 }, o);
     creeps.push(c); return c;
   }
-  [['veyra', 'skitter', 'melee', 11, { speed: 1.25 }], ['veyra', 'spore', 'ranged', 6], ['neon', 'runner', 'melee', 9, { speed: 1.55 }], ['neon', 'drone', 'ranged', 7],
-   ['ash', 'shambler', 'melee', 15, { speed: 0.55 }], ['ash', 'bloater', 'ranged', 5]].forEach(([w, t, ai, n, o]) => { for (let k = 0; k < n; k++) addWorldCreep(t, w, ai, o); });
+  [['veyra', 'skitter', 'melee', 11], ['veyra', 'spore', 'ranged', 6], ['neon', 'runner', 'melee', 9], ['neon', 'drone', 'ranged', 7],
+   ['ash', 'shambler', 'melee', 15], ['ash', 'bloater', 'ranged', 5]].forEach(([w, t, ai, n, o]) => { for (let k = 0; k < n; k++) addWorldCreep(t, w, ai, o); });
   [['veyra', 'matron', 0.8], ['neon', 'halvane', 0.9], ['ash', 'rot', 0.3]].forEach(([w, t, hue]) => addWorldCreep(t, w, 'godling', { storyBoss: w, camp: WORLDS[w].boss.clone(), radius: 1.7, hitY: 2.2, markY: 5.4, godName: CREEP_NAME[t], godHue: hue, respawn: 2 }));
   function worldSpot(c) {
     const W = WORLDS[c.realm];
