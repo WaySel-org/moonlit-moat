@@ -16,16 +16,18 @@
       const nr = nearestRift();
       if (nr.d < 4) { ui.prompt.hidden = false; ui.prompt.textContent = G.realm === 'spirit' ? 'Q \u00b7 Return through the Veil Rift' : 'Q \u00b7 Step into the Spirit Realm (Q works anywhere)'; }
     }
+    if (!ui.prompt.hidden) { const pt = touchSay(ui.prompt.textContent); if (pt !== ui.prompt.textContent) ui.prompt.textContent = pt; }
     drawMinimap(real);
     if (SHRINE.crystal) { SHRINE.crystal.rotation.y += real * 1.2; SHRINE.crystal.position.y = 2.6 + Math.sin(uTime.value * 1.8) * 0.12; }
     const sk = (id, locked, cdFrac, needMana) => {
       const el = document.getElementById(id);
       el.classList.toggle('locked', locked || needMana);
       el.lastChild.style.height = (locked ? 0 : clamp(cdFrac, 0, 1) * 100) + '%';
+      touchSkill(id.replace('sk_', 't_'), locked || needMana, locked ? 0 : cdFrac);
     };
     sk('sk_z', false, P.cd.z / 0.45, P.st < 6);
     const mpw = P.mount ? MOUNT_POWERS[P.mount.type] : null;
-    const lbl = (id, t) => { const sp = document.querySelector('#' + id + ' span'); if (sp.textContent !== t) sp.textContent = t; };
+    const lbl = (id, t) => { [id, id.replace('sk_', 't_')].forEach(i => { const sp = document.querySelector('#' + i + ' span'); if (sp && sp.textContent !== t) sp.textContent = t; }); };
     lbl('sk_c', mpw ? mpw.mp1.short : 'Bolt'); lbl('sk_x', mpw ? mpw.mp2.short : 'Leap');
     if (mpw) sk('sk_c', false, P.cd.mp1 / mpw.mp1.cd, P.mana < mpw.mp1.mana);
     else sk('sk_c', false, 0, P.mana < boltCost());
@@ -49,7 +51,7 @@
       document.getElementById('wtier').textContent = `${tier} (next in ${fmtTime(left)})`;
       document.getElementById('wenv').textContent = G.world === 'moat' ? G.env.name : `${WNAME[G.world]} \u00b7 ${G.env.name}`;
       document.getElementById('wshards').textContent = `${shardCount()} / 4 shards`;
-      if (G.state !== 'dead' && G.state !== 'won') ui.obj.textContent = objectiveText();
+      if (G.state !== 'dead' && G.state !== 'won') ui.obj.textContent = touchSay(objectiveText());
       document.getElementById('whunt').textContent = G.hunt ? 'now!' : `in ${fmtTime(Math.max(0, 180 - (G.huntClock || 0)))}`;
       document.getElementById('gold').textContent = PR.gold;
       document.getElementById('wasc').textContent = G.ascension ? `${G.ascension} \u00b7 edge ${G.edge} m` : 'None yet';

@@ -1,7 +1,7 @@
   // ---------- Pause ----------
   function setPause(on) {
     if (on && (G.state === 'dead' || G.state === 'won' || G.shop)) return;
-    G.paused = on; ui.pauseEl.hidden = !on; keys.clear();
+    G.paused = on; ui.pauseEl.hidden = !on; keys.clear(); document.body.classList.toggle('paused', on);
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
   }
   function togglePause() { setPause(!G.paused); }

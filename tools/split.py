@@ -75,6 +75,7 @@ DOMAINS = [
     ('Content', 'core', 'content'),
     ('Pause', 'core', 'pause'),
     ('Input', 'core', 'input'),
+    ('Touch controls', 'core', 'touch-controls'),
     ('Renderer controls', 'ui', 'renderer-controls'),
     ('Player update', 'actors/player', 'player-update'),
     ('Loop', 'core', 'loop'),

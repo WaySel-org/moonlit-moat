@@ -52,15 +52,16 @@
   });
   cv.addEventListener('pointercancel', () => { drag = null; });
 
-  document.querySelectorAll('#pad button, #acts button').forEach(b => {
+  document.querySelectorAll('#tacts button, #tmisc button, #tops button').forEach(b => {
     const k = b.dataset.k;
     b.addEventListener('pointerdown', ev => { ev.preventDefault(); press(k); b.setPointerCapture(ev.pointerId); });
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => b.addEventListener(t, () => keys.delete(k)));
   });
 
   function moveInput() {
-    const f = (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) - (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0);
-    const r = (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) - (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0);
+    const J = P.joy && Math.hypot(P.joy.x, P.joy.y) > 0.18 ? P.joy : null;
+    const f = (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) - (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) - (J ? J.y : 0);
+    const r = (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) - (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) + (J ? J.x : 0);
     const cf = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)), cr = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
     return new THREE.Vector3().addScaledVector(cf, f).addScaledVector(cr, r);
   }

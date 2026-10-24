@@ -62,6 +62,7 @@
   "core/48-content.js",
   "core/49-pause.js",
   "core/50-input.js",
+  "core/50b-touch-controls.js",
   "ui/51-renderer-controls.js",
   "actors/player/52-player-update.js",
   "core/53-loop.js",
