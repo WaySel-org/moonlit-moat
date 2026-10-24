@@ -1,0 +1,16 @@
+{
+  "gameId": "minotaur",
+  "name": "The Minotaur",
+  "kind": "creep",
+  "world": "moat",
+  "mythic": true,
+  "stats": {
+    "baseHealth": 480
+  },
+  "ai": "stalker",
+  "wakes": "world tier 1",
+  "look": "Bull-headed giant with a short pole-axe; charges down a long telegraphed lane.",
+  "id": "mythic-minotaur",
+  "originality": "original",
+  "source": "Greek myth (public-domain myth; this design is original)"
+}

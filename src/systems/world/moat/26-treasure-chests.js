@@ -5,7 +5,7 @@
     { name: 'Gilded', color: 0xc9a042, trim: 0x6a4c12, gleam: 0xfff0a0 },
     { name: 'Crystal', color: 0x5fe0ff, trim: 0x2a6a8a, gleam: 0xbff6ff }];
   const chests = [];
-  [[-30, 20], [34, 26], [-50.5, -30.5], [60, -30], [-46, 52], [48, 58], [0, 62], [-66, 40], [70, 12], [-18, -58], [28, -60], [0, -70], [-70, -62], [66, -66], [57, -52, 10], [47, 38, 10]].forEach(([x, z, y = 0]) => {
+  function makeChest(x, z, y = 0) {
     const g = new THREE.Group();
     const baseMat = new THREE.MeshLambertMaterial({ color: 0x6a4524, flatShading: true }), trimMat = new THREE.MeshLambertMaterial({ color: 0x2a1a0c });
     box(1.2, 0.6, 0.8, 0, 0.3, 0, baseMat, g);
@@ -18,7 +18,9 @@
     const c = { g, lid, baseMat, trimMat, gleam, glowM, x, z, y, tier: 1, open: false, refill: 0, tierT: 0 };
     c.maze = inMaze(x, z) || y > 0; if (c.maze) c.tier = 3;
     chestLook(c); chests.push(c);
-  });
+    return c;
+  }
+  [[-30, 20], [34, 26], [-50.5, -30.5], [60, -30], [-46, 52], [48, 58], [0, 62], [-66, 40], [70, 12], [-18, -58], [28, -60], [0, -70], [-70, -62], [66, -66], [57, -52, 10], [47, 38, 10]].forEach(([x, z, y]) => makeChest(x, z, y));
   function chestLook(c) {
     const T = CHEST_TIERS[c.tier];
     c.baseMat.color.setHex(T.color); c.trimMat.color.setHex(T.trim); c.glowM.color.setHex(T.gleam);

@@ -33,7 +33,7 @@
     if (mpw) sk('sk_x', false, P.cd.mp2 / mpw.mp2.cd, P.mana < mpw.mp2.mana);
     else sk('sk_x', !PR.warden, P.cd.x / 6, P.mana < 25);
     creeps.forEach(c => {
-      if (!c.alive || c.realm !== realmKey() || flatDist(c.pos, player.position) > (c.ancient || c.ai === 'godling' ? 34 : 22)) { c.bar.hidden = true; return; }
+      if (!c.alive || c.realm !== realmKey() || flatDist(c.pos, player.position) > (c.ancient || c.mythic || c.ai === 'godling' ? 34 : 22)) { c.bar.hidden = true; return; }
       const sp = project(c.pos.clone().setY(c.pos.y + (CREEP_BAR_H[c.type] || 0.8) * (c.ancient ? 1.8 : 1)));
       c.bar.hidden = !sp.ok;
       if (!c.bar.hidden) {
@@ -52,6 +52,8 @@
       if (G.state !== 'dead' && G.state !== 'won') ui.obj.textContent = objectiveText();
       document.getElementById('whunt').textContent = G.hunt ? 'now!' : `in ${fmtTime(Math.max(0, 180 - (G.huntClock || 0)))}`;
       document.getElementById('gold').textContent = PR.gold;
+      document.getElementById('wasc').textContent = G.ascension ? `${G.ascension} \u00b7 edge ${G.edge} m` : 'None yet';
+      document.getElementById('wmyth').textContent = mythicText();
     }
   }
   recalc(); P.hp = P.max;

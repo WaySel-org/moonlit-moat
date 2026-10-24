@@ -13,7 +13,7 @@
   function chapterText(w) {
     const ST = G.story, n = CHAPTERS.indexOf(w) + 1, W = WORLDS[w], next = CHAPTERS[n];
     if (w === 'moat') {
-      const base = G.wardenDown ? OBJ_CLIMB : OBJ_START;
+      const base = ascensionText() || (G.wardenDown ? OBJ_CLIMB : OBJ_START);
       if (shardCount() === CHAPTERS.length) return `${base} The World Heart is whole.`;
       return ST.shards.moat ? `${base} The World Gate beside the shrine leads to the other shards.` : base;
     }

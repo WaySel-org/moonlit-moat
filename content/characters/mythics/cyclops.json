@@ -1,0 +1,16 @@
+{
+  "gameId": "cyclops",
+  "name": "The Cyclops",
+  "kind": "creep",
+  "world": "moat",
+  "mythic": true,
+  "stats": {
+    "baseHealth": 1100
+  },
+  "ai": "godling",
+  "wakes": "world tier 3",
+  "look": "One-eyed stone-grey giant; strikes marked ground.",
+  "id": "mythic-cyclops",
+  "originality": "original",
+  "source": "Greek myth (public-domain myth; this design is original)"
+}

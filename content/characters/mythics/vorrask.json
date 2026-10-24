@@ -1,0 +1,15 @@
+{
+  "gameId": "vorrask",
+  "name": "Vorrask, the Hollow Sovereign",
+  "kind": "creep",
+  "world": "moat",
+  "mythic": true,
+  "stats": {
+    "baseHealth": 1600
+  },
+  "ai": "godling",
+  "wakes": "Ascension 1",
+  "look": "A robed void king behind a blank white mask with a violet halo; rose from what the Veil devoured.",
+  "id": "mythic-vorrask",
+  "originality": "original"
+}

@@ -288,9 +288,9 @@
     else winGame();
   }
   function startRoyal() {
-    const tier = worldTier(), m = tierMult(tier);
-    G.dmgMult = 1 + 0.2 * (tier - 1); G.bossTier = tier;
-    royals.forEach((r, i) => { r.max = Math.round((r.kind === 'gorgon' ? 440 : 320) * m); r.hp = r.max; ui['rname' + i].textContent = `${r.kind === 'gorgon' ? 'Vesthra, the Gorgon' : 'Nyxara, the Thorn Empress'} \u00b7 Lv ${tier}`; });
+    const tier = worldTier(), m = tierMult(tier) * (1 + 0.5 * G.ascension);
+    G.dmgMult = (1 + 0.2 * (tier - 1)) * (1 + 0.25 * G.ascension); G.bossTier = tier;
+    royals.forEach((r, i) => { r.max = Math.round((r.kind === 'gorgon' ? 440 : 320) * m); r.hp = r.max; ui['rname' + i].textContent = `${r.kind === 'gorgon' ? 'Vesthra, the Gorgon' : 'Nyxara, the Thorn Empress'} \u00b7 Lv ${tier + 2 * G.ascension}`; });
     G.state = 'royal'; G.lock = true; G.target = null;
     royals.forEach(r => { r.active = true; r.state = 'chase'; r.cool = 1.2 + Math.random(); });
     showBanner('The Gorgon and the Empress', '', 'title'); bannerTimer = 2.2;

@@ -1,0 +1,15 @@
+{
+  "gameId": "thurnis",
+  "name": "Kael Thurnis, the Star-Devourer",
+  "kind": "creep",
+  "world": "moat",
+  "mythic": true,
+  "stats": {
+    "baseHealth": 2000
+  },
+  "ai": "godling",
+  "wakes": "Ascension 2",
+  "look": "A horned conqueror in crimson armour from beyond the sky with a burning halo.",
+  "id": "mythic-thurnis",
+  "originality": "original"
+}

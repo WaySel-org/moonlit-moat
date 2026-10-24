@@ -5,7 +5,7 @@
     const rk = realmKey(), inMoat = G.world === 'moat';
     if (inMoat && HITTABLE.includes(B.state)) out.push(WARDEN);
     royals.forEach(r => { if (inMoat && r.active && r.alive) out.push(r); });
-    creeps.forEach(c => { if (c.alive && c.realm === rk && flatDist(c.pos, player.position) < (c.ai === 'godling' ? 40 : 26)) out.push(c); });
+    creeps.forEach(c => { if (c.alive && c.realm === rk && flatDist(c.pos, player.position) < (c.ai === 'godling' || c.mythic ? 40 : 26)) out.push(c); });
     return out;
   }
   function nearestTarget(list, from) {

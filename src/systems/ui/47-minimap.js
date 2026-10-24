@@ -6,7 +6,7 @@
     const cv2 = ui.minimap, big = cv2.classList.contains('big'), size = big ? 420 : 170;
     if (cv2.width !== size) { cv2.width = size; cv2.height = size; }
     const W = WORLDS[G.world];
-    const R = W ? 74 : G.realm === 'spirit' ? 120 : 84, sc = size / (R * 2);
+    const R = W ? 74 : G.realm === 'spirit' ? Math.max(120, G.edge + 24) : G.edge + 4, sc = size / (R * 2);
     const X = x => (x + R) * sc, Z = z => (z + R) * sc;
     const c = mctx; c.clearRect(0, 0, size, size);
     const dot = (x, z, r, col) => { c.fillStyle = col; c.beginPath(); c.arc(X(x), Z(z), r, 0, TAU); c.fill(); };
@@ -25,7 +25,7 @@
       if (G.story.step[W.id] === 1) { c.strokeStyle = '#e0a0ff'; c.lineWidth = 1.5; c.beginPath(); c.arc(X(W.boss.x), Z(W.boss.z), big ? 9 : 5, 0, TAU); c.stroke(); }
     } else {
       c.fillStyle = G.realm === 'spirit' ? 'rgba(40,30,70,0.55)' : 'rgba(20,30,26,0.55)';
-      const L = G.realm === 'spirit' ? 116 : 80; c.fillRect(X(-L), Z(-L), (L * 2) * sc, (L * 2 - 8) * sc);
+      const L = G.realm === 'spirit' ? Math.max(116, G.edge + 20) : G.edge; c.fillRect(X(-L), Z(-L), (L * 2) * sc, (L * 2 - 8) * sc);
       // lake, castle, maze, keeps
       c.fillStyle = 'rgba(80,120,150,0.6)'; c.beginPath(); c.arc(X(LAKE.x), Z(LAKE.z), LAKE.r * sc, 0, TAU); c.fill();
       c.fillStyle = 'rgba(200,200,190,0.55)'; c.fillRect(X(-15.5), Z(-36), 31 * sc, 16 * sc);
@@ -44,6 +44,7 @@
     const em = eventMark(); if (em && G.realm === 'material') { dot(em.x, em.z, big ? 6 : 4, em.col); c.strokeStyle = em.col; c.lineWidth = 1; c.beginPath(); c.arc(X(em.x), Z(em.z), (big ? 10 : 7) + Math.sin(uTime.value * 6) * 2, 0, TAU); c.stroke(); }
     const rk = realmKey();
     creeps.forEach(cr => { if (cr.alive && cr.realm === rk) dot(cr.pos.x, cr.pos.z, cr.ai === 'godling' ? (big ? 5 : 3.5) : cr.ancient ? (big ? 3.5 : 2.5) : (big ? 2 : 1.3), cr.ai === 'godling' ? '#e0a0ff' : cr.ancient ? '#ff9a4a' : '#ff5a4a'); });
+    if (!W && G.realm === 'material') drawMythics(c, X, Z, big);
     // you: an arrow pointing where you face
     const px = X(player.position.x), pz = Z(player.position.z), a = P.facing;
     c.save(); c.translate(px, pz); c.rotate(-a + Math.PI); c.fillStyle = '#fff6e0';
