@@ -1,7 +1,7 @@
   if (!window.THREE) { document.body.insertAdjacentHTML('beforeend', '<div id="err">The 3D library did not load. Reload the page to try again.</div>'); return; }
   const $ = s => document.querySelector(s);
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const S = { mode: 0, pal: 0, cell: 4, gain: 2.6, edges: true, reflect: true, sound: true };
+  const S = { mode: 2, pal: 0, cell: 4, gain: 2.6, edges: true, reflect: true, sound: true };
   const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
   const TAU = Math.PI * 2;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));

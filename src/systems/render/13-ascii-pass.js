@@ -6,7 +6,7 @@
   const postU = {
     tScene: { value: sceneRT.texture }, tMask: { value: maskRT.texture }, tAtlas: { value: null }, uRes: { value: new THREE.Vector2(1, 1) },
     uCell: { value: 8 }, uCount: { value: RAMP.length }, uTotal: { value: RAMP.length + EDGE.length },
-    uMode: { value: 0 }, uPal: { value: 0 }, uEdges: { value: 1 }, uGain: { value: S.gain }, uLine: { value: DPR }, uSpirit: { value: 0 }, uTime
+    uMode: { value: S.mode }, uPal: { value: 0 }, uEdges: { value: 1 }, uGain: { value: S.gain }, uLine: { value: DPR }, uSpirit: { value: 0 }, uTime
   };
   const postMat = new THREE.ShaderMaterial({
     uniforms: postU, depthTest: false, depthWrite: false,
