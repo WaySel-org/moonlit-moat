@@ -33,7 +33,7 @@
     const ST = G.story, s = stageOf(w), m = tierMult(worldTier());
     ST.step[w] = 2; ST.nextStage[w] = STAGE_LULL;
     reward(300 * m * s, 220 * m * s, player.position.clone().add(new THREE.Vector3(0, 3.4, 0)));
-    PR.points++; renderHero();
+    PR.points++; renderHero(); dropRelic(player.position.x + 2, player.position.z);
     showBanner(`Stage ${s} cleared`, `${WORLDS[w].bossName} falls again. +1 attribute point. Stage ${s + 1} of ${WORLDS[w].name} begins soon.`, 'title'); bannerTimer = 4;
     for (let i = 0; i < 3; i++) launchFirework(player.position.clone().add(new THREE.Vector3((Math.random() - 0.5) * 6, 1, (Math.random() - 0.5) * 6)));
   }
@@ -144,6 +144,7 @@
     spawnLoot(c.pos.x + 1, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
     spawnLoot(c.pos.x - 1, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
     dropGear(c.pos, 1, 0.6);
+    dropRelic(c.pos.x, c.pos.z + 1.2);
     if (E && E.elite === c) endEvent(false, 'The elite is down and the ambush breaks. Bounty paid.');
   }
   function eventText() {

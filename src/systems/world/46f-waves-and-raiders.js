@@ -56,7 +56,7 @@
 
   // Telegraphed ground strikes, shared by raiders and bosses: a circle or a lane that lands after `wind` seconds
   const strikes = [], strikeTeles = Array.from({ length: 12 }, () => makeTele());
-  function strike(o) {
+  function groundStrike(o) {
     const tele = strikeTeles.find(t => !strikes.some(s => s.tele === t)); if (!tele) return;
     strikes.push(Object.assign({ t: 0, wind: 1, r: 2.4, dmg: 20, kb: 6, src: null, y: Math.max(0, P.y) }, o, { tele }));
   }
@@ -193,8 +193,8 @@
         toward(9, 8); r.pos.y += (2.2 - r.pos.y) * Math.min(1, dt * 3);
         if (r.t > 0.8 && !r.breathed) {
           r.breathed = true; const fire = r.type === 'wyrm';
-          for (let i = 0; i < 3; i++) strike({ at: pp.clone().add(new THREE.Vector3((Math.random() - 0.5) * 6, 0, (Math.random() - 0.5) * 6)), r: 2.6, wind: 1 + i * 0.25, dmg: 20, kb: 6, src: r, fire, freeze: fire ? 0 : 0.9 });
-          strike({ at: r.pos.clone().setY(0), lane: true, facing: yawTo(r.pos, pp), len: 12, w: 4, wind: 1.1, dmg: 24, kb: 8, src: r, freeze: fire ? 0 : 1.1, fire });
+          for (let i = 0; i < 3; i++) groundStrike({ at: pp.clone().add(new THREE.Vector3((Math.random() - 0.5) * 6, 0, (Math.random() - 0.5) * 6)), r: 2.6, wind: 1 + i * 0.25, dmg: 20, kb: 6, src: r, fire, freeze: fire ? 0 : 0.9 });
+          groundStrike({ at: r.pos.clone().setY(0), lane: true, facing: yawTo(r.pos, pp), len: 12, w: 4, wind: 1.1, dmg: 24, kb: 8, src: r, freeze: fire ? 0 : 1.1, fire });
         }
         if (r.t > 2.4) { r.state = 'rest'; r.t = 0; r.breathed = false; }
       } else if (r.state === 'rest') {
@@ -247,7 +247,7 @@
     const mobs = [];
     for (const c of wavePool[w]) {
       if (mobs.length >= size) break; if (c.alive) continue;
-      const p = ringSpot(22, 30); if (p && raiseMob(c, p, bonus, horde)) mobs.push(c);
+      const p = ringSpot(22, 30) || ringSpot(12, 22); if (p && raiseMob(c, p, bonus, horde)) mobs.push(c);
     }
     G.waveClock = 0; if (!mobs.length) return;
     G.waveN[w] = n; G.wave = { w, n, mobs, t: 120, size: mobs.length };

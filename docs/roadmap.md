@@ -7,7 +7,7 @@
 ## Next
 - **Plug and play**: click the link, land in a live world with no menus, panels or loading screen; offline-first delivery; phone and tablet controls. Plan in [plug-and-play.md](plug-and-play.md) (Gatewright, Veilwarden).
 - Move world layouts and bosses from code into `content/` (Gatewright).
-- Smoke test in CI: headless load with no console errors (Veilwarden).
+- Smoke test in CI: headless load with no console errors (Veilwarden). `#debug` now exposes `window.MM_DEBUG` for it.
 - Convert systems to ES modules with explicit imports (Gatewright).
 
 ## Not yet released to play.waysel.com
@@ -15,3 +15,4 @@
 
 ## Ideas welcome
 - New worlds and Shardkeepers, more mounts and environments, accessibility and controller support, balance passes.
+- More relics and creep types for the other worlds; Rend on the rooftop royals; a save of the hero between visits.

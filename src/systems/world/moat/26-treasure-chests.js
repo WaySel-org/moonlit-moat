@@ -52,5 +52,6 @@
       if (PR.flaskMax < 6 && Math.random() < 0.35) { PR.flaskMax++; P.flasks++; floatText('+1 flask slot', at, 'word', '#ff9a4a'); recalc(); }
       else { P.flasks = PR.flaskMax; floatText('flasks refilled', at, 'word', '#ff9a4a'); }
     }
+    if (tier >= 3 && Math.random() < (tier >= 4 ? 0.6 : 0.35)) dropRelic(c.x + 1.4, c.z + 0.6);
     if (tier >= 4) { PR.points++; renderHero(); floatText('+1 attribute point', at.clone().add(new THREE.Vector3(0, 0.6, 0)), 'word', '#bff6ff'); }
   }

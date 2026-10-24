@@ -4,8 +4,9 @@
   const tierMult = t => 1 + 0.3 * (t - 1);
   const P = { hp: 100, max: 100, st: 100, stMax: 100, stDelay: 0, flasks: 3, act: null, actT: 0, actDur: 0, combo: 0, hitDone: false, buffer: null, bufferT: 0,
     iframe: 0, block: false, blockT: 0, facing: Math.PI, kb: new THREE.Vector3(), rollDir: new THREE.Vector3(), healed: false, hurtFlash: 0,
-    mana: 50, manaMax: 100, armor: 0, armorMax: 60, buffDmg: 0, buffAgi: 0, y: 0, stone: 0, cd: { z: 0, v: 0, x: 0, mp1: 0, mp2: 0 }, leapFrom: null, leapTo: null, leapY: 0 };
-  const PR = { level: 1, xp: 0, gold: 0, points: 0, str: 0, vit: 0, agi: 0, spi: 0, weapon: 0, armorLv: 0, flaskMax: 3, warden: false, dmg: 1, spell: 1, speed: 1 };
+    mana: 50, manaMax: 100, armor: 0, armorMax: 60, buffDmg: 0, buffAgi: 0, y: 0, stone: 0, cd: { z: 0, v: 0, x: 0, mp1: 0, mp2: 0 }, leapFrom: null, leapTo: null, leapY: 0,
+    flow: 0, flowed: false, riposte: 0, poison: 0, poisonDmg: 0, poisonTick: 0, calm: 0 };
+  const PR = { level: 1, xp: 0, gold: 0, points: 0, str: 0, vit: 0, agi: 0, spi: 0, weapon: 0, armorLv: 0, flaskMax: 3, warden: false, dmg: 1, spell: 1, speed: 1, relics: [] };
   const B = { hp: 800, max: 800, poise: 100, phase: 1, state: 'perch', t: 0, atk: null, cool: 1.0, facing: 0, flash: 0, from: new THREE.Vector3(), to: new THREE.Vector3(), dur: 1, spin: 0 };
   boss.position.copy(PERCH);
 

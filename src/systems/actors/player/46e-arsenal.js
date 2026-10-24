@@ -113,13 +113,13 @@
   P.jh = 0; P.jv = 0; P.airHits = 0;
   function jump() {
     if (P.mount || P.jh > 0 || P.act || P.stone > 0 || G.state === 'dead' || G.state === 'won' || P.st < 10) return;
-    P.jv = 11.5; P.jh = 0.01; P.airHits = 0; P.plunge = false; P.st -= 10; P.stDelay = 0.6; sfx('roll');
+    P.jv = 11.5; P.jh = 0.01; P.airHits = 0; P.plunge = false; P.st -= stCost(10); P.stDelay = 0.5; sfx('roll');
     const mv = moveInput(); P.jdir = mv.lengthSq() > 0 ? mv.normalize().multiplyScalar(6.8 * PR.speed) : new THREE.Vector3();
   }
   function airAttack(name) {
     if (name === 'light') {
       if (P.airHits >= 2 || P.st < 8) return false;
-      P.act = 'airslash'; P.actT = 0; P.actDur = 0.26; P.hitDone = false; P.airHits++; P.st -= 8; P.stDelay = 0.6;
+      P.act = 'airslash'; P.actT = 0; P.actDur = 0.26; P.hitDone = false; P.airHits++; P.st -= stCost(8); P.stDelay = 0.5;
       P.jv = Math.max(P.jv, 6); sfx('swing'); return true;
     }
     P.act = 'plunge'; P.actT = 0; P.actDur = 2; P.hitDone = false; P.jv = -26; P.plunge = true; sfx('swoosh'); return true;

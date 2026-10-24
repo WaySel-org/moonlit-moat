@@ -3,7 +3,8 @@
 #   make image && make run        ->  http://localhost:8080   (health: /healthz)
 
 ARG PYTHON_IMAGE=python:3.12-alpine
-ARG NGINX_IMAGE=nginxinc/nginx-unprivileged:1.27-alpine
+# 1.30 is nginx's current stable branch; 1.27 is retired and frozen on an unpatched Alpine.
+ARG NGINX_IMAGE=nginxinc/nginx-unprivileged:1.30-alpine
 
 # ---- build: validate content and assemble dist/ (no network, no extra packages)
 FROM ${PYTHON_IMAGE} AS build
@@ -31,6 +32,10 @@ LABEL org.opencontainers.image.title="Moonlit Moat" \
       org.opencontainers.image.vendor="WaySel" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.revision="${REVISION}"
+# Pick up Alpine security fixes published since the base image was built, then drop back to the unprivileged user.
+USER root
+RUN apk upgrade --no-cache
+USER 101
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /security-headers.conf /cache-assets.conf /cache-default.conf /etc/nginx/snippets/
 COPY --from=build /app/dist /usr/share/nginx/html

@@ -40,3 +40,11 @@ Built in one long Claude session, 2026-10-11 to 2026-10-23.
 - Made the project an isolated repository at `~/Claude Docs/moonlit-moat` (a clone of the public repo).
 - Split the single game file into 45 system files by domain (`tools/split.py`), assembled by `tools/build.py`; the assembled code was verified identical to the original.
 - Added data-driven content (`content/`), lore canon (`lore/`), storyline-based agent roles (`agents/`), container + nginx + Kubernetes manifests, CI/CD with image publishing, and GitHub templates.
+
+## Combat depth, new creeps and relics (2026-10-23)
+- Every player hit now runs through one `strike()` path: crits (5% base, +1.5% per Agility), backstabs on creeps (x1.35), Riposte (the first hit within 2 s of a parry, x2) and Flow (a perfect dodge mid-roll: 2.5 s of doubled stamina regen and guaranteed crits).
+- Heavy hits apply Rend, a bleed of up to three stacks on creeps and the Warden. Poison, from a Fen Stalker's bite, ticks through armour until a flask cures it.
+- Two new moat creeps with their own AI: the **Fen Stalker** (circles at five to seven metres, then lunges down a telegraphed lane) and the **Thornback** (a shell-walker whose front takes a third damage until it is staggered or struck from behind).
+- **Relics**: ten original passive keepsakes, three slots, dropped by gilded and crystal chests, ancients, elites, godlings, the Warden and cleared stages. Drop one from the hero sheet to swap.
+- Hero sheet shows derived combat stats (weapon and spell multipliers, crit chance, speed) and the carried relics.
+- `#debug` in the URL exposes `window.MM_DEBUG` for play-tests and the planned CI smoke test.
