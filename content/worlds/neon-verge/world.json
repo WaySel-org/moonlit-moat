@@ -1,0 +1,56 @@
+{
+  "id": "neon-verge",
+  "name": "Neon Verge",
+  "theme": "cyberpunk",
+  "status": "live",
+  "originality": "original",
+  "dataDriven": false,
+  "bounds": 70,
+  "objective": "Hack 3 relay terminals",
+  "boss": "Director Halvane",
+  "shard": "Shard of the World Heart (Neon Verge)",
+  "spawn": [
+    0,
+    56
+  ],
+  "worldGate": [
+    -5,
+    61
+  ],
+  "bossBaseHealth": 2200,
+  "gameId": "neon",
+  "objectivePoints": [
+    [
+      -40,
+      -20
+    ],
+    [
+      40,
+      20
+    ],
+    [
+      0,
+      -40
+    ]
+  ],
+  "bossAt": [
+    0,
+    0
+  ],
+  "roster": [
+    {
+      "name": "Chrome Runner",
+      "ai": "melee",
+      "count": 9,
+      "baseHealth": 46
+    },
+    {
+      "name": "Patrol Drone",
+      "ai": "ranged",
+      "count": 7,
+      "baseHealth": 42
+    }
+  ],
+  "solids": "32 buildings on a grid around an open central plaza",
+  "unlockedBy": "the Hive Matron's defeat"
+}

@@ -1,0 +1,137 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/waysel-org/moonlit-moat
+
+jobs:
+  validate:
+    name: Validate content and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Build (validates content, syntax-checks game.js)
+        run: python3 tools/build.py
+      - uses: actions/upload-artifact@v4
+        with: { name: dist, path: dist, retention-days: 7 }
+
+  container:
+    name: Container build, smoke test and scan
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint Dockerfile
+        uses: hadolint/hadolint-action@v3.1.0
+        with: { dockerfile: Dockerfile, failure-threshold: error }
+      - uses: docker/setup-buildx-action@v3
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: moonlit-moat:ci
+          build-args: |
+            VERSION=ci
+            REVISION=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke test (read-only, no capabilities)
+        run: |
+          docker run -d --name mm -p 8080:8080 --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges moonlit-moat:ci
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8080/healthz && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8080/healthz | grep -q ok
+          curl -fsS http://127.0.0.1:8080/ | grep -q '<title>Moonlit Moat</title>'
+          curl -fsSI http://127.0.0.1:8080/ | tee headers.txt
+          grep -qi "content-security-policy: default-src 'self'" headers.txt
+          grep -qi 'x-frame-options: DENY' headers.txt
+          grep -qi 'strict-transport-security' headers.txt
+          grep -qi 'cache-control: public, max-age=0, must-revalidate' headers.txt
+          GAME=$(curl -fsS http://127.0.0.1:8080/ | grep -o 'a/game\.[0-9a-f]*\.js')
+          curl -fsS -H 'Accept-Encoding: gzip' -D game-headers.txt -o /dev/null "http://127.0.0.1:8080/$GAME"
+          grep -qi 'cache-control: public, max-age=31536000, immutable' game-headers.txt
+          grep -qi 'content-encoding: gzip' game-headers.txt
+          grep -qi "content-security-policy: default-src 'self'" game-headers.txt
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/a/missing.js)" = 404
+          docker inspect --format '{{.Config.User}}' moonlit-moat:ci | grep -qx 101
+          docker logs mm
+      - name: Vulnerability scan
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0, pinned by SHA; it pins its own helpers by SHA too
+        with:
+          image-ref: moonlit-moat:ci
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '1'
+
+  helm:
+    name: Helm chart
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+      - run: helm lint deploy/helm/moonlit-moat
+      - run: helm template moonlit-moat deploy/helm/moonlit-moat --set ingress.enabled=true > rendered.yaml && cat rendered.yaml
+
+  publish:
+    name: Publish multi-arch image (signed, with SBOM)
+    needs: [container, helm]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+      - id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+            REVISION=${{ github.sha }}
+          provenance: mode=max
+          sbom: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - uses: sigstore/cosign-installer@v3
+      - name: Sign image (keyless)
+        run: cosign sign --yes ${{ env.IMAGE }}@${{ steps.push.outputs.digest }}

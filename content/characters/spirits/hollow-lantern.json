@@ -1,0 +1,13 @@
+{
+  "gameId": "lantern",
+  "name": "Hollow Lantern",
+  "ai": "melee",
+  "stats": {
+    "baseHealth": 34
+  },
+  "look": "A pale floating head with hanging tendrils; comes in swarms.",
+  "id": "hollow-lantern",
+  "kind": "spirit",
+  "world": "spirit",
+  "originality": "original"
+}

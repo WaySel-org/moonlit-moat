@@ -1,0 +1,11 @@
+# Only what the build stage needs goes into the build context
+*
+!tools/
+!src/
+!content/
+!vendor/
+!deploy/headers.json
+!deploy/cache.json
+!deploy/nginx.conf
+**/__pycache__
+**/.DS_Store

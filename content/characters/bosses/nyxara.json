@@ -1,0 +1,20 @@
+{
+  "id": "nyxara",
+  "gameId": "empress",
+  "name": "Nyxara, the Thorn Empress",
+  "kind": "boss",
+  "world": "moat",
+  "chapter": 1,
+  "lore": "A briar sorceress who floats above the roof, crowned in thorns.",
+  "look": "Vine-wrapped crimson gown, crown of thorns, six orbiting thorn shards, thorn staff.",
+  "stats": {
+    "baseHealth": 320
+  },
+  "abilities": [
+    "Thorn fan",
+    "Briar burst",
+    "Vanish"
+  ],
+  "originality": "original",
+  "dataDriven": false
+}

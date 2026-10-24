@@ -1,0 +1,31 @@
+{
+  "gameId": "stag",
+  "name": "Moonstag",
+  "stats": {
+    "levelRequired": 2,
+    "speed": 1.8,
+    "goreDamage": 34,
+    "rideHeight": 1.25
+  },
+  "powers": {
+    "mp1": {
+      "name": "Lunar Nova",
+      "short": "Nova",
+      "kind": "nova",
+      "cd": 6,
+      "mana": 25
+    },
+    "mp2": {
+      "name": "Starbound Charge",
+      "short": "Charge",
+      "kind": "charge",
+      "cd": 5,
+      "mana": 0
+    }
+  },
+  "look": "Pale stag with glowing branching antlers.",
+  "id": "moonstag",
+  "kind": "mount",
+  "world": "moat",
+  "originality": "original"
+}

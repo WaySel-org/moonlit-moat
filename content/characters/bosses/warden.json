@@ -1,0 +1,23 @@
+{
+  "id": "gate-warden",
+  "gameId": "warden",
+  "name": "The Gate Warden",
+  "kind": "boss",
+  "world": "moat",
+  "chapter": 1,
+  "lore": "A stone-armoured giant bound to the castle gate. Its power, once taken, lets the bearer leap.",
+  "look": "Grey plate armour, horned helm with an ember visor slit, red cape, a two-handed hammer.",
+  "stats": {
+    "baseHealth": 1500
+  },
+  "abilities": [
+    "Hammer slam",
+    "Spinning sweep",
+    "Charge",
+    "Leap slam (phase 2)",
+    "Ground shockwaves (phase 2)",
+    "Hunts the player every 3 minutes"
+  ],
+  "originality": "original",
+  "dataDriven": false
+}

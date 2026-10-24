@@ -1,0 +1,9 @@
+apiVersion: v2
+name: moonlit-moat
+description: WaySel's open-source endless ASCII action RPG, served by unprivileged nginx
+type: application
+version: 0.1.0
+appVersion: "latest"
+home: https://play.waysel.com
+sources: [https://github.com/WaySel-org/moonlit-moat]
+maintainers: [{ name: WaySel }]

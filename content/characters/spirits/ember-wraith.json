@@ -1,0 +1,13 @@
+{
+  "gameId": "ember",
+  "name": "Ember Wraith",
+  "ai": "melee",
+  "stats": {
+    "baseHealth": 50
+  },
+  "look": "Stacked flames around a white-hot core; fast.",
+  "id": "ember-wraith",
+  "kind": "spirit",
+  "world": "spirit",
+  "originality": "original"
+}

@@ -1,0 +1,39 @@
+image:
+  repository: ghcr.io/waysel-org/moonlit-moat
+  tag: ""            # defaults to the chart appVersion
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+resources:
+  requests: { cpu: 50m, memory: 32Mi }
+  limits: { cpu: 250m, memory: 64Mi }
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  className: ""
+  host: play.example.com
+  tls: []            # - secretName: moonlit-moat-tls
+  annotations: {}
+
+networkPolicy:
+  enabled: true      # only ingress on the http port; no egress needed for a static site
+
+podAnnotations: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}

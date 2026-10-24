@@ -1,0 +1,31 @@
+{
+  "gameId": "drake",
+  "name": "Ember Drake",
+  "stats": {
+    "levelRequired": 5,
+    "speed": 1.7,
+    "goreDamage": 52,
+    "rideHeight": 1.5
+  },
+  "powers": {
+    "mp1": {
+      "name": "Fire Breath",
+      "short": "Breath",
+      "kind": "breath",
+      "cd": 6,
+      "mana": 30
+    },
+    "mp2": {
+      "name": "Inferno Dive",
+      "short": "Dive",
+      "kind": "dive",
+      "cd": 8,
+      "mana": 20
+    }
+  },
+  "look": "Young four-legged dragon with dark red scales, horns, folded wings and a glowing throat.",
+  "id": "ember-drake",
+  "kind": "mount",
+  "world": "moat",
+  "originality": "original"
+}

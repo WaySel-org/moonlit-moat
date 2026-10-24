@@ -1,0 +1,13 @@
+{
+  "gameId": "wisp",
+  "name": "Ash Wisp",
+  "kind": "creep",
+  "world": "moat",
+  "stats": {
+    "baseHealth": 42
+  },
+  "ai": "ranged",
+  "look": "Floating pale-blue orb with a tail; keeps its distance and shoots.",
+  "id": "ash-wisp",
+  "originality": "original"
+}

@@ -1,0 +1,23 @@
+  // ---------- The Gate Warden (boss) ----------
+  const PERCH = new THREE.Vector3(0, 8.0, -21);
+  const boss = new THREE.Group();
+  const bBody = new THREE.Group(); boss.add(bBody);
+  const armor = new THREE.MeshLambertMaterial({ color: 0x5c6168, flatShading: true, emissive: 0x000000 });
+  const trim = new THREE.MeshLambertMaterial({ color: 0x23262a, flatShading: true });
+  const visorMat = new THREE.MeshBasicMaterial({ color: 0xffa040 });
+  const capeMat = new THREE.MeshLambertMaterial({ color: 0x4a1a1a, side: THREE.DoubleSide });
+  box(0.55, 1.6, 0.65, -0.45, 0.8, 0, armor, bBody); box(0.55, 1.6, 0.65, 0.45, 0.8, 0, armor, bBody);
+  box(1.7, 1.5, 1.05, 0, 2.35, 0, armor, bBody);
+  box(1.3, 0.35, 0.95, 0, 1.55, 0, trim, bBody);
+  [-1, 1].forEach(sx => { const pd = new THREE.Mesh(new THREE.SphereGeometry(0.58, 7, 5), armor); pd.position.set(sx * 1.05, 3.0, 0); bBody.add(pd); });
+  box(0.85, 0.85, 0.85, 0, 3.5, 0, armor, bBody);
+  const visor = box(0.62, 0.11, 0.06, 0, 3.55, 0.43, visorMat, bBody);
+  [-1, 1].forEach(sx => { const h = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.8, 5), trim); h.position.set(sx * 0.45, 4.05, 0); h.rotation.z = -sx * 0.5; bBody.add(h); });
+  const cape = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 2.6), capeMat); cape.position.set(0, 2.05, -0.58); bBody.add(cape);
+  box(0.4, 1.3, 0.45, 1.05, 2.3, 0, armor, bBody);
+  const wPivot = new THREE.Group(); wPivot.position.set(-1.05, 2.95, 0); bBody.add(wPivot);
+  box(0.4, 1.3, 0.45, 0, -0.5, 0, armor, wPivot);
+  const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 3.0, 6), trim); handle.rotation.x = Math.PI / 2; handle.position.set(0, -1.1, 1.3); wPivot.add(handle);
+  const hammerHead = box(1.1, 0.75, 0.75, 0, -1.1, 2.75, armor, wPivot);
+  boss.scale.setScalar(1.3);
+  scene.add(boss);

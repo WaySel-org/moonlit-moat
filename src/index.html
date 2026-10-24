@@ -1,0 +1,222 @@
+<div id="stage"></div>
+
+<div id="hud">
+  <h1>Moonlit Moat</h1>
+  <p><kbd>WASD</kbd> move &nbsp; <kbd>J</kbd>/click attack &nbsp; <kbd>K</kbd> heavy &nbsp; <kbd>Space</kbd> roll &nbsp; <kbd>Shift</kbd> block &nbsp; <kbd>Z</kbd> dagger &nbsp; <kbd>C</kbd> bolt &nbsp; <kbd>V</kbd> volley &nbsp; <kbd>X</kbd> leap &nbsp; <kbd>F</kbd> flask &nbsp; <kbd>E</kbd> use &nbsp; <kbd>R</kbd> lock &nbsp; <kbd>T</kbd> target &nbsp; <kbd>P</kbd> hero &nbsp; <kbd>Q</kbd> spirit realm &nbsp; <kbd>M</kbd> map &nbsp; <kbd>Esc</kbd> pause</p>
+  <p id="obj">Build up on creeps, ancients, chests and the hedge maze to the south-west. When you are ready, press E at the castle gate.</p>
+</div>
+
+<div id="tags" hidden><span>Raw render</span><span>ASCII pass</span></div>
+<div id="label">wanderer</div>
+<div id="nums"></div>
+<div id="flash"></div>
+
+<div id="bossbar" hidden>
+  <div class="row"><span class="name" id="bname">The Gate Warden</span><span class="tag" id="btag"></span></div>
+  <div class="track"><i class="ghost" id="bghost" style="width:100%"></i><i class="fill" id="bfill" style="width:100%"></i></div>
+  <div class="track" id="poise"><i class="fill" id="pfill" style="width:100%"></i></div>
+</div>
+
+<div id="royalbars" hidden>
+  <div class="rb" id="rb0">
+    <div class="row"><span class="name" id="rname0">Vesthra, the Gorgon</span><span class="tag" id="rtag0"></span></div>
+    <div class="track"><i class="ghost" id="rghost0" style="width:100%"></i><i class="fill" id="rfill0" style="width:100%"></i></div>
+  </div>
+  <div class="rb" id="rb1">
+    <div class="row"><span class="name" id="rname1">Nyxara, the Thorn Empress</span><span class="tag" id="rtag1"></span></div>
+    <div class="track"><i class="ghost" id="rghost1" style="width:100%"></i><i class="fill" id="rfill1" style="width:100%"></i></div>
+  </div>
+</div>
+<div id="lockmark" hidden>&#9660;</div>
+<div id="cbars"></div>
+
+<div id="campclock">Camps restock 1:00</div>
+<canvas id="minimap" width="170" height="170" aria-label="Map"></canvas>
+<details id="hero">
+  <summary>Hero <span id="hlv">Lv 1</span> <span id="hpts" hidden></span></summary>
+  <div class="body">
+    <div class="xp">
+      <div class="row"><span>Experience</span><span id="xptxt">0 / 80</span></div>
+      <div class="track"><i class="fill" id="xpfill" style="width:0%"></i></div>
+    </div>
+    <div class="row"><span>Gold</span><span id="gold" class="gold">0</span></div>
+    <div class="row"><span>World tier</span><span id="wtier">1</span></div>
+    <div class="row"><span>Environment</span><span id="wenv">Moonlit Night</span></div>
+    <div class="row"><span>Warden hunt</span><span id="whunt">in 3:00</span></div>
+    <div class="row"><span>World Heart</span><span id="wshards">0 / 4 shards</span></div>
+    <p class="muted" id="wnote">Bosses, creeps and chests grow stronger every two minutes.</p>
+    <div class="attrs">
+      <div class="attr"><span>Strength <b id="a_str">0</b></span><button type="button" data-attr="str" aria-label="Add a point to strength">+</button><small>+6% weapon damage</small></div>
+      <div class="attr"><span>Vitality <b id="a_vit">0</b></span><button type="button" data-attr="vit" aria-label="Add a point to vitality">+</button><small>+12 max health</small></div>
+      <div class="attr"><span>Agility <b id="a_agi">0</b></span><button type="button" data-attr="agi" aria-label="Add a point to agility">+</button><small>+3% speed, +6 stamina</small></div>
+      <div class="attr"><span>Spirit <b id="a_spi">0</b></span><button type="button" data-attr="spi" aria-label="Add a point to spirit">+</button><small>+8% spell damage, +10 mana</small></div>
+    </div>
+    <div class="row"><span>Weapon</span><span id="g_weapon">+0</span></div>
+    <div class="row"><span>Armour plating</span><span id="g_armor">+0</span></div>
+    <div class="row"><span>Flasks</span><span id="g_flask">3</span></div>
+    <div class="row"><span>Warden's Might</span><span id="g_warden" class="muted">Not yet earned</span></div>
+    <div class="combat">
+      <div class="row"><span>Weapon damage</span><span id="c_dmg">&times;1.00</span></div>
+      <div class="row"><span>Spell damage</span><span id="c_spell">&times;1.00</span></div>
+      <div class="row"><span>Crit chance</span><span id="c_crit">5%</span></div>
+      <div class="row"><span>Move speed</span><span id="c_speed">&times;1.00</span></div>
+      <p class="muted">Crits hit 1.6&times;. Hits from behind a creep hit 1.35&times;. The first hit after a parry (Riposte) hits 2&times;. A perfect dodge grants Flow: every hit crits for a short while.</p>
+    </div>
+    <div id="relics"></div>
+    <p class="muted">Spend gold at the Moon Shrine beside the path near the start.</p>
+  </div>
+</details>
+
+<div id="skills" aria-hidden="true">
+  <div class="sk" id="sk_z"><b>Z</b><span>Dagger</span><i></i></div>
+  <div class="sk" id="sk_c"><b>C</b><span>Bolt</span><i></i></div>
+  <div class="sk" id="sk_v"><b>V</b><span>Volley</span><i></i></div>
+  <div class="sk" id="sk_x"><b>X</b><span>Leap</span><i></i></div>
+</div>
+<div id="prompt" hidden></div>
+<button type="button" id="pausebtn" aria-label="Pause the game">&#10074;&#10074; Pause</button>
+<div id="pause" hidden>
+  <div class="card">
+    <h2>Paused</h2>
+    <p>Everything is frozen: enemies, cooldowns, boosts and the world-tier clock.</p>
+    <button type="button" class="close" id="resumebtn">Resume (Esc)</button>
+  </div>
+</div>
+
+<div id="shop" hidden>
+  <div class="card">
+    <h2>Moon Shrine</h2>
+    <p>The shrine restores your health, mana and flasks. Spend gold to grow stronger.</p>
+    <div class="row"><span>Gold</span><span id="shopgold" class="gold">0</span></div>
+    <button type="button" class="shopbtn" id="buy_weapon"></button>
+    <button type="button" class="shopbtn" id="buy_armor"></button>
+    <button type="button" class="shopbtn" id="buy_flask"></button>
+    <button type="button" class="close" id="shopclose">Leave (E)</button>
+  </div>
+</div>
+
+<div id="worlds" hidden>
+  <div class="card">
+    <h2>World Gate</h2>
+    <p id="worldsnote">Shards of the World Heart: 0 of 4. Each world holds one.</p>
+    <div id="worldlist"></div>
+    <button type="button" class="close" id="worldsclose">Stay (E)</button>
+  </div>
+</div>
+
+<div id="pbars">
+  <svg id="coil" viewBox="0 0 120 120" aria-hidden="true">
+    <defs>
+      <linearGradient id="soulGrad" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#1fbf93"/><stop offset="0.6" stop-color="#5ff2c8"/><stop offset="1" stop-color="#d8fff4"/></linearGradient>
+      <filter id="soulGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <clipPath id="orbClip"><circle cx="60" cy="60" r="8"/></clipPath>
+    </defs>
+    <circle class="ar-track" cx="60" cy="60" r="57"/>
+    <circle id="arRing" cx="60" cy="60" r="57" pathLength="100" transform="rotate(-90 60 60)"/>
+    <path id="coilTrack"/>
+    <path id="coilFill" pathLength="100" filter="url(#soulGlow)"/>
+    <circle class="orb-shell" cx="60" cy="60" r="8.6"/>
+    <rect id="orbFill" x="50" y="60" width="20" height="8" clip-path="url(#orbClip)"/>
+  </svg>
+  <div class="pcol">
+    <div class="row"><span>Soul <span id="hnum">100</span></span><span id="flasks">&#9670;&#9670;&#9670;</span></div>
+    <div class="row"><span class="volt">Armour <span id="anum">0</span></span><span class="mana">Mana <span id="mnum">50</span></span></div>
+    <div class="track st thin"><i class="fill" id="sfill" style="width:100%"></i></div>
+    <div class="chips" id="chips"></div>
+  </div>
+</div>
+
+<div id="banner" hidden><div class="card"><h2 id="bh"></h2><p id="bp"></p><button type="button" id="bbtn" hidden>Fight again</button></div></div>
+
+<details id="panel" open>
+  <summary>Renderer</summary>
+  <div class="body">
+    <div class="ctl"><span class="lab">View</span>
+      <div class="seg" data-key="mode" role="group" aria-label="View">
+        <button type="button" data-v="0" aria-pressed="true">ASCII</button><button type="button" data-v="1" aria-pressed="false">Split</button><button type="button" data-v="2" aria-pressed="false">Raw</button>
+      </div>
+    </div>
+    <div class="ctl"><span class="lab">Palette</span>
+      <div class="seg" data-key="pal" role="group" aria-label="Palette">
+        <button type="button" data-v="0" aria-pressed="true">Mono</button><button type="button" data-v="1" aria-pressed="false">Colour</button><button type="button" data-v="2" aria-pressed="false">Green</button><button type="button" data-v="3" aria-pressed="false">Amber</button>
+      </div>
+    </div>
+    <label class="ctl" for="cell"><span class="lab">Cell size</span><input type="range" id="cell" min="4" max="16" step="1" value="4"><output id="cellOut">4 px</output></label>
+    <label class="ctl" for="gain"><span class="lab">Exposure</span><input type="range" id="gain" min="1" max="4" step="0.1" value="2.6"><output id="gainOut">2.6</output></label>
+    <label class="chk" for="edges"><input type="checkbox" id="edges" checked> Outline glyphs <code>| - / \</code></label>
+    <label class="chk" for="reflect"><input type="checkbox" id="reflect" checked> Water reflection</label>
+    <label class="chk" for="sound"><input type="checkbox" id="sound" checked> Sound</label>
+    <details class="sub">
+      <summary>How to fight</summary>
+      <dl>
+        <dt>J</dt><dd>Light attack. Press again in rhythm for a three-hit combo.</dd>
+        <dt>K</dt><dd>Heavy attack. Slow, but breaks guards fast and makes the target Rend (bleed) for four seconds, up to three stacks.</dd>
+        <dt>Space</dt><dd>Roll. You can't be hit for the first part of it. Roll through an attack that would have landed and you enter Flow: stamina returns twice as fast and every hit crits for a few seconds.</dd>
+        <dt>Shift</dt><dd>Block. Tap it just before a hit lands to parry and stun him. Your next hit within two seconds is a Riposte for double damage.</dd>
+        <dt>F</dt><dd>Drink a flask. Three per fight, and you stand still while drinking.</dd>
+        <dt>C</dt><dd>Cast a moon bolt. Costs 30 mana and homes in on him.</dd>
+        <dt>R</dt><dd>Lock the camera on him, or let it go.</dd>
+        <dt>T</dt><dd>Switch which enemy you're locked on to.</dd>
+        <dt>Z</dt><dd>Throw a dagger. Fast, costs a little stamina.</dd>
+        <dt>V</dt><dd>Arc Volley: five homing bolts. Unlocks at level 3, costs 50 mana.</dd>
+        <dt>X</dt><dd>Warden's Leap: jump onto a target or up onto the roof and slam the ground. Earned by beating the Warden.</dd>
+        <dt>E</dt><dd>Open a chest, use the Moon Shrine or a World Gate.</dd>
+        <dt>P</dt><dd>Open your hero sheet to spend attribute points.</dd>
+      </dl>
+      <p style="margin:8px 0 0">After the Warden falls, the red ward on the stairs beside the gate breaks. Climb to the roof to face two queens. Vesthra the Gorgon sweeps her tail all around her, lunges, and fires a stone gaze down a long red lane: turn your back or roll before it lands, or you are frozen in place. Nyxara the Thorn Empress floats out of reach, throws fans of thorns, calls a burst of briars under your feet, and vanishes to the far side of the roof when you get close. Kill one and the other gets faster. Die on the roof and you start again at the foot of the stairs.</p>
+      <p style="margin:8px 0 0">Cinderwing the dragon circles the castle setting off fireworks. It leaves you alone unless you hit it. Hit it and it fights back for a while with fireballs and fire breath. Drive it off and it drops a big reward, then returns a few minutes later.</p>
+      <p style="margin:8px 0 0">Hits from behind a creep are backstabs and hit harder. Fen Stalkers circle you and lunge down a red lane; their bite poisons, and poison ticks through armour until a flask cures it. Thornbacks guard their front: a hit on the shell does a third of its damage, so parry or heavy-hit them to stagger, or get behind them. Relics are passive keepsakes you can carry three of; they drop from gilded and crystal chests, ancients, elites, godlings and the Warden. Drop one from the hero sheet to swap it.</p>
+      <p style="margin:8px 0 0">Crawlers and wisps roam the meadow. Kill them for gold and experience, and sometimes a pod. Each level gives two attribute points (P). Treasure chests (E) are spread across the map and upgrade from wooden to iron, gilded and crystal the longer you leave them. The world tier rises every two minutes, so the bosses get stronger the longer you wait.</p>
+      <p style="margin:8px 0 0">The Sundering: the World Heart has cracked and every world holds a shard. The Gate Warden guards the moat's. Beat it and the World Gate beside the Moon Shrine opens onto Veyra, a violet grove under three moons: walk over three Lumen Seeds, then face the Hive Matron. Next is Neon Verge, a smog-lit city: stand beside three relay terminals for three seconds each to hack them, then face Director Halvane. Last is Ashfall, a dead town under falling ash: press E beside three survivors to lead them out, then face the Rot Sovereign. Each guardian you beat carries you on to the next world, and you can travel back through any World Gate (not mid-fight, during a hunt or from the spirit realm).</p>
+      <p style="margin:8px 0 0">Every few minutes a rift storm may tear you into another world, open or sealed, for 75 seconds before dropping you back where you were. After the last shard the game keeps going: tiers rise, the Warden hunts and the Veil still opens.</p>
+      <p style="margin:8px 0 0;color:var(--muted)">The pond is shallow. You can wade through it, but slowly.</p>
+      <ul class="legend">
+        <li><i style="background:var(--b-green)"></i>Green pod: +35 health</li>
+        <li><i style="background:var(--b-blue)"></i>Blue pod: +50 mana</li>
+        <li><i style="background:var(--b-red)"></i>Red pod: 1.5&times; damage for 15 s</li>
+        <li><i style="background:var(--b-yellow)"></i>Yellow pod: faster moves and rolls for 15 s</li>
+        <li><i style="background:var(--b-volt)"></i>Electric pod: armour filled to max</li>
+      </ul>
+      <p style="margin:8px 0 0;color:var(--muted)">Pods grow on the bushes and ripen in a few seconds. Walk into a ripe one to take it. It grows back later, sometimes as a different colour.</p>
+      <ol>
+        <li>Red marks on the ground show where his next attack lands. The bright patch fills up as the hit gets closer.</li>
+        <li>Fill the orange bar under his health and he staggers. Staggered, he takes extra damage.</li>
+        <li>Below half health he moves faster, sends shockwaves along the ground, and leaps at you.</li>
+      </ol>
+    </details>
+    <details class="sub">
+      <summary>How the ASCII works</summary>
+      <ol>
+        <li>Render a normal 3D scene. Switch View to Raw to see it.</li>
+        <li>Cut the screen into square cells.</li>
+        <li>Average each cell's colour and brightness.</li>
+        <li>Pick a character by brightness, from <code>&nbsp;</code> (dark) through <code>.':-=+*ox%#</code> to <code>@</code> (bright).</li>
+        <li>Where brightness jumps between cells, swap in <code>| - / \</code> so shapes get outlines.</li>
+        <li>Tint the character with the cell's colour.</li>
+        <li>Water: a second camera is placed below the surface, its view is drawn first, then rippled into the lake.</li>
+      </ol>
+    </details>
+  </div>
+</details>
+
+<div id="pad" aria-label="Movement">
+  <button type="button" class="up" data-k="KeyW" aria-label="Walk forward">&#9650;</button>
+  <button type="button" class="left" data-k="KeyA" aria-label="Walk left">&#9664;</button>
+  <button type="button" class="down" data-k="KeyS" aria-label="Walk back">&#9660;</button>
+  <button type="button" class="right" data-k="KeyD" aria-label="Walk right">&#9654;</button>
+</div>
+<div id="acts" aria-label="Actions">
+  <button type="button" data-k="KeyJ">Attack</button>
+  <button type="button" data-k="KeyK">Heavy</button>
+  <button type="button" data-k="Space">Roll</button>
+  <button type="button" data-k="ShiftLeft">Block</button>
+  <button type="button" data-k="KeyC">Spell</button>
+  <button type="button" data-k="KeyF">Flask</button>
+  <button type="button" data-k="KeyR">Lock</button>
+  <button type="button" data-k="KeyT">Target</button>
+  <button type="button" data-k="KeyZ">Dagger</button>
+  <button type="button" data-k="KeyV">Volley</button>
+  <button type="button" data-k="KeyX">Leap</button>
+  <button type="button" data-k="KeyE">Use</button>
+  <button type="button" data-k="KeyP">Hero</button>
+</div>
