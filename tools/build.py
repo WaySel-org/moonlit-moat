@@ -127,6 +127,9 @@ def build():
     (DIST / 'index.html').write_text(
         '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
+        '<meta name="apple-mobile-web-app-capable" content="yes">\n'
+        '<meta name="mobile-web-app-capable" content="yes">\n'
+        '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n'
         '<meta name="referrer" content="no-referrer">\n<title>Moonlit Moat</title>\n'
         f'<link rel="preload" href="{fonts["400"]}" as="font" type="font/woff2" crossorigin>\n'
         f'<link rel="stylesheet" href="{styles}">\n</head>\n<body>\n' + markup +

@@ -2,7 +2,7 @@
 
 <div id="hud">
   <h1>Moonlit Moat</h1>
-  <p><kbd>WASD</kbd> move &nbsp; <kbd>J</kbd>/click attack &nbsp; <kbd>K</kbd> heavy &nbsp; <kbd>Space</kbd> roll &nbsp; <kbd>G</kbd> jump &nbsp; <kbd>I</kbd> bag &nbsp; <kbd>U</kbd> upgrade sword &nbsp; <kbd>Shift</kbd> block &nbsp; <kbd>Z</kbd> dagger &nbsp; <kbd>C</kbd> bolt &nbsp; <kbd>V</kbd> volley &nbsp; <kbd>X</kbd> leap &nbsp; <kbd>F</kbd> flask &nbsp; <kbd>E</kbd> use &nbsp; <kbd>R</kbd> lock &nbsp; <kbd>T</kbd> target &nbsp; <kbd>P</kbd> hero &nbsp; <kbd>Q</kbd> spirit realm &nbsp; <kbd>M</kbd> map &nbsp; <kbd>Esc</kbd> pause</p>
+  <p id="keyhelp"><kbd>WASD</kbd> move &nbsp; <kbd>J</kbd>/click attack &nbsp; <kbd>K</kbd> heavy &nbsp; <kbd>Space</kbd> roll &nbsp; <kbd>G</kbd> jump &nbsp; <kbd>I</kbd> bag &nbsp; <kbd>U</kbd> upgrade sword &nbsp; <kbd>Shift</kbd> block &nbsp; <kbd>Z</kbd> dagger &nbsp; <kbd>C</kbd> bolt &nbsp; <kbd>V</kbd> volley &nbsp; <kbd>X</kbd> leap &nbsp; <kbd>F</kbd> flask &nbsp; <kbd>E</kbd> use &nbsp; <kbd>R</kbd> lock &nbsp; <kbd>T</kbd> target &nbsp; <kbd>P</kbd> hero &nbsp; <kbd>Q</kbd> spirit realm &nbsp; <kbd>M</kbd> map &nbsp; <kbd>Esc</kbd> pause</p>
   <p id="obj">Build up on creeps, ancients, chests and the hedge maze to the south-west. When you are ready, press E at the castle gate.</p>
 </div>
 
@@ -210,26 +210,27 @@
   </div>
 </details>
 
-<div id="pad" aria-label="Movement">
-  <button type="button" class="up" data-k="KeyW" aria-label="Walk forward">&#9650;</button>
-  <button type="button" class="left" data-k="KeyA" aria-label="Walk left">&#9664;</button>
-  <button type="button" class="down" data-k="KeyS" aria-label="Walk back">&#9660;</button>
-  <button type="button" class="right" data-k="KeyD" aria-label="Walk right">&#9654;</button>
+<div id="joyzone" aria-hidden="true"><div id="joybase"><div id="joyknob"></div></div></div>
+<div id="tacts" aria-label="Actions">
+  <button type="button" data-k="KeyJ" class="t-attack">Attack</button>
+  <button type="button" data-k="KeyK" class="t-heavy">Heavy</button>
+  <button type="button" data-k="ShiftLeft" class="t-block">Block</button>
+  <button type="button" data-k="KeyG" class="t-jump">Jump</button>
+  <button type="button" data-k="Space" class="t-roll">Roll</button>
+  <button type="button" data-k="KeyZ" class="t-sk t-s1" id="t_z"><span>Dagger</span></button>
+  <button type="button" data-k="KeyC" class="t-sk t-s2" id="t_c"><span>Bolt</span></button>
+  <button type="button" data-k="KeyV" class="t-sk t-s3" id="t_v"><span>Volley</span></button>
+  <button type="button" data-k="KeyX" class="t-sk t-s4" id="t_x"><span>Leap</span></button>
 </div>
-<div id="acts" aria-label="Actions">
-  <button type="button" data-k="KeyJ">Attack</button>
-  <button type="button" data-k="KeyK">Heavy</button>
-  <button type="button" data-k="Space">Roll</button>
-  <button type="button" data-k="KeyG">Jump</button>
-  <button type="button" data-k="KeyI">Bag</button>
-  <button type="button" data-k="ShiftLeft">Block</button>
-  <button type="button" data-k="KeyC">Spell</button>
+<div id="tmisc" aria-label="More actions">
   <button type="button" data-k="KeyF">Flask</button>
-  <button type="button" data-k="KeyR">Lock</button>
-  <button type="button" data-k="KeyT">Target</button>
-  <button type="button" data-k="KeyZ">Dagger</button>
-  <button type="button" data-k="KeyV">Volley</button>
-  <button type="button" data-k="KeyX">Leap</button>
   <button type="button" data-k="KeyE">Use</button>
+  <button type="button" data-k="KeyT">Target</button>
+  <button type="button" data-k="KeyR">Lock</button>
+  <button type="button" data-k="KeyQ">Veil</button>
+</div>
+<div id="tops" aria-label="Menus">
+  <button type="button" data-k="KeyI">Bag</button>
+  <button type="button" data-k="KeyM">Map</button>
   <button type="button" data-k="KeyP">Hero</button>
 </div>
