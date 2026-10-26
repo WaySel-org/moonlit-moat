@@ -79,6 +79,7 @@ DOMAINS = [
     ('Renderer controls', 'ui', 'renderer-controls'),
     ('Player update', 'actors/player', 'player-update'),
     ('Loop', 'core', 'loop'),
+    ('Save state', 'core', 'save'),
 ]
 HEADER = re.compile(r'^\s*// -{6,} (.*?) -{6,}\s*$')
 

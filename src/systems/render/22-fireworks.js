@@ -124,7 +124,7 @@
   // After a death: keep level, gear and gold (minus a fifth). The Warden stays dead once beaten.
   function respawn() {
     if (G.realm === 'spirit') setRealm('material', true);
-    const lost = Math.round(PR.gold * 0.2); PR.gold -= lost;
+    const lost = G.lastLostGold || 0; G.lastLostGold = 0;
     resetVitals();
     ui.royalbars.hidden = true; ui.banner.hidden = true; ui.hud.hidden = false;
     const storm = G.storm;
@@ -146,6 +146,7 @@
       }
     }
     renderHero();
+    saveGame();
     if (lost) floatText(`-${lost} gold`, player.position.clone().add(new THREE.Vector3(0, 2.5, 0)), 'word', '#ffd36a');
   }
   function restart() { if (G.state === 'dead') respawn(); else resetGame(); }

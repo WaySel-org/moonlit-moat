@@ -253,14 +253,15 @@
   function killPlayer() {
     G.state = 'dead'; G.lock = false; P.act = 'dead'; P.actT = 0; hideTele();
     royals.forEach(r => r.tele.hide());
+    const pen = deathPenalty();
     let text;
     if (G.world !== 'moat' || G.storm) {
-      text = `You keep your level and lose a fifth of your gold.${G.storm ? ' The rift storm lets go of you.' : ''}`;
+      text = `${pen}${G.storm ? ' The rift storm lets go of you.' : ''}`;
     } else if (G.wardenDown) {
       const left = royals.filter(r => r.alive).map(r => `${r.name} ${Math.round(r.hp / r.max * 100)}%`).join(', ');
-      text = `Still standing: ${left}. You keep your level and lose a fifth of your gold.`;
+      text = `Still standing: ${left}. ${pen}`;
     } else {
-      text = `You keep your level and lose a fifth of your gold. Level up on creeps and chests before the next try.`;
+      text = `${pen} Level up on creeps and chests before the next try.`;
     }
     setTimeout(() => showBanner('You fell', text, 'lose', 'Try again'), 1100);
   }
