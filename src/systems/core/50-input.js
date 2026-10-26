@@ -4,19 +4,20 @@
   function press(code) {
     if (G.paused) return;
     audio();
+    // J and K attack, Y U I O are the spells right above them, Space jumps, X rolls
     if (code === 'KeyJ') request('light');
     else if (code === 'KeyK') request('heavy');
-    else if (code === 'Space') request('roll');
+    else if (code === 'Space') jump();
+    else if (code === 'KeyX') request('roll');
     else if (code === 'KeyF') request('drink');
-    else if (code === 'KeyC') request('cast');
-    else if (code === 'KeyZ') request('throw');
-    else if (code === 'KeyV') request('volley');
-    else if (code === 'KeyX') request('leap');
+    else if (code === 'KeyY') request('throw');
+    else if (code === 'KeyU') request('cast');
+    else if (code === 'KeyI') request('volley');
+    else if (code === 'KeyO') request('leap');
     else if (code === 'KeyE') interact();
     else if (code === 'KeyQ') toggleRealm();
-    else if (code === 'KeyG') jump();
-    else if (code === 'KeyI') openInv();
-    else if (code === 'KeyU') upgradeSword();
+    else if (code === 'KeyB') openInv();
+    else if (code === 'KeyN') upgradeSword();
     else if (code === 'KeyM') ui.minimap.classList.toggle('big');
     else if (code === 'KeyP') { ui.heroEl.open = !ui.heroEl.open; }
     else if (code === 'KeyR') { G.lock = !G.lock; if (!G.lock) G.target = null; }
@@ -29,11 +30,11 @@
   }
   window.addEventListener('keydown', ev => {
     if (!ui.banner.hidden && !ui.bbtn.hidden && (ev.code === 'Enter' || ev.code === 'KeyR')) { ev.preventDefault(); restart(); return; }
-    if (G.shop && (ev.code === 'KeyE' || ev.code === 'Escape' || (ev.code === 'KeyI' && G.invUI))) { ev.preventDefault(); closeShop(); return; }
+    if (G.shop && (ev.code === 'KeyE' || ev.code === 'Escape' || (ev.code === 'KeyB' && G.invUI))) { ev.preventDefault(); closeShop(); return; }
     if (ev.code === 'Escape') { ev.preventDefault(); togglePause(); return; }
     if (G.paused) return;
     if (ev.target.closest && ev.target.closest('input, button, summary')) return;
-    const handled = HELD.includes(ev.code) || ['KeyJ', 'KeyK', 'Space', 'KeyF', 'KeyR', 'KeyC', 'KeyT', 'KeyZ', 'KeyV', 'KeyX', 'KeyE', 'KeyP', 'KeyQ', 'KeyM', 'KeyG', 'KeyI', 'KeyU'].includes(ev.code);
+    const handled = HELD.includes(ev.code) || ['KeyJ', 'KeyK', 'Space', 'KeyX', 'KeyF', 'KeyY', 'KeyU', 'KeyI', 'KeyO', 'KeyE', 'KeyQ', 'KeyB', 'KeyN', 'KeyM', 'KeyP', 'KeyR', 'KeyT'].includes(ev.code);
     if (!handled) return;
     ev.preventDefault();
     if (ev.repeat) return;

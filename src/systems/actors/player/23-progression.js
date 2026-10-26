@@ -24,7 +24,7 @@
       recalc(); P.hp = P.max; P.mana = P.manaMax; P.st = P.stMax; P.flasks = PR.flaskMax;
       sfx('parry'); burst(player.position.x, player.position.y + 1.5, player.position.z, 40, 6);
       floatText(`LEVEL ${PR.level}  +2 points (P)`, player.position.clone().add(new THREE.Vector3(0, 3.2, 0)), 'word', '#ffd36a');
-      if (PR.level === 3) floatText('Arc Volley learned (V)', player.position.clone().add(new THREE.Vector3(0, 3.8, 0)), 'word', '#c8a9ff');
+      if (PR.level === 3) floatText('Arc Volley learned (I)', player.position.clone().add(new THREE.Vector3(0, 3.8, 0)), 'word', '#c8a9ff');
     }
     renderHero();
   }
