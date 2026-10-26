@@ -30,7 +30,7 @@
   function touchSay(t) {
     if (!isTouch()) return t;
     return t.replace(/^E · /, 'Tap Use · ').replace(/^Q · /, 'Tap Veil · ').replace(/press E/g, 'tap Use').replace(/\(Q works anywhere\)/, '(Veil works anywhere)')
-      .replace(/ \(U\)/g, ' (tap Bag)').replace(/ \(I\)/g, '').replace(/\(X\)/g, '(Leap)');
+      .replace(/ \(N\)/g, ' (tap Bag)').replace(/ \(B\)/g, '').replace(/\(O\)/g, '(Leap)');
   }
   ui.prompt.addEventListener('pointerdown', ev => {
     const t = ui.prompt.textContent; ev.preventDefault();

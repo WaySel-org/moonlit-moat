@@ -1,6 +1,6 @@
   // ---------- Arsenal: inventory, sword upgrades, jumping and air combos ----------
   // Gear: one sword and two charms equipped, eight bag slots. Elites, ancients, bosses, raiders and cleared waves drop gear.
-  // The equipped sword feeds on kills; when its edge bar fills, press U (or Upgrade in the bag) to raise its rank.
+  // The equipped sword feeds on kills; when its edge bar fills, press N (or Upgrade in the bag) to raise its rank.
   const SWORD_KINDS = [
     { name: 'Ember Saber', affix: 'burn', note: '+15% damage as fire' },
     { name: 'Leech Fang', affix: 'leech', note: 'heals 4% of damage dealt' },
@@ -32,7 +32,7 @@
     const it = rollGear(q), i = PR.inv.bag.indexOf(null), pos = (at || player.position).clone().add(new THREE.Vector3(0, 3, 0));
     if (i < 0) { floatText(`Bag full: left ${it.name} behind`, pos, 'word', '#ff9a4a'); return; }
     PR.inv.bag[i] = it; sfx('pickup');
-    floatText(`Found ${it.name} (I)`, pos, 'word', '#9fe8ff');
+    floatText(`Found ${it.name} (B)`, pos, 'word', '#9fe8ff');
     renderGear();
   }
   const itemLine = it => it.kind === 'sword' ? `+${Math.round((it.dmg + 0.1 * it.rank) * 100)}% damage${it.note ? ', ' + it.note : ''}` : `+${it.val}${it.unit[0] === '%' ? '' : ' '}${it.unit}`;
@@ -51,7 +51,7 @@
   function swordFeed(n) {
     const s = PR.inv.sword, was = s.kills >= edgeNeed(s);
     s.kills += n;
-    if (!was && s.kills >= edgeNeed(s)) floatText(`${s.name} is ready to upgrade (U)`, player.position.clone().add(new THREE.Vector3(0, 3.2, 0)), 'word', '#9fe8ff');
+    if (!was && s.kills >= edgeNeed(s)) floatText(`${s.name} is ready to upgrade (N)`, player.position.clone().add(new THREE.Vector3(0, 3.2, 0)), 'word', '#9fe8ff');
     renderGear();
   }
   function upgradeSword() {
@@ -75,11 +75,11 @@
     const I = PR.inv, s = I.sword, ready = s.kills >= edgeNeed(s);
     gearEl.innerHTML = `<button type="button" data-open="1" class="${ready ? 'ready' : ''}"><b>${s.name}${s.rank ? ' +' + s.rank : ''}</b><i class="edge"><b style="width:${Math.min(100, s.kills / edgeNeed(s) * 100)}%"></b></i></button>`
       + I.charms.map(c => `<button type="button" data-open="1"><b>${c ? c.name : 'Charm slot'}</b><small>${c ? itemLine(c) : 'empty'}</small></button>`).join('')
-      + `<button type="button" data-open="1"><b>Bag (I)</b><small>${I.bag.filter(Boolean).length} / 8</small></button>`;
+      + `<button type="button" data-open="1"><b>Bag (B)</b><small>${I.bag.filter(Boolean).length} / 8</small></button>`;
     if (invEl.hidden) return;
     invBody.innerHTML = `<p class="muted">Click a bag item to equip it. Click an equipped charm to take it off. &times; salvages for gold.</p>
       <h3>Equipped</h3><div class="slots">${slotHtml(s, 'sword', 0, 'Sword')}${I.charms.map((c, i) => slotHtml(c, 'charm', i, 'Charm')).join('')}</div>
-      <div class="row"><span>Edge ${Math.min(s.kills, edgeNeed(s))} / ${edgeNeed(s)} kills</span><button type="button" class="shopbtn" data-act="upgrade"${ready ? '' : ' disabled'}>Upgrade sword (U)</button></div>
+      <div class="row"><span>Edge ${Math.min(s.kills, edgeNeed(s))} / ${edgeNeed(s)} kills</span><button type="button" class="shopbtn" data-act="upgrade"${ready ? '' : ' disabled'}>Upgrade sword (N)</button></div>
       <h3>Bag</h3><div class="slots bag">${I.bag.map((it, i) => it ? `<div class="cell">${slotHtml(it, 'bag', i)}<button type="button" class="x" data-act="salvage" data-i="${i}" aria-label="Salvage ${it.name}">&times;</button></div>` : `<div class="cell">${slotHtml(null, '', i, 'Empty')}</div>`).join('')}</div>`;
   }
   function openInv() {
@@ -108,7 +108,7 @@
     P.jh = 0; P.jv = 0; P.airHits = 0; recalc(); renderGear();
   }
 
-  // Jumping (G). In the air: attack for a spinning slash (twice per jump), heavy to plunge.
+  // Jumping (Space). In the air: attack for a spinning slash (twice per jump), heavy to plunge.
   // Two slashes then a plunge is Skyfall: a bigger landing blast.
   P.jh = 0; P.jv = 0; P.airHits = 0;
   function jump() {

@@ -218,7 +218,7 @@
     }
   }
 
-  const OBJ_CLIMB = 'Climb the stairs, or leap (X) up onto the roof, to face the Gorgon and the Empress.';
+  const OBJ_CLIMB = 'Climb the stairs, or leap (O) up onto the roof, to face the Gorgon and the Empress.';
   const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.round(s) % 60).padStart(2, '0')}`;
   function killBoss() {
     if (G.hunt && G.hunt.echo) {
@@ -244,7 +244,7 @@
     completeChapter('moat');
     setTimeout(() => {
       if (G.state !== 'interlude') return;
-      showBanner("Warden's Might", 'You took its power: Leap (X), +40 armour, +25% damage, +10% speed, +50 mana. The stairs are open.', 'title');
+      showBanner("Warden's Might", 'You took its power: Leap (O), +40 armour, +25% damage, +10% speed, +50 mana. The stairs are open.', 'title');
       bannerTimer = 5;
       ui.bossbar.hidden = true; ui.hud.hidden = false;
       ui.obj.textContent = OBJ_CLIMB;
