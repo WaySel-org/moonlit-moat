@@ -255,3 +255,5 @@ body.touch.paused #panel { display: block; z-index: 5; }
 /* iPad and other tablets: no double-tap zoom, no long-press text selection or callouts, no rubber-band scrolling */
 body.touch { touch-action: manipulation; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; overscroll-behavior: none; }
 body.touch #inv .card, body.touch #hero .body, body.touch #panel { touch-action: pan-y; }
+#newgame { font: inherit; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 7px 14px; cursor: pointer; }
+#newgame[data-armed="1"] { color: var(--blood); border-color: var(--blood); }

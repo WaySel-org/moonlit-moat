@@ -134,5 +134,6 @@
     else if (mode === 'stormIn') { showBanner('Rift storm', `Reality tears open and drags you into ${WNAME[to]}${G.story.unlocked[to] ? '' : ', a world still sealed to you'}. Hold out for 75 seconds.`, 'title'); sfx('roar'); G.shake = Math.max(G.shake, 0.6); }
     else if (mode === 'stormEnd') showBanner('The storm passes', `The rift lets go and you fall back into ${WNAME[to]}.`, 'title');
     if (mode !== 'respawn') { bannerTimer = 4; sfx('parry'); }
+    if (mode !== 'respawn') saveGame();
     for (let i = 0; i < 60; i++) { fwColor.setHSL(0.12 + Math.random() * 0.05, 0.8, 0.75); const a = Math.random() * TAU, sp = 2 + Math.random() * 5; fwParticle(x, P.y + 1, z, Math.cos(a) * sp, 1 + Math.random() * 4, Math.sin(a) * sp, fwColor, 1.1, true); }
   }

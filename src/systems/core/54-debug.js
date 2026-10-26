@@ -3,5 +3,5 @@
   if (location.hash === '#debug') {
     window.MM_DEBUG = { G, P, PR, B, creeps, groundRelics, RELICS, dropRelic, takeRelic, spawnCreep, worldTier, player, recalc, renderHero, strike, poisonHero, applyRend, WARDEN,
       royals, startRoyalHunt, startHunt, enterWorld, WORLDS, raiders, startRaid, startWave, wavePool, KITS, dropGear, swordFeed, upgradeSword, openInv, jump, startEvent, startStage, NEUTRAL_CAMPS, damageRaider, damageRoyal,
-      ascend, wakeMythic, mythics, killCreep, killRoyal, startRoyal, groundAt, chests, RINGS, frame };
+      ascend, wakeMythic, saveGame, loadGame, deathPenalty, killPlayer, respawn, takeRelic, WORLDS, mythics, killCreep, killRoyal, startRoyal, groundAt, chests, RINGS, frame };
   }
