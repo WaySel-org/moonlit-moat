@@ -11,9 +11,18 @@
   const postMat = new THREE.ShaderMaterial({
     uniforms: postU, depthTest: false, depthWrite: false,
     vertexShader: `void main(){ gl_Position = vec4(position.xy, 0.0, 1.0); }`,
-    fragmentShader: `uniform sampler2D tScene; uniform sampler2D tMask; uniform sampler2D tAtlas; uniform vec2 uRes;
+    fragmentShader: `uniform sampler2D tScene; uniform sampler2D tMask; uniform sampler2D tAtlas; uniform sampler2D tBloom; uniform float uBloom; uniform vec2 uRes;
       uniform float uCell, uCount, uTotal, uMode, uPal, uEdges, uGain, uLine, uSpirit, uTime;
       float L(vec3 c){ return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
+      // Enhanced raw view: glow, a filmic curve, a touch more colour and a soft vignette
+      vec3 grade(vec3 c, vec2 fc){
+        if (uBloom < 0.5) return c;
+        c += min(texture2D(tBloom, fc / uRes).rgb * 0.6, vec3(0.45));
+        c *= 1.18; c = clamp((c * (2.51 * c + 0.03)) / (c * (2.43 * c + 0.59) + 0.14), 0.0, 1.0);
+        float l = L(c); c = mix(vec3(l), c, 1.12);
+        vec2 v = fc / uRes - 0.5; c *= 1.0 - 0.38 * pow(length(v) * 1.35, 2.4);
+        return c;
+      }
       vec3 cellCol(vec2 ci){
         vec2 b = ci * uCell; float q = uCell * 0.25;
         return 0.25 * (texture2D(tScene, (b + vec2(q, q)) / uRes).rgb + texture2D(tScene, (b + vec2(3.0*q, q)) / uRes).rgb
@@ -24,7 +33,7 @@
         vec2 fc = gl_FragCoord.xy;
         float splitX = uRes.x * 0.5;
         if (uMode > 0.5 && uMode < 1.5 && abs(fc.x - splitX) < uLine) { gl_FragColor = vec4(0.94, 0.9, 0.76, 1.0); return; }
-        if (uMode > 1.5 || (uMode > 0.5 && fc.x < splitX)) { gl_FragColor = vec4(texture2D(tScene, fc / uRes).rgb, 1.0); return; }
+        if (uMode > 1.5 || (uMode > 0.5 && fc.x < splitX)) { gl_FragColor = vec4(grade(texture2D(tScene, fc / uRes).rgb, fc), 1.0); return; }
         vec2 ci = floor(fc / uCell);
         // In the spirit realm the world sways like a dream; gameplay stays put
         vec2 wfc = fc + uSpirit * vec2(sin(fc.y * 0.018 + uTime * 1.3) * 12.0, cos(fc.x * 0.014 + uTime * 0.9) * 8.0) * (uRes.y / 900.0);

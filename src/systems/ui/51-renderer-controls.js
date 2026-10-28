@@ -1,5 +1,5 @@
   // ---------- Renderer controls ----------
-  document.querySelectorAll('.seg').forEach(seg => {
+  document.querySelectorAll('.seg[data-key]').forEach(seg => {
     seg.addEventListener('click', ev => {
       const b = ev.target.closest('button'); if (!b) return;
       seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));

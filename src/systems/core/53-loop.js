@@ -133,7 +133,9 @@
     renderer.autoClear = false; scene.overrideMaterial = maskFoe; camera.layers.set(2);
     renderer.render(scene, camera);
     renderer.autoClear = true; scene.overrideMaterial = null; camera.layers.set(0);
+    gfxBeforeScene();
     renderer.setRenderTarget(sceneRT); renderer.render(scene, camera);
+    gfxAfterScene();
     renderer.setRenderTarget(null); renderer.render(postScene, postCam);
 
     // HTML layer

@@ -67,5 +67,6 @@
   "actors/player/52-player-update.js",
   "core/53-loop.js",
   "core/54-debug.js",
-  "core/55-save.js"
+  "core/55-save.js",
+  "render/56-graphics.js"
 ]

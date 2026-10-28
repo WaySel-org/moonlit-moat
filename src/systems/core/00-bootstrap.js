@@ -1,5 +1,15 @@
   if (!window.THREE) { document.body.insertAdjacentHTML('beforeend', '<div id="err">The 3D library did not load. Reload the page to try again.</div>'); return; }
   const $ = s => document.querySelector(s);
+  // Graphics quality: 'high' (Enhanced, default) or 'low' (Classic). Enhanced turns every Lambert surface into a
+  // physically based one before anything is built; render/56-graphics.js adds shadows, bloom and grading.
+  const GFX = (() => { try { return localStorage.getItem('moonlit-moat.gfx') || 'high'; } catch (e) { return 'high'; } })();
+  if (GFX === 'high') {
+    const Std = THREE.MeshStandardMaterial;
+    THREE.MeshLambertMaterial = function (p) {
+      const o = Object.assign({}, p); ['combine', 'reflectivity', 'refractionRatio', 'flatShading'].forEach(k => delete o[k]);
+      return new Std(Object.assign({ roughness: 0.86, metalness: 0 }, o));
+    };
+  }
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const S = { mode: 2, pal: 0, cell: 4, gain: 2.6, edges: true, reflect: true, sound: true };
   const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
