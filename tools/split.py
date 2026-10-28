@@ -80,6 +80,7 @@ DOMAINS = [
     ('Player update', 'actors/player', 'player-update'),
     ('Loop', 'core', 'loop'),
     ('Save state', 'core', 'save'),
+    ('Graphics', 'render', 'graphics'),
 ]
 HEADER = re.compile(r'^\s*// -{6,} (.*?) -{6,}\s*$')
 

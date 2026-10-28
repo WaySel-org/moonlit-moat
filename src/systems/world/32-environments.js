@@ -30,7 +30,7 @@
     skyU.uHor.value.x += (e.hor[0] - skyU.uHor.value.x) * k; skyU.uHor.value.y += (e.hor[1] - skyU.uHor.value.y) * k; skyU.uHor.value.z += (e.hor[2] - skyU.uHor.value.z) * k;
     skyU.uZen.value.x += (e.zen[0] - skyU.uZen.value.x) * k; skyU.uZen.value.y += (e.zen[1] - skyU.uZen.value.y) * k; skyU.uZen.value.z += (e.zen[2] - skyU.uZen.value.z) * k;
     skyU.uAur.value += (e.aur - skyU.uAur.value) * k;
-    scene.fog.density += (e.fog - scene.fog.density) * k;
+    scene.fog.density += (e.fog + (GFX === 'high' ? 0.006 : 0) - scene.fog.density) * k;
     scene.fog.color.lerp(envFogCol.setHex(e.fogCol), k);
     grassU.uFogD.value = scene.fog.density; grassU.uFogCol.value.copy(scene.fog.color);
     moon.material.color.lerp(moonCol.setHex(e.moon), k);
