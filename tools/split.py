@@ -28,6 +28,8 @@ DOMAINS = [
     ('Bushes and power pods', 'world/moat', 'power-pods'),
     ('Grass', 'world/moat', 'grass'),
     ('Player (local', 'actors/player', 'player-model'),
+    ('Hero mesh', 'actors/player', 'hero-mesh'),
+    ('Hero rig', 'actors/player', 'hero-rig'),
     ('The Gate Warden (boss)', 'actors/bosses', 'warden-model'),
     ('Telegraphs', 'render', 'telegraphs-and-sparks'),
     ('Water', 'world/moat', 'water'),
