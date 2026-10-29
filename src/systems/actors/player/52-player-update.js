@@ -29,7 +29,7 @@
     P.iframe = Math.max(0, P.iframe - dt);
     if (P.bufferT > 0) { P.bufferT -= dt; if (P.bufferT <= 0) P.buffer = null; }
     if (P.act === 'dead') {
-      P.actT += dt; pBody.rotation.x = -Math.min(1.5, P.actT * 3); poseSword(); return { moving: false, dl: 99 };
+      P.actT += dt; pBody.rotation.x = -Math.min(1.5, P.actT * 3); poseSword(); heroRigUpdate(false); return { moving: false, dl: 99 };
     }
 
     P.stone = Math.max(0, P.stone - dt);
@@ -153,5 +153,6 @@
     const dl = Math.hypot(player.position.x - LAKE.x, player.position.z - LAKE.z);
     player.position.y = P.act === 'leap' ? P.leapY : P.y + P.jh;
     poseSword();
+    heroRigUpdate(moving);
     return { moving, dl };
   }
