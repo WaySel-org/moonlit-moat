@@ -9,8 +9,6 @@
   "world/moat/07-power-pods.js",
   "world/moat/08-grass.js",
   "actors/player/09-player-model.js",
-  "actors/player/09b-hero-mesh.js",
-  "actors/player/09c-hero-rig.js",
   "actors/bosses/10-warden-model.js",
   "render/11-telegraphs-and-sparks.js",
   "world/moat/12-water.js",
