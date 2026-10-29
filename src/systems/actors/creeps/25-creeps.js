@@ -259,6 +259,7 @@
     if (!p) { c.respawn = 2; return; }
     c.elite = false; c.enraged = false;
     c.lv = (c.storyBoss ? Math.max(worldTier(), PR.level - 1) : worldTier()) + (c.storyBoss ? stageOf(c.storyBoss) - 1 : c.mythic ? 2 + G.ascension : c.ai === 'godling' ? 3 : c.ancient ? 2 : (Math.random() < 0.3 ? 1 : 0)); c.max = 1; c.age = 0;
+    if (c.lvOf) c.lv = c.lvOf(c);
     creepStats(c);
     c.alive = true; c.g.visible = c.realm === realmKey(); c.pos.copy(p); c.home.copy(p); c.wander.copy(p);
     c.atk = null; c.cool = 1; c.stun = 0; c.leash = false; c.rend = 0; c.orbit = Math.random() < 0.5 ? 1 : -1;
@@ -291,7 +292,7 @@
     if (c.wave || G.royalHunt && !c.storyBoss && !c.mythic) c.leash = false;
     else if (flatDist(c.pos, c.home) > (c.ancient ? 12 : c.mythic ? 30 : 26)) c.leash = true;
     if (c.leash && flatDist(c.pos, c.home) < 3) c.leash = false;
-    const aggro = (c.wave || G.royalHunt && !c.storyBoss && !c.mythic ? true : c.neutral ? (c.provoked || d < 3.5) : d < (c.mythic ? 16 : 11)) && player.position.y < 2 && !c.leash && G.state !== 'dead' && G.state !== 'won';
+    const aggro = (c.wave || G.royalHunt && !c.storyBoss && !c.mythic ? true : c.neutral ? (c.provoked || d < 3.5) : d < (c.mythic ? 16 : 11)) && P.y < 2 && !c.leash && G.state !== 'dead' && G.state !== 'won';
     c.stun = Math.max(0, c.stun - dt);
     const groundY = Math.min(0, groundAt(c.pos.x, c.pos.z));
     if (c.ai === 'godling') { updateGodling(c, dt, d, groundY); }
@@ -370,7 +371,7 @@
   }
   function killCreep(c) {
     c.alive = false; c.g.visible = false; c.tele.hide(); c.atk = null; c.bar.hidden = true;
-    c.respawn = c.neutral || c.wave || c.mythic ? Infinity : c.ai === 'godling' ? 120 : c.ancient ? 60 : 7 + Math.random() * 6;
+    c.respawn = c.respawnAfter ? c.respawnAfter(c) : c.neutral || c.wave || c.mythic ? Infinity : c.ai === 'godling' ? 120 : c.ancient ? 60 : 7 + Math.random() * 6;
     if (c.neutral) campCreepDied(c);
     if (c.mythic) mythicDied(c);
     spawnSoul(c.pos.x, c.pos.y, c.pos.z, c.ai === 'godling' ? 0.4 : c.ancient ? 0.15 : 0.06);

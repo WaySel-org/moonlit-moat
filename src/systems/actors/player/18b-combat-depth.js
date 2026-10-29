@@ -71,6 +71,7 @@
   }
   function updateStatus(dt) {
     if (dt <= 0 || P.act === 'dead') return;
+    statusTick(dt);
     P.flow = Math.max(0, P.flow - dt); P.riposte = Math.max(0, P.riposte - dt);
     P.calm += dt;
     if (P.poison > 0) {

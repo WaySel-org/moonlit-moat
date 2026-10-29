@@ -73,10 +73,8 @@
         for (let d = 0; d < s.len; d += 2) burst(s.at.x + f.x * d, s.y + 0.3, s.at.z + f.z * d, 3, 4);
       } else { hit = flatDist(player.position, s.at) < s.r + 0.3; burst(s.at.x, s.y + 0.3, s.at.z, 22, 6); }
       sfx(s.sound || 'boom'); G.shake = Math.max(G.shake, 0.25);
-      if (hit && Math.abs(player.position.y - s.y) < 2.2 && hitPlayer(s.dmg, s.at, s.kb, false, s.src) && s.freeze) {
-        P.stone = s.freeze; floatText(s.freezeWord || 'FROZEN', player.position.clone().add(new THREE.Vector3(0, 2.4, 0)), 'word', '#bfe8ff');
-      }
-      if (s.fire) addPatch(s.at.x, s.y, s.at.z, s.r * 0.7, false);
+      if (hit && Math.abs(player.position.y - s.y) < 2.2 && hitPlayer(s.dmg, s.at, s.kb, false, s.src)) strikeEffects(s);
+      if (s.fire) addPatch(s.at.x, s.y, s.at.z, s.r * 0.7, false, s.fireLife);
     }
   }
   function clearStrikes() { strikes.forEach(s => s.tele.hide()); strikes.length = 0; }

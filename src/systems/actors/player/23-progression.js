@@ -14,7 +14,7 @@
     renderHero();
   }
   function reward(xp, gold, at) {
-    xp = Math.round(xp * G.env.xp * (1 + relicBonus('xp'))); gold = Math.round(gold * (G.fortune > 0 ? 2 : 1) * (1 + relicBonus('gold')));
+    xp = Math.round(xp * G.env.xp * (1 + relicBonus('xp')) * (G.realm === 'spirit' ? 1.75 : 1)); gold = Math.round(gold * (G.fortune > 0 ? 2 : 1) * (1 + relicBonus('gold')));
     PR.gold += gold; PR.xp += xp;
     floatText(`+${xp} XP${gold ? `  +${gold} gold` : ''}`, at, 'word', '#ffd36a');
     if (gold) sfx('coin');

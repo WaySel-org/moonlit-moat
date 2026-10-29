@@ -51,7 +51,7 @@
     const mv = moveInput();
     let speed = 0;
     if (P.act === null) {
-      speed = (P.block ? 2.4 : 6.8) * (P.mount ? BEAST_TYPES[P.mount.type].speed : 1) * PR.speed * (agi ? 1.4 : 1) * (wading ? 0.6 : 1) * (P.stone > 0 ? 0 : 1);
+      speed = (P.block ? 2.4 : 6.8) * (P.mount ? BEAST_TYPES[P.mount.type].speed : 1) * PR.speed * (agi ? 1.4 : 1) * (wading ? 0.6 : 1) * (P.stone > 0 ? 0 : 1) * heroSlow();
       if (mv.lengthSq() > 0) {
         mv.normalize();
         movePlayer(mv.x * speed * dt, mv.z * speed * dt);

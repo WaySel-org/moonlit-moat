@@ -90,7 +90,7 @@
   // Returns true if the hit connected
   function hitPlayer(dmg, src, kbStrength, parryable, attacker) {
     if (G.state === 'dead' || G.state === 'won' || G.state === 'intro' || G.shop) return false;
-    dmg *= (attacker && attacker.isCreep) ? attacker.mult * G.env.creepDmg : (attacker && attacker.pow) ? attacker.pow : G.dmgMult;
+    dmg *= (attacker && attacker.isCreep) ? attacker.mult * G.env.creepDmg * (attacker.rallyT > 0 ? 1.35 : 1) : (attacker && attacker.pow) ? attacker.pow : G.dmgMult;
     if (P.iframe > 0) {
       // A perfect dodge: the hit would have landed mid-roll. Flow follows.
       if (P.act === 'roll' && !P.flowed) {
