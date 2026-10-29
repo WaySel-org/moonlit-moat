@@ -109,48 +109,56 @@
   }
 
   // Jumping (Space). In the air: attack for a spinning slash (twice per jump), heavy to plunge.
-  // Two slashes then a plunge is Skyfall: a bigger landing blast.
+  // Two slashes then a plunge is Skyfall: a bigger landing blast. A plunge costs stamina and leaves a short landing
+  // recovery ('land'), so jump-and-slam is a commitment. On a beast, Space is a pounce: it leaps forward on top of
+  // steering, J swipes in the air and K is Pounce Slam.
   P.jh = 0; P.jv = 0; P.airHits = 0;
   function jump() {
-    if (P.mount || P.jh > 0 || P.act || P.stone > 0 || G.state === 'dead' || G.state === 'won' || P.st < 10) return;
-    P.jv = 11.5; P.jh = 0.01; P.airHits = 0; P.plunge = false; P.st -= stCost(10); P.stDelay = 0.5; sfx('roll');
-    const mv = moveInput(); P.jdir = mv.lengthSq() > 0 ? mv.normalize().multiplyScalar(6.8 * PR.speed) : new THREE.Vector3();
+    const need = P.mount ? 12 : 14;
+    if (P.jh > 0 || P.act || P.stone > 0 || G.state === 'dead' || G.state === 'won' || P.st < need) return;
+    P.jv = P.mount ? 10 : 11.5; P.jh = 0.01; P.airHits = 0; P.plunge = false; P.st -= stCost(need); P.stDelay = 0.5; sfx(P.mount ? 'roar' : 'roll');
+    const mv = moveInput();
+    if (P.mount) P.jdir = (mv.lengthSq() > 0 ? mv.normalize() : fwdOf(P.facing)).multiplyScalar(7);
+    else P.jdir = mv.lengthSq() > 0 ? mv.normalize().multiplyScalar(6.8 * PR.speed) : new THREE.Vector3();
   }
   function airAttack(name) {
     if (name === 'light') {
-      if (P.airHits >= 2 || P.st < 8) return false;
-      P.act = 'airslash'; P.actT = 0; P.actDur = 0.26; P.hitDone = false; P.airHits++; P.st -= stCost(8); P.stDelay = 0.5;
+      if (P.airHits >= 2 || P.st < 10) return false;
+      P.act = 'airslash'; P.actT = 0; P.actDur = 0.26; P.hitDone = false; P.airHits++; P.st -= stCost(10); P.stDelay = 0.5;
       P.jv = Math.max(P.jv, 6); sfx('swing'); return true;
     }
+    if (P.st < 12) return false;
+    P.st -= stCost(!P.mount && P.airHits >= 2 ? 30 : 24); P.stDelay = 1.0;
     P.act = 'plunge'; P.actT = 0; P.actDur = 2; P.hitDone = false; P.jv = -26; P.plunge = true; sfx('swoosh'); return true;
   }
   function airTick(dt) {
     if (P.jh <= 0 && P.jv === 0) return;
-    if (P.act === 'airslash' || P.act === 'plunge') movePlayer(P.jdir.x * dt, P.jdir.z * dt);
+    if (P.act === 'airslash' || P.act === 'plunge' || P.mount) movePlayer(P.jdir.x * dt, P.jdir.z * dt);
+    const bt = P.mount && BEAST_TYPES[P.mount.type];
     if (P.act === 'airslash') {
-      const k = P.actT / P.actDur; pBody.rotation.y = k * TAU;
+      const k = P.actT / P.actDur; pBody.rotation.y = bt ? 0 : k * TAU;
       if (!P.hitDone && k > 0.3) {
         P.hitDone = true; spawnSwoosh(false);
-        liveTargets().forEach(t => { if (Math.abs(t.pos.y - player.position.y) < 3 && flatDist(player.position, t.pos) < 2.9 + t.radius) damageEnemy(t, 22 * PR.dmg, 14, false); });
+        liveTargets().forEach(t => { if (Math.abs(t.pos.y - player.position.y) < 3 && flatDist(player.position, t.pos) < (bt ? 3.4 : 2.9) + t.radius) damageEnemy(t, (bt ? bt.dmg * 0.7 : 22) * PR.dmg, 14, false); });
       }
     } else pBody.rotation.y = 0;
-    if (P.act === 'plunge') pBody.rotation.x = -0.6;
+    if (P.act === 'plunge' && !bt) pBody.rotation.x = -0.6;
     P.jv -= (P.plunge ? 40 : 22) * dt; P.jh += P.jv * dt;
     if (P.jh > 0) return;
     P.jh = 0; P.jv = 0; pBody.rotation.set(0, 0, 0);
     if (!P.plunge) return;
-    // Landing slam
-    const sky = P.airHits >= 2, r = sky ? 4.6 : 3.4;
-    P.plunge = false; P.act = null; P.actT = 1;
-    G.shake = Math.max(G.shake, sky ? 0.7 : 0.45); sfx('boom'); spawnSwoosh(true);
-    burst(player.position.x, P.y + 0.3, player.position.z, sky ? 60 : 34, sky ? 9 : 6);
-    const m = new THREE.Mesh(waveGeo, new THREE.MeshBasicMaterial({ color: sky ? 0xbff6ff : 0xfff0c8, transparent: true, opacity: 0.9, depthWrite: false }));
-    m.position.set(player.position.x, P.y + 0.06, player.position.z); scene.add(m); fxRings.push({ m, r: 0.4 });
-    if (sky) floatText('SKYFALL', player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', '#bff6ff');
+    // Landing slam, then a moment of recovery with no acting or moving. Bosses are never stunned by it, and a creep
+    // at most once every three seconds.
+    const sky = !bt && P.airHits >= 2, r = bt ? 5 : sky ? 4.6 : 3.4;
+    P.plunge = false; P.act = 'land'; P.actT = 0; P.actDur = 0.4; P.hitDone = true;
+    G.shake = Math.max(G.shake, sky || bt ? 0.7 : 0.45); sfx('boom'); spawnSwoosh(true);
+    burst(player.position.x, P.y + 0.3, player.position.z, sky || bt ? 60 : 34, sky || bt ? 9 : 6);
+    kitRingFx(player.position.x, P.y, player.position.z, sky ? 0xbff6ff : bt ? 0xffd36a : 0xfff0c8);
+    if (sky || bt) floatText(bt ? 'POUNCE' : 'SKYFALL', player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', bt ? '#ffd36a' : '#bff6ff');
     liveTargets().forEach(t => {
       if (Math.abs(t.pos.y - P.y) > 3 || flatDist(player.position, t.pos) > r + t.radius) return;
-      damageEnemy(t, (sky ? 90 : 55) * PR.dmg, sky ? 60 : 35, true);
-      if (t.isCreep) t.stun = Math.max(t.stun, sky ? 1.4 : 0.8);
+      damageEnemy(t, bt ? bt.dmg * 1.6 * PR.dmg : (sky ? 90 : 55) * PR.dmg, sky || bt ? 60 : 35, true);
+      if (heroMinorFoe(t) && !(t.slamGuard > uTime.value)) { t.stun = Math.max(t.stun, sky ? 1.4 : 0.8); t.slamGuard = uTime.value + 3; }
     });
   }
   recalc(); renderGear();
