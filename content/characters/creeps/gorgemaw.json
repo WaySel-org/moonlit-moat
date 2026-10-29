@@ -1,0 +1,15 @@
+{
+  "gameId": "gorger",
+  "name": "Gorgemaw, the Grave Glutton",
+  "kind": "creep",
+  "world": "ashfall",
+  "stats": {
+    "baseHealth": 1600
+  },
+  "ai": "gorger",
+  "respawn": "90 s after it falls",
+  "behaviour": "Throws a chain hook down a telegraphed lane and drags the hero in; a roll slips it. Up close it swings a cleaver or swallows the hero for two seconds, chewing through armour to heal itself (Blade Spin resists). Its grave stench poisons within 4 m, and when hurt it eats its own shamblers to heal.",
+  "look": "Bloated grave-glutton with a huge stitched belly and a small head; a chain hook in its right hand, a broad cleaver in its left.",
+  "id": "gorgemaw",
+  "originality": "original"
+}

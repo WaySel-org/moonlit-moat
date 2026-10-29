@@ -2,11 +2,12 @@
   // Shard guardians: the Hive Matron (brood, spore fan, acid rain), Director Halvane (laser lanes, drone call,
   // missile salvo) and Necrophous (raise the dead, bone nova, grave grasp). The royals gain serpent rain,
   // stone ring, thorn nova and briar lances.
-  function fanShots(c, n, spread, speed) {
+  // Shots fly level at the hero's chest height: from a floating boss's own height they would sail overhead
+  function fanShots(c, n, spread, speed, mat) {
     const base = yawTo(c.pos, player.position);
     for (let i = 0; i < n; i++) {
-      const a = base + (n > 1 ? (i / (n - 1) - 0.5) * spread : 0), m = new THREE.Mesh(cshotGeo, cshotMat);
-      m.position.set(c.pos.x, c.pos.y + 1.4, c.pos.z); scene.add(m);
+      const a = base + (n > 1 ? (i / (n - 1) - 0.5) * spread : 0), m = new THREE.Mesh(cshotGeo, mat || cshotMat);
+      m.position.set(c.pos.x, player.position.y + 1.1, c.pos.z); scene.add(m);
       cshots.push({ m, v: new THREE.Vector3(Math.sin(a) * speed, 0, Math.cos(a) * speed), t: 0, c });
     }
     sfx('cast');
@@ -26,7 +27,7 @@
     rot: [
       // Raise the dead: zombies claw up from the underworld around the hero to pin them down
       c => { const n = summon('ash', c.enraged ? 7 : 5, player.position, 4, 8, true).length; if (n) { floatText('Rise. RISE.', c.pos.clone().add(new THREE.Vector3(0, 5.4, 0)), 'word', '#8aff4a'); G.shake = Math.max(G.shake, 0.4); } },
-      c => { for (let i = 0; i < 12; i++) { const a = i / 12 * TAU, m = new THREE.Mesh(cshotGeo, cshotMat); m.position.set(c.pos.x, c.pos.y + 1.2, c.pos.z); scene.add(m); cshots.push({ m, v: new THREE.Vector3(Math.sin(a) * 7, 0, Math.cos(a) * 7), t: 0, c }); } sfx('cast'); },
+      c => { for (let i = 0; i < 12; i++) { const a = i / 12 * TAU, m = new THREE.Mesh(cshotGeo, cshotMat); m.position.set(c.pos.x, player.position.y + 1.1, c.pos.z); scene.add(m); cshots.push({ m, v: new THREE.Vector3(Math.sin(a) * 7, 0, Math.cos(a) * 7), t: 0, c }); } sfx('cast'); },
       c => { groundStrike({ at: player.position.clone(), r: 2.2, wind: 1.0, dmg: 18, src: c, freeze: 0.9, freezeWord: 'GRASPED' }); for (let i = 0; i < 3; i++) groundStrike({ at: around(player.position, 5), r: 2, wind: 1.3, dmg: 14, src: c }); }
     ]
   };

@@ -5,11 +5,11 @@
   "world": "moat",
   "mythic": true,
   "stats": {
-    "baseHealth": 1100
+    "baseHealth": 2400
   },
   "ai": "godling",
   "wakes": "world tier 3",
-  "look": "One-eyed stone-grey giant; strikes marked ground.",
+  "look": "One-eyed stone-grey giant with an orange war-ring on the ground around it.",
   "id": "mythic-cyclops",
   "originality": "original",
   "source": "Greek myth (public-domain myth; this design is original)"
