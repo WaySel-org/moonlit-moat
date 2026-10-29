@@ -244,9 +244,10 @@
     return `${cat}${c.godName || CREEP_NAME[c.type]} \u00b7 Lv ${c.lv}`;
   }
   function creepStats(c) {
-    // A titan shows a huge level but hits and lasts like a strong mythic a couple of levels above the hero
-    const L = c.myth && c.myth.titan ? Math.max(worldTier() + 2, PR.level + 2) + G.ascension : c.lv;
-    c.mult = (1 + 0.35 * (L - 1)) * (c.ancient ? 1.8 : 1) * (c.mythic ? 1.6 : 1) * (1 + 0.15 * G.ascension);
+    // A titan shows a huge level but lasts like a strong mythic a couple of levels above the hero, and hits a third
+    // softer than that so its slam lands hard without one-shotting a hero of the same level
+    const titan = c.myth && c.myth.titan, L = titan ? Math.max(worldTier() + 2, PR.level + 2) + G.ascension : c.lv;
+    c.mult = (1 + 0.35 * (L - 1)) * (c.ancient ? 1.8 : 1) * (c.mythic ? 1.6 : 1) * (1 + 0.15 * G.ascension) * (titan ? 0.65 : 1);
     const ratio = c.max > 1 ? c.hp / c.max : 1;
     c.max = Math.round((CREEP_BASE[c.type] || 50) * (c.ancient ? 4 : 1) * (1 + 0.35 * (L - 1)));
     c.hp = Math.max(1, Math.round(c.max * ratio));
