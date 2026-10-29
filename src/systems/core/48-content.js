@@ -18,7 +18,7 @@
         if (st.goreDamage) bt.dmg = st.goreDamage;
         if (st.rideHeight) bt.ride = st.rideHeight;
         const pw = ch.powers || {};
-        ['mp1', 'mp2'].forEach(k => { if (pw[k]) Object.assign(MOUNT_POWERS[ch.gameId][k], pw[k]); });
+        ['mp1', 'mp2', 'mp3', 'mp4'].forEach(k => { if (pw[k]) Object.assign(MOUNT_POWERS[ch.gameId][k], pw[k]); });
       }
     });
     (C.environments || []).forEach(e => {

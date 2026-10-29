@@ -17,7 +17,7 @@
     const m = new THREE.Mesh(waveGeo, new THREE.MeshBasicMaterial({ color: 0xffd36a, transparent: true, opacity: 0.9, depthWrite: false }));
     m.position.set(player.position.x, P.y + 0.06, player.position.z); scene.add(m); fxRings.push({ m, r: 0.4 });
     const kind = P.leapKind; P.leapKind = null;
-    const leapDmg = kind === 'pounce' ? 75 * PR.dmg : kind === 'dive' ? 55 * PR.spell : 60 * PR.dmg;
+    const leapDmg = (kind === 'pounce' ? 75 * PR.dmg : kind === 'dive' ? 55 * PR.spell : 60 * PR.dmg) * abilityScale();
     liveTargets().forEach(t => { if (Math.abs(t.pos.y - P.y) < 2.5 && flatDist(player.position, t.pos) < (kind === 'dive' ? 4.2 : 3.4) + t.radius) damageEnemy(t, leapDmg, 40, true); });
     if (kind === 'dive') {
       for (let i = 0; i < 6; i++) { const a = i / 6 * TAU; addPatch(player.position.x + Math.cos(a) * 2.6, P.y, player.position.z + Math.sin(a) * 2.6, 1.3, true); }

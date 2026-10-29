@@ -21,6 +21,20 @@
       "kind": "pounce",
       "cd": 7,
       "mana": 0
+    },
+    "mp3": {
+      "name": "Talon Rake",
+      "short": "Rake",
+      "kind": "rake",
+      "cd": 3,
+      "mana": 0
+    },
+    "mp4": {
+      "name": "Feather Storm",
+      "short": "Feathers",
+      "kind": "feathers",
+      "cd": 7,
+      "mana": 30
     }
   },
   "look": "Eagle-lion with folded wings and a golden beak.",

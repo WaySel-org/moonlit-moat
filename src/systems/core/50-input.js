@@ -4,11 +4,12 @@
   function press(code) {
     if (G.paused) return;
     audio();
-    // J and K attack, Y U I O are the spells right above them, Space jumps, X rolls
+    // J and K attack, Y U I O are the spells right above them, H spins, Space jumps, L rolls (X still works)
     if (code === 'KeyJ') request('light');
     else if (code === 'KeyK') request('heavy');
     else if (code === 'Space') jump();
-    else if (code === 'KeyX') request('roll');
+    else if (code === 'KeyL' || code === 'KeyX') request('roll');
+    else if (code === 'KeyH') request('spin');
     else if (code === 'KeyF') request('drink');
     else if (code === 'KeyY') request('throw');
     else if (code === 'KeyU') request('cast');
@@ -34,7 +35,7 @@
     if (ev.code === 'Escape') { ev.preventDefault(); togglePause(); return; }
     if (G.paused) return;
     if (ev.target.closest && ev.target.closest('input, button, summary')) return;
-    const handled = HELD.includes(ev.code) || ['KeyJ', 'KeyK', 'Space', 'KeyX', 'KeyF', 'KeyY', 'KeyU', 'KeyI', 'KeyO', 'KeyE', 'KeyQ', 'KeyB', 'KeyN', 'KeyM', 'KeyP', 'KeyR', 'KeyT'].includes(ev.code);
+    const handled = HELD.includes(ev.code) || ['KeyJ', 'KeyK', 'Space', 'KeyL', 'KeyH', 'KeyX', 'KeyF', 'KeyY', 'KeyU', 'KeyI', 'KeyO', 'KeyE', 'KeyQ', 'KeyB', 'KeyN', 'KeyM', 'KeyP', 'KeyR', 'KeyT'].includes(ev.code);
     if (!handled) return;
     ev.preventDefault();
     if (ev.repeat) return;

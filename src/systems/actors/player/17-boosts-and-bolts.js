@@ -31,20 +31,22 @@
   const boltGeo = new THREE.SphereGeometry(0.22, 10, 8);
   const HITTABLE = ['chase', 'attack', 'stagger', 'roar'];
   const daggerGeo = new THREE.BoxGeometry(0.06, 0.06, 0.55);
+  // pierce: extra foes it passes through (never the same one twice), blast: splash radius on impact, rend: makes foes bleed
   function spawnBolt(o) {
-    o = Object.assign({ angle: P.facing, dmg: 44 * PR.spell, speed: 17, home: 4, life: 1.6, poise: 26, color: 0xa9c4ff, geo: boltGeo, heavy: true, trail: true }, o || {});
+    o = Object.assign({ angle: P.facing, dmg: 44 * PR.spell, speed: 17, home: 4, life: 1.6, poise: 26, color: 0xa9c4ff, geo: boltGeo, heavy: true, trail: true, pierce: 0, blast: 0, rend: false }, o || {});
     const m = new THREE.Mesh(o.geo, new THREE.MeshBasicMaterial({ color: o.color }));
     const f = fwdOf(o.angle);
     m.position.copy(player.position).addScaledVector(f, 0.8); m.position.y = player.position.y + 1.3; m.rotation.y = o.angle;
     scene.add(m);
-    bolts.push(Object.assign(o, { m, dir: f.clone(), t: 0 }));
+    const b = Object.assign(o, { m, dir: f.clone(), t: 0, hits: new Set() });
+    bolts.push(b); return b;
   }
   function updateBolts(dt) {
     for (let i = bolts.length - 1; i >= 0; i--) {
       const b = bolts[i]; b.t += dt;
       const live = liveTargets();
       if (b.home > 0) {
-        const near = live.filter(t => flatDist(t.pos, b.m.position) < 22);
+        const near = live.filter(t => !b.hits.has(t) && flatDist(t.pos, b.m.position) < 22);
         const tgt = (G.target && near.includes(G.target)) ? G.target : nearestTarget(near, b.m.position);
         if (tgt) {
           const to = tgt.pos.clone().setY(tgt.pos.y + tgt.hitY).sub(b.m.position).normalize();
@@ -56,8 +58,13 @@
       if (b.trail && Math.random() < 0.7) burst(b.m.position.x, b.m.position.y, b.m.position.z, 1, 1);
       let done = b.t > b.life;
       if (!done) {
-        const hit = live.find(t => flatDist(b.m.position, t.pos) < t.radius + 0.3 && b.m.position.y > t.pos.y - 0.5 && b.m.position.y < t.pos.y + t.hitY * 2);
-        if (hit) { done = true; strike(hit, b.dmg, b.poise, b.heavy, { spell: b.geo !== daggerGeo }); }
+        const hit = live.find(t => !b.hits.has(t) && flatDist(b.m.position, t.pos) < t.radius + 0.3 && b.m.position.y > t.pos.y - 0.5 && b.m.position.y < t.pos.y + t.hitY * 2);
+        if (hit) {
+          strike(hit, b.dmg, b.poise, b.heavy, { spell: b.geo !== daggerGeo });
+          if (b.rend) applyRend(hit, 1);
+          if (b.blast) boltBlast(b, hit, live);
+          if (b.pierce > 0) { b.pierce--; b.hits.add(hit); } else done = true;
+        }
       }
       if (!done && G.world === 'moat' && dragon.state === 'fly' && dragon.g.visible) {
         const dc = dragon.g.position;
