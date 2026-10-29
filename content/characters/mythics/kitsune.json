@@ -5,11 +5,11 @@
   "world": "moat",
   "mythic": true,
   "stats": {
-    "baseHealth": 340
+    "baseHealth": 750
   },
   "ai": "ranged",
   "wakes": "world tier 3",
-  "look": "Pale nine-tailed fox spirit that keeps its distance and throws foxfire.",
+  "look": "Pale nine-tailed fox spirit; its blue tails sway as it floats.",
   "id": "mythic-kitsune",
   "originality": "original",
   "source": "Japanese folklore (public-domain myth; this design is original)"

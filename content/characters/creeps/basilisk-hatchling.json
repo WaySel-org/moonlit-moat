@@ -1,0 +1,14 @@
+{
+  "gameId": "hatchling",
+  "name": "Basilisk Hatchling",
+  "kind": "creep",
+  "world": "moat",
+  "stats": {
+    "baseHealth": 28
+  },
+  "ai": "stalker",
+  "behaviour": "Called by the Basilisk: three or four rise behind the hero and lunge at once. The bite slows and lightly poisons. They scatter when the Basilisk dies.",
+  "look": "Small green serpent with a gold-nubbed crown and yellow eyes.",
+  "id": "basilisk-hatchling",
+  "originality": "original"
+}

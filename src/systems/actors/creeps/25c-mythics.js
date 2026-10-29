@@ -35,8 +35,9 @@
       for (let i = 0; i < 6; i++) add(body, new THREE.SphereGeometry(0.42 - i * 0.04, 8, 6), mat, Math.sin(i * 1.1) * 0.35, 0.38, 0.6 - i * 0.42);
       add(body, new THREE.BoxGeometry(0.55, 0.4, 0.7), mat, 0, 0.6, 1.0);
       for (let i = 0; i < 5; i++) add(body, new THREE.ConeGeometry(0.07, 0.4, 4), spikeMat, -0.2 + i * 0.1, 0.95, 0.95 - Math.abs(i - 2) * 0.05);
-      [-1, 1].forEach(s => add(body, new THREE.SphereGeometry(0.06, 5, 4), mBas(0xffe04a), s * 0.15, 0.68, 1.36));
-      return { g, body, mat, legs: [], spikeMat };
+      const eyeMat = mBas(0xffe04a);
+      [-1, 1].forEach(s => add(body, new THREE.SphereGeometry(0.06, 5, 4), eyeMat, s * 0.15, 0.68, 1.36));
+      return { g, body, mat, legs: [], spikeMat, eyeMat };
     },
     // Oni (Japanese folklore): a horned, red-skinned brute with an iron club
     oni() {
@@ -54,30 +55,36 @@
       add(body, new THREE.SphereGeometry(0.36, 8, 6), mat, 0, 0, 0.1).scale.set(0.8, 0.8, 1.3);
       add(body, new THREE.ConeGeometry(0.2, 0.45, 6), mat, 0, 0.12, 0.6, Math.PI / 2);
       const fire = mBas(0x8ad8ff);
-      for (let i = 0; i < 9; i++) { const a = (i - 4) * 0.28; add(body, new THREE.ConeGeometry(0.07, 0.9, 5), fire, Math.sin(a) * 0.5, 0.25 + Math.cos(a) * 0.15, -0.6 - Math.cos(a) * 0.2, -1.1, 0, a); }
+      const tails = [];
+      for (let i = 0; i < 9; i++) { const a = (i - 4) * 0.28; tails.push(add(body, new THREE.ConeGeometry(0.07, 0.9, 5), fire, Math.sin(a) * 0.5, 0.25 + Math.cos(a) * 0.15, -0.6 - Math.cos(a) * 0.2, -1.1, 0, a)); }
       const core = add(body, new THREE.SphereGeometry(0.1, 6, 4), fire, 0, 0.5, 0.2);
-      return { g, body, mat, core };
+      return { g, body, mat, core, tails };
     },
     // Cyclops (Greek myth): a one-eyed giant who hurls boulders onto marked ground
     cyclops() {
       const g = new THREE.Group(), body = new THREE.Group(); g.add(body); const mat = mLam(0x7a6a58);
       add(body, new THREE.BoxGeometry(1.6, 1.8, 1.0), mat, 0, 2.5, 0);
       add(body, new THREE.SphereGeometry(0.55, 10, 8), mat, 0, 3.75, 0.05);
-      add(body, new THREE.SphereGeometry(0.2, 8, 6), mBas(0xffe8a0), 0, 3.8, 0.52);
+      const eyeMat = mBas(0xffe8a0);
+      add(body, new THREE.SphereGeometry(0.2, 8, 6), eyeMat, 0, 3.8, 0.52);
       [-1, 1].forEach(s => add(body, new THREE.BoxGeometry(0.5, 1.6, 0.5), mat, s * 0.45, 0.8, 0));
-      return { g, body, mat, godName: 'The Cyclops', godHue: 0.09 };
+      [-1, 1].forEach(s => add(body, new THREE.BoxGeometry(0.42, 1.5, 0.42), mat, s * 1.05, 2.4, 0.1, 0, 0, s * 0.18));
+      return { g, body, mat, eyeMat, godName: 'The Cyclops', godHue: 0.09 };
     },
     // Hydra (Greek myth): many heads on long necks, striking the ground in turn
     hydra() {
       const g = new THREE.Group(), body = new THREE.Group(); g.add(body); const mat = mLam(0x2a5a4a);
       add(body, new THREE.SphereGeometry(1.1, 10, 8), mat, 0, 1.0, 0).scale.set(1, 0.75, 1.2);
-      for (let i = 0; i < 5; i++) {
-        const a = (i - 2) * 0.45;
-        add(body, new THREE.CylinderGeometry(0.12, 0.2, 2.2, 6), mat, Math.sin(a) * 0.9, 2.2, 0.4 + Math.cos(a) * 0.3, 0.3, 0, -a * 0.8);
-        add(body, new THREE.BoxGeometry(0.35, 0.28, 0.55), mat, Math.sin(a) * 1.6, 3.25, 0.75 + Math.cos(a) * 0.3);
-        add(body, new THREE.SphereGeometry(0.05, 5, 4), mBas(0xffd04a), Math.sin(a) * 1.6, 3.33, 1.03 + Math.cos(a) * 0.3);
-      }
-      return { g, body, mat, godName: 'The Hydra', godHue: 0.38 };
+      const eye = mBas(0xffd04a), neckGeo = new THREE.CylinderGeometry(0.12, 0.2, 2.2, 6), headGeo = new THREE.BoxGeometry(0.35, 0.28, 0.55), eyeGeo = new THREE.SphereGeometry(0.05, 5, 4);
+      const necks = [], heads = [];
+      [-0.9, -0.45, 0, 0.45, 0.9, -1.3, 1.3].forEach((a, i) => {
+        const n = new THREE.Group(); body.add(n); necks.push(n); n.visible = i < 5;
+        const lift = i < 5 ? 0 : -0.35;
+        add(n, neckGeo, mat, Math.sin(a) * 0.9, 2.2 + lift, 0.4 + Math.cos(a) * 0.3, 0.3, 0, -a * 0.8);
+        heads.push(add(n, headGeo, mat, Math.sin(a) * 1.6, 3.25 + lift, 0.75 + Math.cos(a) * 0.3));
+        add(n, eyeGeo, eye, Math.sin(a) * 1.6, 3.33 + lift, 1.03 + Math.cos(a) * 0.3);
+      });
+      return { g, body, mat, necks, heads, godName: 'The Hydra', godHue: 0.38 };
     },
     // Original tyrants, after the first Ascension
     // Vorrask: a hollow, masked king of the void who rules what the spirit realm swallows
@@ -95,10 +102,11 @@
       add(body, new THREE.BoxGeometry(1.0, 1.3, 0.6), coat, 0, 1.75, 0);
       add(body, new THREE.SphereGeometry(0.32, 8, 6), mat, 0, 2.65, 0.05);
       add(body, new THREE.BoxGeometry(0.9, 0.15, 0.45), coat, 0, 2.95, 0);
-      add(body, new THREE.CylinderGeometry(0.06, 0.06, 1.4, 6), brass, 0.75, 1.3, 0.3);
-      add(body, new THREE.TorusGeometry(0.3, 0.06, 6, 12, Math.PI), brass, 0.75, 0.6, 0.3, 0, 0, Math.PI);
+      const anchor = new THREE.Group(); anchor.position.set(0.75, 1.3, 0.3); body.add(anchor);
+      add(anchor, new THREE.CylinderGeometry(0.06, 0.06, 1.4, 6), brass, 0, 0, 0);
+      add(anchor, new THREE.TorusGeometry(0.3, 0.06, 6, 12, Math.PI), brass, 0, -0.7, 0, 0, 0, Math.PI);
       const legs = legsOf(body, coat, [[-0.25, 0], [0.25, 0]], 1.1, 0.3);
-      return { g, body, mat, legs };
+      return { g, body, mat, legs, hand: anchor };
     },
     // Kael Thurnis: a horned conqueror from beyond the sky who burns worlds for sport
     thurnis() {
@@ -113,16 +121,16 @@
   };
   // tier: world tier at which it can wake. asc: Ascension at which it can wake (either unlocks it).
   const MYTHS = [
-    { type: 'minotaur', name: 'The Minotaur', ai: 'stalker', size: 1.6, hp: 480, xp: 6, tier: 1, bar: 3.0, lore: 'A bull-headed giant tramples out of the old forest.' },
-    { type: 'oni', name: 'The Oni', ai: 'melee', size: 1.5, hp: 520, xp: 6, tier: 1, speed: 0.85, bar: 3.0, lore: 'A horned brute with an iron club comes looking for a fight.' },
-    { type: 'manticore', name: 'The Manticore', ai: 'ranged', size: 1.7, hp: 380, xp: 6, tier: 2, venom: true, shotDmg: 12, bar: 2.0, lore: 'A lion with a scorpion tail. Its spines are venomous.' },
-    { type: 'basilisk', name: 'The Basilisk', ai: 'guard', size: 1.9, hp: 600, xp: 7, tier: 2, bar: 1.6, lore: 'The serpent king. Its crowned front turns blades; strike its tail.' },
-    { type: 'kitsune', name: 'The Kitsune', ai: 'ranged', size: 1.6, hp: 340, xp: 6, tier: 3, shotDmg: 14, bar: 1.6, lore: 'A nine-tailed fox spirit. It keeps its distance and throws foxfire.' },
-    { type: 'cyclops', name: 'The Cyclops', ai: 'godling', grounded: true, size: 1.2, hp: 1100, xp: 9, tier: 3, bar: 5.0, lore: 'A one-eyed giant. Watch the ground where it aims.' },
-    { type: 'hydra', name: 'The Hydra', ai: 'godling', grounded: true, size: 1.2, hp: 1400, xp: 10, tier: 4, bar: 4.4, lore: 'Many heads, one hunger. It strikes wherever you stand.' },
-    { type: 'saltmarrow', name: 'Admiral Saltmarrow', ai: 'melee', size: 1.6, hp: 900, xp: 9, asc: 1, speed: 1.0, bar: 3.4, lore: 'A drowned admiral walks out of the lake, dragging his anchor.' },
-    { type: 'vorrask', name: 'Vorrask, the Hollow Sovereign', ai: 'godling', size: 1.2, hp: 1600, xp: 12, asc: 1, bar: 4.0, lore: 'A masked king of the void, risen from what the Veil devoured.' },
-    { type: 'thurnis', name: 'Kael Thurnis, the Star-Devourer', ai: 'godling', size: 1.25, hp: 2000, xp: 14, asc: 2, bar: 4.4, lore: 'A conqueror from beyond the sky. He burns worlds for sport.' }
+    { type: 'minotaur', name: 'The Minotaur', ai: 'stalker', size: 1.6, hp: 480, xp: 6, tier: 1, bar: 3.0, lore: 'A bull-headed giant tramples out of the old forest. When it lowers its horns, get off the line.' },
+    { type: 'oni', name: 'The Oni', ai: 'melee', size: 1.5, hp: 520, xp: 6, tier: 1, speed: 0.85, bar: 3.0, lore: 'A horned brute with an iron club comes looking for a fight. Wounded, it only gets faster.' },
+    { type: 'manticore', name: 'The Manticore', ai: 'ranged', size: 1.7, hp: 380, xp: 6, tier: 2, venom: true, shotDmg: 12, bar: 2.0, lore: 'A lion with a scorpion tail. Its spines are venomous, and it pounces on whoever stands still.' },
+    { type: 'basilisk', name: 'The Basilisk', ai: 'guard', size: 1.9, hp: 1300, xp: 7, tier: 2, venom: true, shotDmg: 10, bar: 1.6, lore: 'The serpent king. Its crowned front turns blades and its gaze turns flesh to stone: look away when its eyes flare. Its brood strikes from behind.' },
+    { type: 'kitsune', name: 'The Kitsune', ai: 'ranged', size: 1.6, hp: 750, xp: 7, tier: 3, shotDmg: 14, bar: 1.6, lore: 'A nine-tailed fox spirit. It blinks away, splits into illusions and charms the careless. Only the real one bleeds.' },
+    { type: 'cyclops', name: 'The Cyclops', ai: 'godling', grounded: true, titan: true, size: 1.2, hp: 2400, xp: 12, tier: 3, bar: 5.0, lore: 'A one-eyed giant who commands every creature near it. Its war cry sends them at you; fight it alone if you can.' },
+    { type: 'hydra', name: 'The Hydra', ai: 'godling', grounded: true, size: 1.2, hp: 2600, xp: 11, tier: 4, venom: true, shotDmg: 10, bar: 4.4, lore: 'Many heads, one hunger. Its wounds close as you watch unless heavy blows rend them open.' },
+    { type: 'saltmarrow', name: 'Admiral Saltmarrow', ai: 'melee', size: 1.6, hp: 900, xp: 9, asc: 1, speed: 1.0, bar: 3.4, lore: 'A drowned admiral walks out of the lake. He throws his anchor to haul you in.' },
+    { type: 'vorrask', name: 'Vorrask, the Hollow Sovereign', ai: 'godling', size: 1.2, hp: 1600, xp: 12, asc: 1, bar: 4.0, lore: 'A masked king of the void, risen from what the Veil devoured. Its rifts drink your mana.' },
+    { type: 'thurnis', name: 'Kael Thurnis, the Star-Devourer', ai: 'godling', size: 1.25, hp: 2000, xp: 14, asc: 2, bar: 4.4, lore: 'A conqueror from beyond the sky. He burns worlds for sport and calls the stars down on you.' }
   ];
   const mythics = [];
   MYTHS.forEach(M => {
@@ -205,6 +213,6 @@
     });
   }
   function resetMythics() {
-    mythics.forEach(c => { c.alive = false; c.summoned = false; c.g.visible = false; c.tele.hide(); c.bar.hidden = true; c.respawn = Infinity; c.atk = null; });
+    mythics.forEach(c => { mkEndAct(c); c.alive = false; c.summoned = false; c.g.visible = false; c.tele.hide(); c.bar.hidden = true; c.respawn = Infinity; c.atk = null; });
     G.mythClock = 0; G.mythKills = 0;
   }
