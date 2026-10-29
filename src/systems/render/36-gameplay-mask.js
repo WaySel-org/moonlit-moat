@@ -1,7 +1,6 @@
   // ---------- Readability: tag what matters so the ASCII pass can make it stand out ----------
   const maskFriend = new THREE.MeshBasicMaterial({ color: 0xff0000, depthTest: false, depthWrite: false, transparent: true, blending: THREE.AdditiveBlending });
   const maskFoe = new THREE.MeshBasicMaterial({ color: 0x00ff00, depthTest: false, depthWrite: false, transparent: true, blending: THREE.AdditiveBlending });
-  maskFriend.skinning = maskFoe.skinning = true;
   const tag = (o, L) => { if (o && !o.userData['mk' + L]) { o.userData['mk' + L] = true; o.traverse(c => { if (!c.isPoints && !c.isSprite) c.layers.enable(L); }); } };
   tag(player, 1);
   beasts.forEach(b => tag(b.g, 1));
