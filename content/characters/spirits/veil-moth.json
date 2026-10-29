@@ -1,0 +1,15 @@
+{
+  "gameId": "moth",
+  "name": "Veil Moth",
+  "ai": "melee",
+  "stats": {
+    "baseHealth": 26
+  },
+  "behaviour": "Fast and floating. Flutters about in swarms of ten, then dives at the hero with a quick telegraphed strike.",
+  "look": "A small pale-dust body with feathery antennae, cyan eyes and two translucent violet wings that beat fast and faster still when it dives.",
+  "lore": "Moths that flew too close to the Veil's light and never left it. They drink the warmth of the living and scatter as soul-dust when struck.",
+  "id": "veil-moth",
+  "kind": "spirit",
+  "world": "spirit",
+  "originality": "original"
+}

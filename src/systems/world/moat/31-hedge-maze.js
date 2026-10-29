@@ -2,6 +2,9 @@
   const hedgeMat = new THREE.MeshLambertMaterial({ color: 0x1f5228, flatShading: true });
   const hedges = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), hedgeMat, 620);
   hedges.frustumCulled = false; scene.add(hedges);
+  // Seen from the spirit realm the hedges are only memories: violet and see-through (spiritHunt makes them shimmer)
+  const hedgeGhost = new THREE.MeshBasicMaterial({ color: 0x9a86ff, transparent: true, opacity: 0.2, depthWrite: false });
+  function ghostHedges(on) { hedges.material = on ? hedgeGhost : hedgeMat; }
   function layoutHedges() {
     const c = MAZE.cell, n = MAZE.n, m = new THREE.Matrix4(), q0 = new THREE.Quaternion(), pos = new THREE.Vector3(), sc = new THREE.Vector3();
     let k = 0;

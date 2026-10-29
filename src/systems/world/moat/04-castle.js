@@ -65,7 +65,8 @@
     if (G.world !== 'moat') return WORLDS[G.world].ground(x, z);
     const LIM = G.realm === 'spirit' ? Math.max(116, G.edge + 20) : G.edge;
     if (Math.abs(x) > LIM || z > LIM - 8 || z < -LIM) return 99;
-    if (mazeSolid(x, z)) return 99;
+    // In the spirit realm the hero (and every spirit) drifts through the hedge maze; castles, keeps and the edge still hold
+    if (G.realm !== 'spirit' && mazeSolid(x, z)) return 99;
     const kh = keepHeight(x, z); if (kh !== null) return kh;
     for (const tx of [-17, 17]) if (Math.hypot(x - tx, z + 21) < 3.2) return 99;
     for (const px of [-2.9, 2.9]) if (Math.abs(x - px) < 0.45 && Math.abs(z + 18.4) < 0.45) return 99;

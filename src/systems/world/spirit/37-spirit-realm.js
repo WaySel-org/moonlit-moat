@@ -43,13 +43,14 @@
     const rk = realmKey();
     creeps.forEach(c => { c.g.visible = c.alive && c.realm === rk; if (c.realm !== rk) { c.bar.hidden = true; c.tele.hide(); c.atk = null; } });
     if (P.mount && r === 'spirit') dismount(true);
+    hungerReset(r);
     if (silent) return;
     sfx('parry'); G.shake = Math.max(G.shake, 0.3);
     for (let i = 0; i < 80; i++) { fwColor.setHSL(0.72 + Math.random() * 0.1, 0.7, 0.75); const a = Math.random() * TAU, sp = 2 + Math.random() * 5; fwParticle(player.position.x, player.position.y + 1, player.position.z, Math.cos(a) * sp, 1 + Math.random() * 4, Math.sin(a) * sp, fwColor, 1.2, true); }
     showBanner(r === 'spirit' ? 'Spirit Realm' : 'Material Realm', r === 'spirit'
-      ? 'Your life slowly fades here. Devour the souls of fallen foes to restore it, and return through a violet Veil Rift.'
+      ? 'A hunting ground: spirits rise to your level and give \u00d71.75 experience. You arrive sated, then soul hunger drains your life faster and faster until you devour souls. You drift through the hedge maze, but castles and keeps still hold. Return through a violet Veil Rift.'
       : 'Back among the living.', 'title');
-    bannerTimer = 3.5;
+    bannerTimer = r === 'spirit' ? 6 : 3.5;
   }
   function toggleRealm() {
     if (G.paused || G.shop || P.act === 'dead') return;
@@ -71,7 +72,7 @@
     P.hp = Math.max(P.hp, Math.round(P.max * 0.3)); P.act = null; P.kb.set(0, 0, 0);
     floatText('Your soul is pulled back to the living world', player.position.clone().add(new THREE.Vector3(0, 2.8, 0)), 'word', '#c8a0ff');
   }
-  // Souls: every fallen foe leaves one. Devour it to restore your life.
+  // Souls: every fallen foe leaves one. Devour it to restore your life (and, in the spirit realm, to stay sated).
   const souls = [], soulGeo = new THREE.SphereGeometry(0.2, 8, 6), soulMat = new THREE.MeshBasicMaterial({ color: 0xbff6ff });
   function spawnSoul(x, y, z, heal) {
     const m = new THREE.Mesh(soulGeo, soulMat); m.position.set(x, Math.max(0, y) + 1.2, z); scene.add(m); tag(m, 1);
@@ -85,7 +86,7 @@
       if (Math.random() < 0.3) { fwColor.setHSL(0.52, 0.6, 0.8); fwParticle(s.m.position.x, s.m.position.y, s.m.position.z, 0, 0.6, 0, fwColor, 0.5, true); }
       let done = s.t <= 0;
       if (d < 1.1 && P.act !== 'dead') {
-        const heal = Math.round(P.max * s.heal); P.hp = Math.min(P.max, P.hp + heal); done = true;
+        const heal = Math.round(P.max * s.heal); P.hp = Math.min(P.max, P.hp + heal); done = true; feedSoul();
         sfx('pickup'); floatText(`+${heal} soul`, player.position.clone().add(new THREE.Vector3(0, 2.4, 0)), 'word', '#bff6ff');
       }
       if (done) { scene.remove(s.m); souls.splice(i, 1); }
