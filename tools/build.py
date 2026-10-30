@@ -27,8 +27,9 @@ ASSETS = DIST / 'a'
 FONTS = ROOT / 'vendor' / 'fonts'
 # Gzip bytes a phone fetches before the first frame (HTML, CSS, scripts, preloaded font).
 # Today's size plus a little room; PR 3 (minify + slim three.js) brings it down to 160.
-# Raised from 260 for the arsenal, waves, raiders and boss kits until minification lands.
-BUDGET_KB = 275
+# Raised from 260 for the arsenal, waves, raiders and boss kits, then to 300 for the hero, beast and myth kits,
+# until minification lands.
+BUDGET_KB = 300
 
 REQUIRED = {
     'character': ['id', 'name', 'kind', 'world', 'originality'],

@@ -144,7 +144,7 @@ output { font-variant-numeric: tabular-nums; color: var(--fg); min-width: 44px; 
 .attr button { grid-row: 1 / span 2; grid-column: 2; font: inherit; font-weight: 600; color: #11161a; background: var(--moon); border: 0; border-radius: 4px; height: 26px; cursor: pointer; }
 .attr button:disabled { background: var(--line); color: var(--muted); cursor: default; }
 #skills { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 6px; pointer-events: none; }
-.sk { position: relative; width: 58px; height: 46px; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; display: grid; place-items: center; align-content: center; overflow: hidden; font-size: 10px; }
+.sk { position: relative; width: 64px; height: 46px; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; display: grid; place-items: center; align-content: center; overflow: hidden; font-size: 10px; }
 .sk b { color: var(--moon); font-size: 13px; } .sk span { color: var(--muted); }
 .sk i { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: rgba(0,0,0,.7); }
 .sk.locked { opacity: .3; }
@@ -234,6 +234,8 @@ body.touch #tacts { display: block; position: fixed; right: calc(8px + env(safe-
 #tacts .t-sk.locked { opacity: .45; }
 #tacts .t-s1 { right: 210px; bottom: 36px; } #tacts .t-s2 { right: 187px; bottom: 124px; }
 #tacts .t-s3 { right: 124px; bottom: 187px; } #tacts .t-s4 { right: 36px; bottom: 210px; }
+/* Blade Spin sits in the top-left corner of the action square, clear of the skill arc */
+#tacts .t-s5 { right: 210px; bottom: 210px; }
 body.touch #tmisc { display: flex; position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); gap: 6px; flex-wrap: wrap; justify-content: center; max-width: calc(100vw - 600px); min-width: 180px; z-index: 3; }
 #tmisc button, #tops button { border-radius: 6px; font-size: 11px; padding: 0 12px; height: 40px; min-width: 56px; }
 body.touch #tops { display: flex; gap: 6px; position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(146px + env(safe-area-inset-right, 0px)); z-index: 3; }
@@ -257,3 +259,4 @@ body.touch { touch-action: manipulation; -webkit-user-select: none; user-select:
 body.touch #inv .card, body.touch #hero .body, body.touch #panel { touch-action: pan-y; }
 #newgame { font: inherit; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 7px 14px; cursor: pointer; }
 #newgame[data-armed="1"] { color: var(--blood); border-color: var(--blood); }
+#soulmeter { margin: 4px 0 0; color: #bff6ff; font-size: 12px; } #soulmeter.hungry { color: #ff6a8a; }

@@ -21,6 +21,20 @@
       "kind": "dive",
       "cd": 8,
       "mana": 20
+    },
+    "mp3": {
+      "name": "Tail Lash",
+      "short": "Lash",
+      "kind": "lash",
+      "cd": 3.5,
+      "mana": 0
+    },
+    "mp4": {
+      "name": "Ember Rain",
+      "short": "Embers",
+      "kind": "embers",
+      "cd": 9,
+      "mana": 35
     }
   },
   "look": "Young four-legged dragon with dark red scales, horns, folded wings and a glowing throat.",

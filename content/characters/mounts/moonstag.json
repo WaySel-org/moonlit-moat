@@ -21,6 +21,20 @@
       "kind": "charge",
       "cd": 5,
       "mana": 0
+    },
+    "mp3": {
+      "name": "Antler Toss",
+      "short": "Toss",
+      "kind": "toss",
+      "cd": 3,
+      "mana": 0
+    },
+    "mp4": {
+      "name": "Spectral Stampede",
+      "short": "Stampede",
+      "kind": "stampede",
+      "cd": 9,
+      "mana": 35
     }
   },
   "look": "Pale stag with glowing branching antlers.",

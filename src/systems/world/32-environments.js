@@ -21,11 +21,10 @@
     }
     // Ease the sky, fog and moon toward the current environment
     const k = G.envSnap ? 1 : Math.min(1, real * 0.6), e = G.realm === 'spirit' ? SPIRIT_ENV : G.world !== 'moat' ? WORLD_ENV[G.world] : G.env;
-    if (G.realm === 'spirit' && G.state !== 'dead') { const floor = P.max * 0.15; if (P.hp > floor) P.hp = Math.max(floor, P.hp - real * 1.0); }
     postU.uSpirit.value += ((G.realm === 'spirit' ? 1 : 0) - postU.uSpirit.value) * Math.min(1, real * 1.5);
     spiritProps.visible = postU.uSpirit.value > 0.05;
     if (G.world === 'moat') updateRifts(real);
-    spiritTick(real); campTick(real);
+    spiritTick(real); spiritHunt(real); campTick(real);
     updateSouls(real);
     skyU.uHor.value.x += (e.hor[0] - skyU.uHor.value.x) * k; skyU.uHor.value.y += (e.hor[1] - skyU.uHor.value.y) * k; skyU.uHor.value.z += (e.hor[2] - skyU.uHor.value.z) * k;
     skyU.uZen.value.x += (e.zen[0] - skyU.uZen.value.x) * k; skyU.uZen.value.y += (e.zen[1] - skyU.uZen.value.y) * k; skyU.uZen.value.z += (e.zen[2] - skyU.uZen.value.z) * k;

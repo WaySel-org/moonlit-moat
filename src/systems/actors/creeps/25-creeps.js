@@ -159,22 +159,24 @@
     const dx = player.position.x - c.pos.x, dz = player.position.z - c.pos.z, dd = Math.hypot(dx, dz);
     if (dd < r && dd > 1e-4) movePlayer(dx / dd * (r - dd), dz / dd * (r - dd));
   }
+  // Haste: 1 is normal. A Cyclops's rally adds half again; raptor packs and an enraged Oni carry their own.
+  function hasteOf(c) { return (c.haste || 1) * (c.rallyT > 0 ? 1.5 : 1); }
   // Fen Stalker: keeps five to seven metres away, circling, then lunges nine metres down a telegraphed lane
   function updateStalker(c, dt, d, groundY, aggro) {
-    const tt = uTime.value;
+    const tt = uTime.value, h = hasteOf(c);
     c.pos.y = groundY;
     if (c.atk) {
-      const A = c.atk; A.t += dt;
+      const A = c.atk; A.t += dt * h;
       if (A.stage === 'wind') {
         if (A.t < 0.3) c.facing += clamp(angDiff(c.facing, yawTo(c.pos, player.position)), -4 * dt, 4 * dt);
         c.tele.lane(c.pos, c.facing, 9, 1.5, A.t / 0.6, c.pos.y);
         if (A.t >= 0.6) { A.stage = 'dash'; A.t = 0; c.tele.hide(); sfx('swoosh'); }
       } else if (A.stage === 'dash') {
-        const ok = creepMove(c, fwdOf(c.facing), 26 * dt);
+        const ok = creepMove(c, fwdOf(c.facing), 26 * h * dt);
         if (Math.random() < 0.6) burst(c.pos.x, c.pos.y + 0.3, c.pos.z, 1, 2);
         if (!A.hit && flatDist(player.position, c.pos) < 1.4 && Math.abs(player.position.y - c.pos.y) < 1.5) {
           A.hit = true;
-          if (hitPlayer(12, c.pos, 8, true, c) && !c.mythic) poisonHero(2 * c.mult * G.env.creepDmg, 6);
+          if (hitPlayer(12, c.pos, 8, true, c)) { if (c.onBite) c.onBite(c); else if (!c.mythic) poisonHero(2 * c.mult * G.env.creepDmg, 6); }
         }
         if (A.t >= 0.35 || !ok) { A.stage = 'rec'; A.t = 0; }
       } else if (A.t >= 1.0) { c.atk = null; c.cool = 2.0 + Math.random() * 1.2; }
@@ -183,8 +185,8 @@
         c.facing += clamp(angDiff(c.facing, yawTo(c.pos, player.position)), -5 * dt, 5 * dt);
         const to = new THREE.Vector3(player.position.x - c.pos.x, 0, player.position.z - c.pos.z).normalize();
         const mv = new THREE.Vector3(-to.z, 0, to.x).multiplyScalar(c.orbit || 1).addScaledVector(to, d > 7 ? 1 : d < 5 ? -1 : 0).normalize();
-        if (!creepMove(c, mv, 4.2 * dt)) c.orbit = -(c.orbit || 1);
-        c.cool -= dt;
+        if (!creepMove(c, mv, 4.2 * h * dt)) c.orbit = -(c.orbit || 1);
+        c.cool -= dt * h;
         if (c.cool <= 0 && d > 2.5 && d < 10) c.atk = { t: 0, stage: 'wind', hit: false };
       } else creepWander(c, dt, 1.6);
     }
@@ -238,19 +240,25 @@
   const CREEP_XP = { crawler: 22, wisp: 18, stalker: 24, thornback: 34 };
   const CREEP_BAR_H = { crawler: 1.4, stalker: 1.3, thornback: 1.7 };
   function creepTitle(c) {
-    const cat = c.mythic ? '' : c.elite ? 'Elite ' : c.ancient ? 'Ancient ' : (c.lv > worldTier() ? 'Veteran ' : '');
+    const cat = c.mythic || c.brute ? '' : c.elite ? 'Elite ' : c.ancient ? 'Ancient ' : (c.lv > worldTier() ? 'Veteran ' : '');
     return `${cat}${c.godName || CREEP_NAME[c.type]} \u00b7 Lv ${c.lv}`;
   }
   function creepStats(c) {
-    c.mult = (1 + 0.35 * (c.lv - 1)) * (c.ancient ? 1.8 : 1) * (c.mythic ? 1.6 : 1) * (1 + 0.15 * G.ascension);
+    // A titan shows a huge level but lasts like a strong mythic a couple of levels above the hero, and hits a third
+    // softer than that so its slam lands hard without one-shotting a hero of the same level
+    const titan = c.myth && c.myth.titan, L = titan ? Math.max(worldTier() + 2, PR.level + 2) + G.ascension : c.lv;
+    c.mult = (1 + 0.35 * (L - 1)) * (c.ancient ? 1.8 : 1) * (c.mythic ? 1.6 : 1) * (1 + 0.15 * G.ascension) * (titan ? 0.65 : 1);
     const ratio = c.max > 1 ? c.hp / c.max : 1;
-    c.max = Math.round((CREEP_BASE[c.type] || 50) * (c.ancient ? 4 : 1) * (1 + 0.35 * (c.lv - 1)));
+    c.max = Math.round((CREEP_BASE[c.type] || 50) * (c.ancient ? 4 : 1) * (1 + 0.35 * (L - 1)));
     c.hp = Math.max(1, Math.round(c.max * ratio));
-    c.bar.className = 'cbar' + (c.mythic ? ' anc myth' : c.ancient || c.storyBoss || c.elite ? ' anc' : (c.lv > worldTier() ? ' vet' : ''));
+    c.bar.className = 'cbar' + (c.mythic ? ' anc myth' : c.ancient || c.storyBoss || c.elite || c.brute ? ' anc' : (c.lv > worldTier() ? ' vet' : ''));
   }
   function spawnCreep(c) {
     if (c.storyBoss && G.story.step[c.storyBoss] !== 1) { c.respawn = 2; return; }
     if (c.mythic && !c.summoned) { c.respawn = Infinity; return; }
+    // Solo creatures (c.solo names their realm) wait in a 'lair' realm while dead, so ambushes never draw them,
+    // and rise only on their own clock or when a kit raises them
+    if (c.solo) { if (c.respawn > 0) return; c.realm = c.solo; }
     // Pick the spot as the creep's own world and realm see it
     const w0 = G.world, r0 = G.realm;
     if (WORLDS[c.realm]) { G.world = c.realm; G.realm = 'material'; } else { G.world = 'moat'; G.realm = c.realm; }
@@ -259,10 +267,13 @@
     if (!p) { c.respawn = 2; return; }
     c.elite = false; c.enraged = false;
     c.lv = (c.storyBoss ? Math.max(worldTier(), PR.level - 1) : worldTier()) + (c.storyBoss ? stageOf(c.storyBoss) - 1 : c.mythic ? 2 + G.ascension : c.ai === 'godling' ? 3 : c.ancient ? 2 : (Math.random() < 0.3 ? 1 : 0)); c.max = 1; c.age = 0;
+    if (c.lvOf) c.lv = c.lvOf(c);
     creepStats(c);
     c.alive = true; c.g.visible = c.realm === realmKey(); c.pos.copy(p); c.home.copy(p); c.wander.copy(p);
     c.atk = null; c.cool = 1; c.stun = 0; c.leash = false; c.rend = 0; c.orbit = Math.random() < 0.5 ? 1 : -1;
+    c.haste = 1; c.commandT = 0; c.rallyT = 0;
     c.g.scale.setScalar(c.mythic ? c.size : (c.ancient ? 1.8 : 1) * (c.type === 'crawler' || c.type === 'thornback' ? 1 + (c.lv - 1) * 0.08 : 1));
+    if (c.onSpawn) c.onSpawn(c);
   }
   function creepMove(c, dir, amt) {
     const nx = c.pos.x + dir.x * amt, nz = c.pos.z + dir.z * amt;
@@ -283,24 +294,32 @@
     if (c.mat && c.mat.emissive) c.mat.emissive.setRGB(c.flash + glowA, c.flash * 0.8 + glowA * 0.6, c.flash * 0.6);
     // Creeps grow stronger the longer they live
     c.age += dt;
-    if (c.age > 75 && !c.storyBoss && !c.mythic && c.lv < worldTier() + (c.ancient ? 4 : 3)) {
+    if (c.age > 75 && !c.storyBoss && !c.mythic && !c.brute && c.lv < worldTier() + (c.ancient ? 4 : 3)) {
       c.age = 0; c.lv++; creepStats(c); c.hp = Math.min(c.max, c.hp + c.max * 0.25);
       if (flatDist(c.pos, player.position) < 22) floatText(`${CREEP_NAME[c.type]} reached Lv ${c.lv}`, c.pos.clone().add(new THREE.Vector3(0, 2.2, 0)), 'word', '#ffd36a');
     }
     const d = flatDist(player.position, c.pos);
-    if (c.wave || G.royalHunt && !c.storyBoss && !c.mythic) c.leash = false;
+    // A war cry commands a creep to attack: it hunts the hero and ignores its leash until the order runs out
+    if (c.commandT > 0) c.commandT -= dt;
+    if (c.rallyT > 0) c.rallyT -= dt;
+    if (c.wave || c.commandT > 0 || G.royalHunt && !c.storyBoss && !c.mythic) c.leash = false;
     else if (flatDist(c.pos, c.home) > (c.ancient ? 12 : c.mythic ? 30 : 26)) c.leash = true;
     if (c.leash && flatDist(c.pos, c.home) < 3) c.leash = false;
-    const aggro = (c.wave || G.royalHunt && !c.storyBoss && !c.mythic ? true : c.neutral ? (c.provoked || d < 3.5) : d < (c.mythic ? 16 : 11)) && player.position.y < 2 && !c.leash && G.state !== 'dead' && G.state !== 'won';
+    const aggro = (c.wave || c.commandT > 0 || G.royalHunt && !c.storyBoss && !c.mythic ? true : c.neutral ? (c.provoked || d < 3.5) : d < (c.mythic ? 16 : 11)) && P.y < 2 && !c.leash && G.state !== 'dead' && G.state !== 'won';
     c.stun = Math.max(0, c.stun - dt);
+    // A mythic's kit can take over its body (a charge, a pounce, a hook throw) and then the usual brain waits
+    const busy = c.mythic && mythKit(c, dt, d);
     const groundY = Math.min(0, groundAt(c.pos.x, c.pos.z));
-    if (c.ai === 'godling') { updateGodling(c, dt, d, groundY); }
+    if (busy) { /* the kit moves it */ }
+    else if (c.ai === 'godling') { updateGodling(c, dt, d, groundY); }
     else if (c.ai === 'stalker') updateStalker(c, dt, d, groundY, aggro);
     else if (c.ai === 'guard') updateGuard(c, dt, d, groundY, aggro);
+    else if (c.ai === 'gorger') updateGorger(c, dt, d, groundY, aggro);
     else if (c.ai === 'melee') {
+      const h = hasteOf(c);
       c.pos.y = groundY + (c.float ? c.float + Math.sin(tt * 3 + c.home.z) * 0.15 : 0);
       if (c.atk) {
-        const A = c.atk; A.t += dt;
+        const A = c.atk; A.t += dt * h;
         const front = c.pos.clone().addScaledVector(fwdOf(c.facing), 0.9);
         if (A.stage === 'wind') {
           c.tele.circle(front.x, c.pos.y, front.z, 1.3, A.t / 0.55);
@@ -312,8 +331,8 @@
       } else if (c.stun <= 0) {
         if (aggro) {
           c.facing += clamp(angDiff(c.facing, yawTo(c.pos, player.position)), -6 * dt, 6 * dt);
-          if (d > 1.6) creepMove(c, fwdOf(c.facing), 3.7 * (c.speed || 1) * dt);
-          c.cool -= dt;
+          if (d > 1.6) creepMove(c, fwdOf(c.facing), 3.7 * (c.speed || 1) * h * dt);
+          c.cool -= dt * h;
           if (d < 2.0 && c.cool <= 0) c.atk = { t: 0, stage: 'wind' };
         } else creepWander(c, dt, 1.3);
       }
@@ -331,7 +350,7 @@
           c.facing += clamp(angDiff(c.facing, yawTo(c.pos, player.position)), -5 * dt, 5 * dt);
           const away = new THREE.Vector3(c.pos.x - player.position.x, 0, c.pos.z - player.position.z).normalize();
           if (d < 6) creepMove(c, away, 2.6 * dt); else if (d > 9) creepMove(c, away.negate(), 2.4 * dt);
-          c.cool -= dt;
+          c.cool -= dt * hasteOf(c);
           if (c.cool <= 0) { c.cool = 2.2 + Math.random(); spawnCreepShot(c); }
         } else creepWander(c, dt, 1.0);
       }
@@ -349,7 +368,7 @@
       const s = cshots[i]; s.t += dt; s.m.position.addScaledVector(s.v, dt);
       if (Math.random() < 0.3) burst(s.m.position.x, s.m.position.y, s.m.position.z, 1, 1);
       let done = s.t > 3;
-      if (!done && s.m.position.distanceTo(player.position.clone().setY(player.position.y + 1)) < 0.75) { done = true; if (hitPlayer(s.c.shotDmg || 8, s.m.position, 4, false, s.c) && s.c.venom) poisonHero(2 * s.c.mult, 5); }
+      if (!done && s.m.position.distanceTo(player.position.clone().setY(player.position.y + 1)) < 0.75) { done = true; if (hitPlayer(s.dmg || s.c.shotDmg || 8, s.m.position, 4, false, s.c) && s.c.venom) poisonHero(2 * s.c.mult, 5); }
       if (done) { scene.remove(s.m); cshots.splice(i, 1); }
     }
   }
@@ -370,8 +389,9 @@
   }
   function killCreep(c) {
     c.alive = false; c.g.visible = false; c.tele.hide(); c.atk = null; c.bar.hidden = true;
-    c.respawn = c.neutral || c.wave || c.mythic ? Infinity : c.ai === 'godling' ? 120 : c.ancient ? 60 : 7 + Math.random() * 6;
+    c.respawn = c.respawnAfter ? c.respawnAfter(c) : c.neutral || c.wave || c.mythic ? Infinity : c.ai === 'godling' ? 120 : c.ancient ? 60 : 7 + Math.random() * 6;
     if (c.neutral) campCreepDied(c);
+    if (c.onDeath) c.onDeath(c);
     if (c.mythic) mythicDied(c);
     spawnSoul(c.pos.x, c.pos.y, c.pos.z, c.ai === 'godling' ? 0.4 : c.ancient ? 0.15 : 0.06);
     if (c.ai === 'godling') floatText(`${c.godName} falls`, c.pos.clone().add(new THREE.Vector3(0, 4, 0)), 'word', '#e0c8ff');

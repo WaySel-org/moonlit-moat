@@ -25,15 +25,18 @@
       el.lastChild.style.height = (locked ? 0 : clamp(cdFrac, 0, 1) * 100) + '%';
       touchSkill(id.replace('sk_', 't_'), locked || needMana, locked ? 0 : cdFrac);
     };
-    sk('sk_z', false, P.cd.z / 0.45, P.st < 6);
     const mpw = P.mount ? MOUNT_POWERS[P.mount.type] : null;
     const lbl = (id, t) => { [id, id.replace('sk_', 't_')].forEach(i => { const sp = document.querySelector('#' + i + ' span'); if (sp && sp.textContent !== t) sp.textContent = t; }); };
-    lbl('sk_c', mpw ? mpw.mp1.short : 'Bolt'); lbl('sk_x', mpw ? mpw.mp2.short : 'Leap');
-    if (mpw) sk('sk_c', false, P.cd.mp1 / mpw.mp1.cd, P.mana < mpw.mp1.mana);
-    else sk('sk_c', false, 0, P.mana < boltCost());
-    sk('sk_v', PR.level < 3, P.cd.v / 4, P.mana < 50);
-    if (mpw) sk('sk_x', false, P.cd.mp2 / mpw.mp2.cd, P.mana < mpw.mp2.mana);
-    else sk('sk_x', !PR.warden, P.cd.x / 6, P.mana < 25);
+    // Riding, Y U I O show the beast's skills; on foot, the spells and their rank
+    if (mpw) [['sk_z', 'mp3'], ['sk_c', 'mp1'], ['sk_v', 'mp4'], ['sk_x', 'mp2']].forEach(([id, s]) => { const w = mpw[s]; lbl(id, w.short); sk(id, false, P.cd[s] / w.cd, P.mana < w.mana); });
+    else {
+      lbl('sk_z', rankName('Dagger')); lbl('sk_c', rankName('Bolt')); lbl('sk_v', rankName('Volley')); lbl('sk_x', 'Leap');
+      sk('sk_z', false, P.cd.z / 0.45, P.st < 6);
+      sk('sk_c', false, 0, P.mana < boltCost());
+      sk('sk_v', PR.level < 3, P.cd.v / volleyCd(), P.mana < 50);
+      sk('sk_x', !PR.warden, P.cd.x / 6, P.mana < 25);
+    }
+    sk('sk_h', PR.level < SPIN_LV || !!P.mount, P.cd.h / SPIN_CD, P.mana < SPIN_MANA);
     creeps.forEach(c => {
       if (!c.alive || c.realm !== realmKey() || flatDist(c.pos, player.position) > (c.ancient || c.mythic || c.ai === 'godling' ? 34 : 22)) { c.bar.hidden = true; return; }
       const sp = project(c.pos.clone().setY(c.pos.y + (CREEP_BAR_H[c.type] || 0.8) * (c.ancient ? 1.8 : 1)));

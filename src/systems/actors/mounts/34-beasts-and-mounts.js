@@ -74,10 +74,14 @@
     parts.g.position.set(sn.x, 0, sn.z); scene.add(parts.g);
     beasts.push(Object.assign(parts, { type: sn.type, home: new THREE.Vector3(sn.x, 0, sn.z), state: 'wild', facing: Math.random() * TAU, wander: new THREE.Vector3(sn.x, 0, sn.z), ringMat }));
   });
+  // Slots: Y mp3, U mp1, I mp4, O mp2. The mp3 and mp4 kinds live in 46j-beast-kit.js.
   const MOUNT_POWERS = {
-    stag: { mp1: { name: 'Lunar Nova', short: 'Nova', kind: 'nova', cd: 6, mana: 25 }, mp2: { name: 'Starbound Charge', short: 'Charge', kind: 'charge', cd: 5, mana: 0 } },
-    gryphon: { mp1: { name: 'Gale Wing', short: 'Gale', kind: 'gust', cd: 5, mana: 20 }, mp2: { name: 'Sky Pounce', short: 'Pounce', kind: 'pounce', cd: 7, mana: 0 } },
-    drake: { mp1: { name: 'Fire Breath', short: 'Breath', kind: 'breath', cd: 6, mana: 30 }, mp2: { name: 'Inferno Dive', short: 'Dive', kind: 'dive', cd: 8, mana: 20 } }
+    stag: { mp1: { name: 'Lunar Nova', short: 'Nova', kind: 'nova', cd: 6, mana: 25 }, mp2: { name: 'Starbound Charge', short: 'Charge', kind: 'charge', cd: 5, mana: 0 },
+      mp3: { name: 'Antler Toss', short: 'Toss', kind: 'toss', cd: 3, mana: 0 }, mp4: { name: 'Spectral Stampede', short: 'Stampede', kind: 'stampede', cd: 9, mana: 35 } },
+    gryphon: { mp1: { name: 'Gale Wing', short: 'Gale', kind: 'gust', cd: 5, mana: 20 }, mp2: { name: 'Sky Pounce', short: 'Pounce', kind: 'pounce', cd: 7, mana: 0 },
+      mp3: { name: 'Talon Rake', short: 'Rake', kind: 'rake', cd: 3, mana: 0 }, mp4: { name: 'Feather Storm', short: 'Feathers', kind: 'feathers', cd: 7, mana: 30 } },
+    drake: { mp1: { name: 'Fire Breath', short: 'Breath', kind: 'breath', cd: 6, mana: 30 }, mp2: { name: 'Inferno Dive', short: 'Dive', kind: 'dive', cd: 8, mana: 20 },
+      mp3: { name: 'Tail Lash', short: 'Lash', kind: 'lash', cd: 3.5, mana: 0 }, mp4: { name: 'Ember Rain', short: 'Embers', kind: 'embers', cd: 9, mana: 35 } }
   };
   function hitArea(range, arc, dmg, poise, knock) {
     liveTargets().forEach(t => {
@@ -89,31 +93,32 @@
     });
   }
   function startMountPower(slot) {
-    const pw = MOUNT_POWERS[P.mount.type][slot], f = fwdOf(P.facing), px = player.position.x, py = player.position.y, pz = player.position.z;
+    const pw = MOUNT_POWERS[P.mount.type][slot], f = fwdOf(P.facing), px = player.position.x, py = player.position.y, pz = player.position.z, sc = abilityScale();
+    P.mpKind = pw.kind;
     if (pw.kind === 'pounce' || pw.kind === 'dive') {
       if (!planLeap()) return false;
       P.act = 'leap'; P.actDur = 0.75; P.iframe = 0.8; P.kb.set(0, 0, 0); P.leapKind = pw.kind;
     } else if (pw.kind === 'charge') {
-      P.act = 'roll'; P.actDur = 0.6; P.iframe = 0.6; P.rollDir.copy(f); P.chargeDmg = 32 * PR.dmg; P.chargeHits = new Set();
+      P.act = 'roll'; P.actDur = 0.6; P.iframe = 0.6; P.rollDir.copy(f); P.chargeDmg = 32 * PR.dmg * sc; P.chargeHits = new Set();
     } else if (pw.kind === 'nova') {
       P.actDur = 0.3;
-      hitArea(5.5, TAU, 40 * PR.spell, 25, 2);
+      hitArea(5.5, TAU, 40 * PR.spell * sc, 25, 2);
       const heal = Math.round(P.max * 0.15); P.hp = Math.min(P.max, P.hp + heal);
       const m = new THREE.Mesh(waveGeo, new THREE.MeshBasicMaterial({ color: 0xbff6ff, transparent: true, opacity: 0.9, depthWrite: false })); m.position.set(px, P.y + 0.06, pz); scene.add(m); fxRings.push({ m, r: 0.6 });
       for (let i = 0; i < 70; i++) { fwColor.setHSL(0.52 + Math.random() * 0.08, 0.8, 0.75); const a = Math.random() * TAU, sp = 4 + Math.random() * 5; fwParticle(px, py + 1, pz, Math.cos(a) * sp, 1 + Math.random() * 3, Math.sin(a) * sp, fwColor, 0.9, true); }
       floatText(`+${heal}`, player.position.clone().add(new THREE.Vector3(0, 2.6, 0)), '', '#4dff6a');
     } else if (pw.kind === 'gust') {
       P.actDur = 0.35;
-      hitArea(7, 2.1, 30 * PR.dmg, 45, 4.5);
+      hitArea(7, 2.1, 30 * PR.dmg * sc, 45, 4.5);
       spawnSwoosh(true);
       for (let i = 0; i < 50; i++) { const a = P.facing + (Math.random() - 0.5) * 2.1, sp = 8 + Math.random() * 6; fwColor.setHSL(0.12, 0.2, 0.85); fwParticle(px, py + 1.4, pz, Math.sin(a) * sp, Math.random() * 2, Math.cos(a) * sp, fwColor, 0.6, false); }
     } else if (pw.kind === 'breath') {
       P.actDur = 0.55;
-      hitArea(8, 1.25, 55 * PR.spell, 20, 0.8);
+      hitArea(8, 1.25, 55 * PR.spell * sc, 20, 0.8);
       for (let d = 2.5; d <= 7; d += 2.2) addPatch(px + f.x * d, P.y, pz + f.z * d, 1.2 + d * 0.08, true);
       for (let i = 0; i < 90; i++) { const a = P.facing + (Math.random() - 0.5) * 1.1, sp = 6 + Math.random() * 7; fwColor.setHSL(0.02 + Math.random() * 0.08, 1, 0.55); fwParticle(px + f.x * 1.6, py + 1.8, pz + f.z * 1.6, Math.sin(a) * sp, -0.5 + Math.random(), Math.cos(a) * sp, fwColor, 0.7, Math.random() < 0.2); }
       G.shake = Math.max(G.shake, 0.3);
-    }
+    } else beastSkill(pw);
     P.mana -= pw.mana; P.cd[slot] = pw.cd; P.combo = 0;
     sfx(pw.kind === 'breath' || pw.kind === 'dive' ? 'boom' : pw.kind === 'nova' ? 'parry' : 'swoosh');
     floatText(pw.name, player.position.clone().add(new THREE.Vector3(0, 3.1, 0)), 'word', '#bff6ff');
@@ -132,19 +137,19 @@
     P.mount = b; b.state = 'ridden';
     player.position.x = b.g.position.x; player.position.z = b.g.position.z;
     sfx('parry'); burst(b.g.position.x, 1.5, b.g.position.z, 30, 5);
-    const pw = MOUNT_POWERS[b.type];
-    floatText(`Riding the ${BEAST_TYPES[b.type].name}: C ${pw.mp1.name}, X ${pw.mp2.name}, Space charge, E dismount`, player.position.clone().add(new THREE.Vector3(0, 3.6, 0)), 'word', '#bff6ff');
+    P.claw = 0;
+    floatText(`Riding the ${BEAST_TYPES[b.type].name}: J/K claws and combos, Y U I O beast skills, Space pounce, L dash, E dismount`, player.position.clone().add(new THREE.Vector3(0, 3.6, 0)), 'word', '#bff6ff');
   }
   function dismount(silent) {
     const b = P.mount; if (!b) return;
-    P.mount = null; b.state = 'wild'; b.wander.copy(b.home);
+    P.mount = null; b.state = 'wild'; b.wander.copy(b.home); b.body.rotation.set(0, 0, 0);
     b.g.position.set(player.position.x + Math.sin(P.facing + 1.6) * 1.6, Math.max(0, P.y), player.position.z + Math.cos(P.facing + 1.6) * 1.6);
     pBody.position.y = 0; pLegs[0].rotation.z = 0; pLegs[1].rotation.z = 0;
     if (!silent) floatText('dismounted', player.position.clone().add(new THREE.Vector3(0, 2.4, 0)), 'word', '#ffd36a');
   }
   function updateRide(dt, moving) {
     const b = P.mount;
-    b.g.position.set(player.position.x, P.act === 'leap' ? P.leapY : P.y, player.position.z); b.g.rotation.y = P.facing;
+    b.g.position.set(player.position.x, P.act === 'leap' ? P.leapY : P.y + P.jh, player.position.z); b.g.rotation.y = P.facing; beastPose(b);
     // Trample creeps you run through
     if (moving) creeps.forEach(c => {
       if (!c.alive || c.trampleT > uTime.value) return;

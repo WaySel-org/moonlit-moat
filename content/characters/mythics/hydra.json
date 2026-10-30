@@ -5,11 +5,11 @@
   "world": "moat",
   "mythic": true,
   "stats": {
-    "baseHealth": 1400
+    "baseHealth": 2600
   },
   "ai": "godling",
   "wakes": "world tier 4",
-  "look": "Five-headed serpent on one body; strikes wherever you stand.",
+  "look": "Five-headed serpent on one body; two more heads burst out when it is wounded.",
   "id": "mythic-hydra",
   "originality": "original",
   "source": "Greek myth (public-domain myth; this design is original)"

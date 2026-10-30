@@ -48,10 +48,10 @@
     fwGeo.attributes.position.needsUpdate = true; fwGeo.attributes.color.needsUpdate = true;
   }
 
-  function addPatch(x, y, z, r, friendly) {
+  function addPatch(x, y, z, r, friendly, life) {
     const m = new THREE.Mesh(patchGeo, new THREE.MeshBasicMaterial({ color: 0xff6a20, transparent: true, opacity: 0.6, depthWrite: false }));
     m.position.set(x, y + 0.06, z); m.scale.setScalar(r); scene.add(m);
-    patches.push({ m, r, t: 3.5, friendly: !!friendly, tick: 0 });
+    patches.push({ m, r, t: life || 3.5, life: life || 3.5, friendly: !!friendly, tick: 0 });
   }
   function burnPlayer(d) {
     if (P.armor > 0) { const a = Math.min(P.armor, d); P.armor -= a; d -= a; }
@@ -62,7 +62,7 @@
   function updatePatches(dt) {
     for (let i = patches.length - 1; i >= 0; i--) {
       const p = patches[i]; p.t -= dt;
-      p.m.material.opacity = Math.max(0, Math.min(0.6, p.t / 3.5 * 0.8)) * (0.75 + 0.25 * Math.sin(uTime.value * 20 + i));
+      p.m.material.opacity = Math.max(0, Math.min(0.6, p.t / p.life * 0.8)) * (0.75 + 0.25 * Math.sin(uTime.value * 20 + i));
       if (Math.random() < 0.3) burst(p.m.position.x + (Math.random() - 0.5) * p.r * 1.4, p.m.position.y, p.m.position.z + (Math.random() - 0.5) * p.r * 1.4, 1, 2);
       if (p.friendly) {
         p.tick -= dt;
@@ -86,7 +86,8 @@
   function resetVitals() {
     Object.assign(P, { hp: P.max, st: P.stMax, stDelay: 0, flasks: PR.flaskMax, act: null, actT: 0, combo: 0, buffer: null, iframe: 0, block: false, facing: Math.PI,
       mana: Math.max(50, P.manaMax * 0.5), armor: 0, buffDmg: 0, buffAgi: 0, y: 0, stone: 0, flow: 0, riposte: 0, poison: 0, calm: 0 });
-    Object.assign(P.cd, { z: 0, v: 0, x: 0, mp1: 0, mp2: 0 });
+    Object.assign(P.cd, { z: 0, v: 0, x: 0, h: 0, mp1: 0, mp2: 0, mp3: 0, mp4: 0 });
+    clearStatus();
     if (P.mount) dismount(true);
     P.kb.set(0, 0, 0);
     bolts.forEach(b => { scene.remove(b.m); b.m.material.dispose(); }); bolts.length = 0;

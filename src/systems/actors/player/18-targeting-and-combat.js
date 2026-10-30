@@ -34,18 +34,25 @@
     h = ok(p.x + dx, p.z); if (h !== null) { p.x += dx; P.y = h; return; }
     h = ok(p.x, p.z + dz); if (h !== null) { p.z += dz; P.y = h; }
   }
+  // On a beast the four skill keys use its powers: Y mp3, U mp1, I mp4, O mp2
+  const MOUNT_SLOT_OF = { throw: 'mp3', cast: 'mp1', volley: 'mp4', leap: 'mp2' };
   function tryBuffered() {
     if (!P.buffer) return;
-    if (P.mount && (P.buffer === 'cast' || P.buffer === 'leap')) P.buffer = P.buffer === 'cast' ? 'mp1' : 'mp2';
-    const name = P.buffer;
+    if (P.mount && MOUNT_SLOT_OF[P.buffer]) P.buffer = MOUNT_SLOT_OF[P.buffer];
+    const name = P.buffer, follow = rollFollow(name);
+    if (follow) {
+      if (P.act) { P.act = null; pBody.rotation.x = 0; pBody.position.y = 0; }
+      P.rollWin = 0; if (startAct(follow)) P.buffer = null;
+      return;
+    }
     if (P.act === null) {
       if (name === 'drink' && P.flasks <= 0) { P.buffer = null; return; }
       const say = (t, c) => { P.buffer = null; floatText(t, player.position.clone().add(new THREE.Vector3(0, 2.3, 0)), 'word', c || '#4a7bff'); };
       if (name === 'cast' && P.mana < boltCost()) return say('not enough mana');
       if (name === 'throw' && (P.cd.z > 0 || P.st < 6)) { P.buffer = null; return; }
       if (name === 'volley') { if (PR.level < 3) return say('Arc Volley unlocks at level 3', '#ffd36a'); if (P.cd.v > 0) { P.buffer = null; return; } if (P.mana < 50) return say('not enough mana'); }
-      if (P.mount && name === 'volley') return say('Not while riding', '#ffd36a');
-      if (name === 'mp1' || name === 'mp2') { const pw = MOUNT_POWERS[P.mount.type][name]; if (P.cd[name] > 0) { P.buffer = null; return; } if (P.mana < pw.mana) return say('not enough mana'); }
+      if (isMp(name)) { if (!P.mount) { P.buffer = null; return; } const pw = MOUNT_POWERS[P.mount.type][name]; if (P.cd[name] > 0) { P.buffer = null; return; } if (P.mana < pw.mana) return say('not enough mana'); }
+      if (name === 'spin') { if (PR.level < SPIN_LV) return say(`Blade Spin unlocks at level ${SPIN_LV}`, '#ffd36a'); if (P.mount) return say('Not while riding', '#ffd36a'); if (P.cd.h > 0) { P.buffer = null; return; } if (P.mana < SPIN_MANA) return say('not enough mana'); }
       if (name === 'leap') { if (!PR.warden) return say("Beat the Warden to learn this", '#ffd36a'); if (P.cd.x > 0) { P.buffer = null; return; } if (P.mana < 25) return say('not enough mana'); }
       if (name === 'drink') { P.flasks--; }
       if (name !== 'light') P.combo = 0;
@@ -54,6 +61,8 @@
       P.combo++; P.act = null; startAct('light'); P.buffer = null;
     } else if (P.act === 'light' && name === 'roll' && P.actT > P.actDur * 0.5) {
       P.act = null; startAct('roll'); P.buffer = null;
+    } else if (P.act === 'gore' && (name === 'light' || name === 'heavy') && P.actT > P.actDur * 0.6) {
+      P.act = null; startAct(name); P.buffer = null;
     }
   }
 
@@ -90,7 +99,10 @@
   // Returns true if the hit connected
   function hitPlayer(dmg, src, kbStrength, parryable, attacker) {
     if (G.state === 'dead' || G.state === 'won' || G.state === 'intro' || G.shop) return false;
-    dmg *= (attacker && attacker.isCreep) ? attacker.mult * G.env.creepDmg : (attacker && attacker.pow) ? attacker.pow : G.dmgMult;
+    dmg *= (attacker && attacker.isCreep) ? attacker.mult * G.env.creepDmg * (attacker.rallyT > 0 ? 1.35 : 1) : (attacker && attacker.pow) ? attacker.pow : G.dmgMult;
+    // Blade Spin: 40% less damage, no flinch, no knockback
+    const spin = heroUnstoppable();
+    if (spin) dmg *= 0.6;
     if (P.iframe > 0) {
       // A perfect dodge: the hit would have landed mid-roll. Flow follows.
       if (P.act === 'roll' && !P.flowed) {
@@ -127,7 +139,8 @@
         burst(at.x, at.y, at.z, 10, 4);
         kbStrength *= 0.4;
       }
-    } else {
+    } else if (spin) { sfx('clang'); G.shake = Math.max(G.shake, 0.2); }
+    else {
       sfx('hurt');
       P.act = 'hurt'; P.actT = 0; P.actDur = 0.4; P.combo = 0;
       ui.flash.style.opacity = '1'; setTimeout(() => { ui.flash.style.opacity = '0'; }, 120);
@@ -145,7 +158,7 @@
     }
     const away = new THREE.Vector3(player.position.x - src.x, 0, player.position.z - src.z);
     if (away.lengthSq() < 1e-4) away.copy(fwdOf(P.facing)).negate();
-    P.kb.copy(away.normalize().multiplyScalar(kbStrength));
+    P.kb.copy(away.normalize().multiplyScalar(spin ? 0 : kbStrength));
     if (P.hp <= 0) { if (G.realm === 'spirit') forceReturn(); else killPlayer(); }
     return true;
   }

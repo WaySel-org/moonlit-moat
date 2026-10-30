@@ -18,6 +18,10 @@
     else if (P.act === 'cast' || P.act === 'volley') { x = -0.9 + 0.8 * ease(k / 0.5); y = 0; bright = true; }
     else if (P.act === 'throw') { x = -0.2; y = -1.2 + 2.4 * ease(k / 0.5); }
     else if (P.act === 'leap') { x = -2.0 + 3.0 * ease((k - 0.6) / 0.4); y = 0; bright = k > 0.6; }
+    else if (P.act === 'rollslash') { x = 0.15; y = -1.5 + 2.9 * ease(k / 0.5); bright = k < 0.6; }
+    else if (P.act === 'rollcleave' || P.act === 'spin') { x = 0.1; y = -1.45; bright = true; }
+    else if (P.act === 'trample') { x = -1.6 + 2.6 * ease((k - 0.1) / 0.2); y = 0; bright = k > 0.1 && k < 0.5; }
+    else if (P.act === 'land') { x = 1.3; y = -0.4; }
     swordPivot.rotation.set(x, y, 0);
     bladeMat.color.setHex(bright ? 0xffffff : SWORDS[swordTier].color);
     if (rune.visible) rune.scale.y = 1 + 0.4 * Math.sin(uTime.value * 6);
@@ -28,8 +32,9 @@
     const wading = P.y < -0.05;
     P.iframe = Math.max(0, P.iframe - dt);
     if (P.bufferT > 0) { P.bufferT -= dt; if (P.bufferT <= 0) P.buffer = null; }
+    heroKitFrame(dt);
     if (P.act === 'dead') {
-      P.actT += dt; pBody.rotation.x = -Math.min(1.5, P.actT * 3); poseSword(); return { moving: false, dl: 99 };
+      P.actT += dt; pBody.rotation.y = 0; pBody.rotation.x = -Math.min(1.5, P.actT * 3); poseSword(); return { moving: false, dl: 99 };
     }
 
     P.stone = Math.max(0, P.stone - dt);
@@ -45,20 +50,21 @@
     P.stDelay -= dt;
     if (P.stDelay <= 0 && P.act !== 'roll') P.st = Math.min(P.stMax, P.st + dt * (P.block ? 14 : 34 + 3 * (PR.level - 1) + 1.5 * PR.agi) * (agi ? 1.5 : 1) * (P.flow > 0 ? 2 : 1));
     P.mana = Math.min(P.manaMax, P.mana + dt * (1.5 + 0.15 * PR.spi) * G.env.mana);
-    P.cd.z = Math.max(0, P.cd.z - dt); P.cd.v = Math.max(0, P.cd.v - dt); P.cd.x = Math.max(0, P.cd.x - dt);
-    P.cd.mp1 = Math.max(0, P.cd.mp1 - dt); P.cd.mp2 = Math.max(0, P.cd.mp2 - dt);
+    for (const c in P.cd) P.cd[c] = Math.max(0, P.cd[c] - dt);
 
     const mv = moveInput();
     let speed = 0;
-    if (P.act === null) {
-      speed = (P.block ? 2.4 : 6.8) * (P.mount ? BEAST_TYPES[P.mount.type].speed : 1) * PR.speed * (agi ? 1.4 : 1) * (wading ? 0.6 : 1) * (P.stone > 0 ? 0 : 1);
+    // The beast keeps running (at 85%) through its own attacks and skills
+    const ride = rideAct();
+    if (P.act === null || ride) {
+      speed = (P.block ? 2.4 : 6.8) * (P.mount ? BEAST_TYPES[P.mount.type].speed : 1) * PR.speed * (agi ? 1.4 : 1) * (wading ? 0.6 : 1) * (P.stone > 0 ? 0 : 1) * heroSlow() * (ride ? 0.85 : 1);
       if (mv.lengthSq() > 0) {
         mv.normalize();
         movePlayer(mv.x * speed * dt, mv.z * speed * dt);
         if (!(G.lock && lockTarget())) P.facing = Math.atan2(mv.x, mv.z);
         walk += dt * (P.block ? 6 : 12);
       }
-      if (P.combo && P.actT > 0.5) P.combo = 0;
+      if (!ride && P.combo && P.actT > 0.5) P.combo = 0;
     }
     const lt = G.lock && P.act !== 'roll' && P.act !== 'leap' ? lockTarget() : null;
     if (lt) P.facing += angDiff(P.facing, yawTo(player.position, lt.pos)) * Math.min(1, dt * 12);
@@ -84,17 +90,6 @@
         movePlayer(P.rollDir.x * sp * dt, P.rollDir.z * sp * dt);
         if (relicHas('ember') && !P.chargeDmg && k < 0.8 && Math.random() < dt * 9) addPatch(player.position.x, P.y, player.position.z, 0.9, true);
         if (!P.mount) { pBody.rotation.x = k * TAU; pBody.position.y = -0.25 * Math.sin(k * Math.PI); }
-      } else if (P.act === 'gore') {
-        if (!P.hitDone && k > 0.4) {
-          P.hitDone = true; const bt = BEAST_TYPES[P.mount ? P.mount.type : 'stag'];
-          spawnSwoosh(true); G.shake = Math.max(G.shake, 0.25);
-          liveTargets().forEach(t => {
-            if (Math.abs(t.pos.y - player.position.y) > 2.5) return;
-            const d = flatDist(player.position, t.pos), ang = Math.abs(angDiff(P.facing, yawTo(player.position, t.pos)));
-            if (P.goreBig ? d < 4.2 + t.radius : (d < 3.6 + t.radius && ang < 1.3)) strike(t, bt.dmg * (P.goreBig ? 1.4 : 1) * PR.dmg, 30, true);
-          });
-          if (P.goreBig) { const m = new THREE.Mesh(waveGeo, new THREE.MeshBasicMaterial({ color: 0xfff0c8, transparent: true, opacity: 0.9, depthWrite: false })); m.position.set(player.position.x, P.y + 0.06, player.position.z); scene.add(m); fxRings.push({ m, r: 0.4 }); sfx('boom'); }
-        }
       } else if (P.act === 'tame') {
         const b = P.tameTarget;
         if (!b || flatDist(player.position, b.g.position) > 4) { P.act = null; floatText('taming interrupted', player.position.clone().add(new THREE.Vector3(0, 2.4, 0)), 'word', '#ffd36a'); }
@@ -102,11 +97,11 @@
         else if (Math.random() < 0.4) burst(b.g.position.x, b.g.position.y + 1.6, b.g.position.z, 1, 2);
         if (!P.act) return { moving: false, dl: Math.hypot(player.position.x - LAKE.x, player.position.z - LAKE.z) };
       } else if (P.act === 'cast') {
-        if (!P.hitDone && k > 0.4) { P.hitDone = true; spawnBolt(); }
+        if (!P.hitDone && k > 0.4) { P.hitDone = true; castBolt(); }
       } else if (P.act === 'throw') {
-        if (!P.hitDone && k > 0.35) { P.hitDone = true; spawnBolt({ dmg: 20 * PR.dmg, speed: 26, home: 0, life: 0.9, poise: 8, color: 0xe8eef2, geo: daggerGeo, heavy: false, trail: false }); }
+        if (!P.hitDone && k > 0.35) { P.hitDone = true; throwDaggers(); }
       } else if (P.act === 'volley') {
-        if (!P.hitDone && k > 0.4) { P.hitDone = true; for (let i = -2; i <= 2; i++) spawnBolt({ angle: P.facing + i * 0.2, dmg: 26 * PR.spell, home: 2.2, poise: 12, color: 0xc8a9ff, heavy: false }); }
+        if (!P.hitDone && k > 0.4) { P.hitDone = true; castVolley(); }
       } else if (P.act === 'leap') {
         const kk = clamp(k, 0, 1), hgt = Math.max(4, P.leapTo.y - P.leapFrom.y + 4);
         player.position.x = P.leapFrom.x + (P.leapTo.x - P.leapFrom.x) * kk;
@@ -121,9 +116,10 @@
           burst(player.position.x, 1.2, player.position.z, 18, 3);
           floatText(`+${heal}`, player.position.clone().add(new THREE.Vector3(0, 2.2, 0)), '');
         }
-      }
+      } else kitTick(dt, k);
       if (P.actT >= P.actDur) {
-        const was = P.act; P.act = null; pBody.rotation.x = 0; pBody.position.y = 0; P.chargeDmg = 0;
+        const was = P.act; P.rollWin = was === 'roll' && !P.chargeDmg ? 0.3 : 0;
+        P.act = null; pBody.rotation.x = 0; pBody.rotation.y = 0; pBody.position.y = 0; P.chargeDmg = 0;
         if (was === 'light' && P.combo >= 2) P.combo = 0;
         P.actT = was === 'light' ? 0 : 1;
       }

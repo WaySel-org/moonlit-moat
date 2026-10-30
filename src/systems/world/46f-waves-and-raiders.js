@@ -31,7 +31,7 @@
       c.body0 = c.body.position.y; wavePool[w].push(c);
     }
   });
-  const raptors = [0, 1, 2, 3, 4].map(() => { const c = addWorldCreep('raptor', 'material', 'melee', { wave: true, respawn: Infinity, speed: 1.7 }); c.body0 = 0; return c; });
+  const raptors = Array.from({ length: 14 }, () => { const c = addWorldCreep('raptor', 'material', 'melee', { wave: true, respawn: Infinity, speed: 1.7 }); c.body0 = 0; return c; });
   // Puts a pooled creep into play at p, optionally climbing out of the ground
   function raiseMob(c, p, lvBonus, rise) {
     spawnCreep(c); if (!c.alive) return false;
@@ -55,7 +55,7 @@
   }
 
   // Telegraphed ground strikes, shared by raiders and bosses: a circle or a lane that lands after `wind` seconds
-  const strikes = [], strikeTeles = Array.from({ length: 12 }, () => makeTele());
+  const strikes = [], strikeTeles = Array.from({ length: 24 }, () => makeTele());
   function groundStrike(o) {
     const tele = strikeTeles.find(t => !strikes.some(s => s.tele === t)); if (!tele) return;
     strikes.push(Object.assign({ t: 0, wind: 1, r: 2.4, dmg: 20, kb: 6, src: null, y: Math.max(0, P.y) }, o, { tele }));
@@ -73,10 +73,8 @@
         for (let d = 0; d < s.len; d += 2) burst(s.at.x + f.x * d, s.y + 0.3, s.at.z + f.z * d, 3, 4);
       } else { hit = flatDist(player.position, s.at) < s.r + 0.3; burst(s.at.x, s.y + 0.3, s.at.z, 22, 6); }
       sfx(s.sound || 'boom'); G.shake = Math.max(G.shake, 0.25);
-      if (hit && Math.abs(player.position.y - s.y) < 2.2 && hitPlayer(s.dmg, s.at, s.kb, false, s.src) && s.freeze) {
-        P.stone = s.freeze; floatText(s.freezeWord || 'FROZEN', player.position.clone().add(new THREE.Vector3(0, 2.4, 0)), 'word', '#bfe8ff');
-      }
-      if (s.fire) addPatch(s.at.x, s.y, s.at.z, s.r * 0.7, false);
+      if (hit && Math.abs(player.position.y - s.y) < 2.2 && hitPlayer(s.dmg, s.at, s.kb, false, s.src)) strikeEffects(s);
+      if (s.fire) addPatch(s.at.x, s.y, s.at.z, s.r * 0.7, false, s.fireLife);
     }
   }
   function clearStrikes() { strikes.forEach(s => s.tele.hide()); strikes.length = 0; }
@@ -108,8 +106,8 @@
     return { g, body, legs, jaw, head };
   }
   const RAIDER = {
-    wyrm: { name: 'Ashwing Wyrm', fly: true, hp: 1400, build: () => buildDragon(0x8a2a1a, 0xff7a3a), line: 'A dragon dives out of the clouds, breathing fire. Hit it when it lands.' },
-    rime: { name: 'Rimefang Wyvern', fly: true, hp: 1200, build: () => buildDragon(0x4a7a9a, 0xbfe8ff), line: 'A frost wyvern circles overhead. Its breath freezes you solid. Hit it when it lands.' },
+    wyrm: { name: 'Ashwing Wyrm', fly: true, hp: 1400, build: () => buildDragon(0x8a2a1a, 0xff7a3a), line: 'A dragon dives out of the clouds. Its fire sets you burning and leaves the ground ablaze. Hit it when it lands.' },
+    rime: { name: 'Rimefang Wyvern', fly: true, hp: 1200, build: () => buildDragon(0x4a7a9a, 0xbfe8ff), line: 'A frost wyvern circles overhead. Its cold slows you whenever it is near, and its breath freezes you solid. Hit it when it lands.' },
     rex: { name: 'Tyrant Rex', fly: false, hp: 2000, build: buildRex, line: 'The ground shakes. A tyrant lizard is charging straight at you.' }
   };
   const raiders = Object.entries(RAIDER).map(([type, d]) => {
@@ -126,11 +124,15 @@
     const pick = ['wyrm', 'rime', 'rex', 'pack'][Math.floor(Math.random() * 4)];
     G.raidClock = 0; G.raidNext = 110 + Math.random() * 60;
     if (pick === 'pack') {
-      const mobs = [];
-      raptors.forEach(c => { c.realm = realmKey(); const p = ringSpot(16, 22); if (p && raiseMob(c, p, Math.max(0, PR.level - worldTier()))) mobs.push(c); });
+      // The pack grows with the hero's level, runs faster with it, and gets faster still the longer the hunt lasts
+      const mobs = [], n = Math.min(14, 5 + Math.floor(PR.level / 3)), haste = Math.min(1.8, 1 + 0.03 * PR.level);
+      for (const c of raptors) {
+        if (mobs.length >= n) break;
+        c.realm = realmKey(); const p = ringSpot(16, 22); if (p && raiseMob(c, p, Math.max(0, PR.level - worldTier()))) { c.haste = haste; mobs.push(c); }
+      }
       if (!mobs.length) return;
-      G.raid = { pack: mobs, t: 60 };
-      showBanner('Raptors!', 'A Razorclaw pack has your scent. They are fast. Stand your ground or jump over them.', 'title');
+      G.raid = { pack: mobs, t: 60, frenzy: 15 };
+      showBanner('Raptors!', `A Razorclaw pack of ${mobs.length} has your scent. They are fast and grow faster the longer the hunt runs. Stand your ground or jump over them.`, 'title');
     } else {
       const r = raiders.find(x => x.type === pick), p = ringSpot(20, 26); if (!p) return;
       r.lv = lvOfHero(r.fly ? 2 : 1); r.max = Math.round(r.base * (1 + 0.3 * (r.lv - 1))); r.hp = r.max; r.pow = 1.1 + 0.15 * (r.lv - 1);
@@ -168,6 +170,11 @@
     if (!r.g.visible) return;
     r.t += dt; r.cool -= dt;
     if (r.wings) r.wings.forEach((w, i) => { w.rotation.z = (i ? -1 : 1) * Math.sin(tt * (r.state === 'rest' ? 2 : 7)) * 0.5; });
+    // Rimefang's frost aura: within 20 m the hero is slowed a little, all the time
+    if (r.type === 'rime') {
+      if (Math.random() < 0.6) { fwColor.setHSL(0.55, 0.5, 0.85); fwParticle(r.pos.x + (Math.random() - 0.5) * 4, r.pos.y + Math.random() * 2, r.pos.z + (Math.random() - 0.5) * 4, 0, -1.2, 0, fwColor, 0.8, true); }
+      if (d < 20 && G.state !== 'dead') { chillHero(0.3, 0.2, false); if (Math.random() < 0.25) { fwColor.setHSL(0.55, 0.6, 0.9); fwParticle(pp.x + (Math.random() - 0.5) * 3, pp.y + 2.5, pp.z + (Math.random() - 0.5) * 3, 0, -1, 0, fwColor, 0.9, true); } }
+    }
     const toward = (sp, minD) => { r.facing += clamp(angDiff(r.facing, yawTo(r.pos, pp)), -3 * dt, 3 * dt); if (d > minD) { const f = fwdOf(r.facing); r.pos.x += f.x * sp * dt; r.pos.z += f.z * sp * dt; } };
     if (r.fly) {
       if (r.state === 'circle') {
@@ -184,17 +191,19 @@
         if (r.t < 1) { r.tele.lane(r.lane.at, r.lane.facing, 30, 3.2, r.t, Math.max(0, P.y)); r.pos.y += (3 - r.pos.y) * Math.min(1, dt * 3); }
         else {
           r.tele.hide(); const f = fwdOf(r.lane.facing); r.pos.x += f.x * 24 * dt; r.pos.z += f.z * 24 * dt; r.pos.y = 2.4; r.facing = r.lane.facing;
-          if (Math.random() < dt * 9) addPatch(r.pos.x, 0, r.pos.z, 1.6, false);
+          // The fire trail burns for five seconds and sets alight whoever steps in it
+          if (Math.random() < dt * 9) { addPatch(r.pos.x, 0, r.pos.z, 1.6, false, 5); patches[patches.length - 1].burns = r.pow; }
           if (!r.hitDone && d < 2.6 && Math.abs(pp.y - r.pos.y) < 3) { r.hitDone = true; hitPlayer(26, r.pos, 10, false, r); }
           if (r.t > 2.3) { r.state = 'rest'; r.t = 0; r.hitDone = false; }
         }
       } else if (r.state === 'hover') {
-        // Close in low and breathe: fire for the wyrm (burning ground), frost for the wyvern (freezes)
+        // Close in low and breathe: fire for the wyrm (sets the hero burning, leaves burning ground), frost for the wyvern (freezes, then chills)
         toward(9, 8); r.pos.y += (2.2 - r.pos.y) * Math.min(1, dt * 3);
         if (r.t > 0.8 && !r.breathed) {
           r.breathed = true; const fire = r.type === 'wyrm';
-          for (let i = 0; i < 3; i++) groundStrike({ at: pp.clone().add(new THREE.Vector3((Math.random() - 0.5) * 6, 0, (Math.random() - 0.5) * 6)), r: 2.6, wind: 1 + i * 0.25, dmg: 20, kb: 6, src: r, fire, freeze: fire ? 0 : 0.9 });
-          groundStrike({ at: r.pos.clone().setY(0), lane: true, facing: yawTo(r.pos, pp), len: 12, w: 4, wind: 1.1, dmg: 24, kb: 8, src: r, freeze: fire ? 0 : 1.1, fire });
+          const fx = fire ? { fire, fireLife: 5, burn: 5, burnDps: 6 * r.pow } : { chill: 0.45, chillT: 4, chillWord: 'CHILLED' };
+          for (let i = 0; i < 3; i++) groundStrike(Object.assign({ at: pp.clone().add(new THREE.Vector3((Math.random() - 0.5) * 6, 0, (Math.random() - 0.5) * 6)), r: 2.6, wind: 1 + i * 0.25, dmg: 20, kb: 6, src: r, freeze: fire ? 0 : 0.9 }, fx));
+          groundStrike(Object.assign({ at: r.pos.clone().setY(0), lane: true, facing: yawTo(r.pos, pp), len: 12, w: 4, wind: 1.1, dmg: 24, kb: 8, src: r, freeze: fire ? 0 : 1.1 }, fx));
         }
         if (r.t > 2.4) { r.state = 'rest'; r.t = 0; r.breathed = false; }
       } else if (r.state === 'rest') {
@@ -273,7 +282,9 @@
   function troubleTick(dt, real) {
     const place = realmKey();
     if (place !== lastPlace) { lastPlace = place; clearStrikes(); endWave(false); if (G.raid) endRaid(); }
-    updateStrikes(dt);
+    updateStrikes(dt); mkTick(dt);
+    // Standing in a burning trail sets the hero alight
+    if (P.iframe <= 0 && P.burn <= 0.5 && G.state !== 'dead') for (const p of patches) if (p.burns && Math.abs(player.position.y - p.m.position.y) < 1 && flatDist(player.position, p.m.position) < p.r) { burnHero(3, 4 * p.burns); break; }
     // Summoned creatures climbing out of the ground
     creeps.forEach(c => { if (c.rise > 0 && c.alive) { c.rise = Math.max(0, c.rise - dt * 1.2); c.body.position.y = c.body0 - 1.8 * c.rise; if (Math.random() < 0.3) burst(c.pos.x, 0.1, c.pos.z, 1, 2); } });
     if (G.state === 'dead') { endWave(false); if (G.raid) endRaid(); return; }
@@ -290,6 +301,10 @@
       if (G.raid.r) { updateRaider(G.raid.r, dt); if (G.raid && G.raid.t <= 0) endRaid(`${G.raid.r.name} loses interest and leaves.`); }
       else if (!G.raid.pack.some(c => c.alive)) { dropGear(player.position, 1, 0.5); endRaid('The pack is dead.'); }
       else if (G.raid.t <= 0) endRaid('The raptors scatter.');
+      else if ((G.raid.frenzy -= dt) <= 0) {
+        G.raid.frenzy = 15; G.raid.pack.forEach(c => { if (c.alive) c.haste += 0.08; });
+        floatText('The pack grows frenzied', player.position.clone().add(new THREE.Vector3(0, 3.2, 0)), 'word', '#ff8a3a');
+      }
     } else if (canSpawnTrouble() && !G.wave) {
       G.raidClock += dt;
       if (G.raidClock >= G.raidNext) startRaid();
