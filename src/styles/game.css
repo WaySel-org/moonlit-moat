@@ -260,3 +260,4 @@ body.touch #inv .card, body.touch #hero .body, body.touch #panel { touch-action:
 #newgame { font: inherit; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 7px 14px; cursor: pointer; }
 #newgame[data-armed="1"] { color: var(--blood); border-color: var(--blood); }
 #soulmeter { margin: 4px 0 0; color: #bff6ff; font-size: 12px; } #soulmeter.hungry { color: #ff6a8a; }
+#ridemeter { margin: 4px 0 0; color: #bff6ff; font-size: 12px; } #ridemeter.low { color: #ffd36a; }

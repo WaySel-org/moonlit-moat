@@ -133,22 +133,39 @@
     b.g.position.x = player.position.x; b.g.position.z = player.position.z;
     mount(b);
   }
+  // A tamed beast carries you for 3 minutes of riding, then flies off into the spirit realm and returns to its
+  // sanctuary 3 minutes later. Dismounting pauses its clock; the return is timed on uTime so it runs in any world.
+  const RIDE_SECS = 180, AWAY_SECS = 180;
+  const rideMeter = document.getElementById('ridemeter');
   function mount(b) {
     P.mount = b; b.state = 'ridden';
+    if (b.rideLeft == null) { b.rideLeft = RIDE_SECS; b.warned = 0; }
     player.position.x = b.g.position.x; player.position.z = b.g.position.z;
     sfx('parry'); burst(b.g.position.x, 1.5, b.g.position.z, 30, 5);
     P.claw = 0;
-    floatText(`Riding the ${BEAST_TYPES[b.type].name}: J/K claws and combos, Y U I O beast skills, Space pounce, L dash, E dismount`, player.position.clone().add(new THREE.Vector3(0, 3.6, 0)), 'word', '#bff6ff');
+    floatText(`Riding the ${BEAST_TYPES[b.type].name}: J/K claws and combos, Y U I O beast skills, Space pounce, L dash, E dismount. It stays ${fmtTime(b.rideLeft)}`, player.position.clone().add(new THREE.Vector3(0, 3.6, 0)), 'word', '#bff6ff');
   }
   function dismount(silent) {
     const b = P.mount; if (!b) return;
     P.mount = null; b.state = 'wild'; b.wander.copy(b.home); b.body.rotation.set(0, 0, 0);
     b.g.position.set(player.position.x + Math.sin(P.facing + 1.6) * 1.6, Math.max(0, P.y), player.position.z + Math.cos(P.facing + 1.6) * 1.6);
     pBody.position.y = 0; pLegs[0].rotation.z = 0; pLegs[1].rotation.z = 0;
+    if (rideMeter) rideMeter.hidden = true;
     if (!silent) floatText('dismounted', player.position.clone().add(new THREE.Vector3(0, 2.4, 0)), 'word', '#ffd36a');
+  }
+  function flyAway(b) {
+    const name = BEAST_TYPES[b.type].name;
+    dismount(true);
+    b.state = 'leaving'; b.leaveT = 0; b.returnAt = uTime.value + AWAY_SECS; b.rideLeft = null;
+    sfx('parry'); burst(b.g.position.x, 1.5, b.g.position.z, 40, 6);
+    floatText(`The ${name} flies into the spirit realm. It returns in 3 minutes`, player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', '#bff6ff');
   }
   function updateRide(dt, moving) {
     const b = P.mount;
+    b.rideLeft -= dt;
+    if (rideMeter) { rideMeter.hidden = false; rideMeter.textContent = `${BEAST_TYPES[b.type].name} stays ${fmtTime(Math.max(0, b.rideLeft))}`; rideMeter.classList.toggle('low', b.rideLeft < 30); }
+    if (b.rideLeft < 30 && b.warned < 1 || b.rideLeft < 10 && b.warned < 2) { b.warned++; floatText(b.warned < 2 ? 'Your beast grows restless' : 'It is about to leave', player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', '#ffd36a'); }
+    if (b.rideLeft <= 0 && P.act !== 'leap') { flyAway(b); return; }
     b.g.position.set(player.position.x, P.act === 'leap' ? P.leapY : P.y + P.jh, player.position.z); b.g.rotation.y = P.facing; beastPose(b);
     // Trample creeps you run through
     if (moving) creeps.forEach(c => {
@@ -161,6 +178,21 @@
     beasts.forEach((b, i) => {
       b.ringMat.opacity = b.state === 'wild' && flatDist(b.g.position, b.home) < 6 ? 0.4 + 0.2 * Math.sin(tt * 2 + i) : 0.15;
       b.glowM.color.setHSL(b.type === 'stag' ? 0.52 : b.type === 'drake' ? 0.04 : 0.12, 1, 0.65 + 0.12 * Math.sin(tt * 3 + i));
+      // Leaving: spiral up in a ghostly light and fade out. Away: hidden until its return time.
+      if (b.state === 'leaving') {
+        b.leaveT += dt; const k = b.leaveT / 2.5;
+        b.g.position.y += (2 + k * 8) * dt; b.g.rotation.y += 3 * dt; b.g.scale.setScalar(Math.max(0.05, 1 - k));
+        b.wings && b.wings.forEach(w => { w.pv.rotation.z = w.sd * (0.5 + Math.sin(tt * 14) * 0.6); });
+        if (Math.random() < 0.6) { fwColor.setHSL(0.5 + Math.random() * 0.1, 0.7, 0.8); fwParticle(b.g.position.x + (Math.random() - 0.5) * 2, b.g.position.y + 1 + Math.random(), b.g.position.z + (Math.random() - 0.5) * 2, 0, 1, 0, fwColor, 0.9, true); }
+        if (k >= 1) { b.state = 'away'; b.g.visible = false; }
+        return;
+      }
+      if (b.state === 'away') {
+        if (tt < b.returnAt) return;
+        b.state = 'wild'; b.g.visible = true; b.g.scale.setScalar(1); b.g.position.copy(b.home); b.wander.copy(b.home);
+        burst(b.home.x, 1.5, b.home.z, 40, 5);
+        if (flatDist(player.position, b.home) < 60) floatText(`The ${BEAST_TYPES[b.type].name} has returned to its sanctuary`, player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', '#bff6ff');
+      }
       let moving = false;
       if (b.state === 'ridden') moving = keys.has('KeyW') || keys.has('KeyA') || keys.has('KeyS') || keys.has('KeyD') || keys.has('ArrowUp') || keys.has('ArrowDown') || keys.has('ArrowLeft') || keys.has('ArrowRight');
       else {
