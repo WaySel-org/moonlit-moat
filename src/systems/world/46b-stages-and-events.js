@@ -81,7 +81,7 @@
     for (let t = 0; t < 60; t++) {
       const a = Math.random() * TAU, r = r0 + Math.random() * (r1 - r0), x = here().x + Math.cos(a) * r, z = here().z + Math.sin(a) * r;
       const lim = G.world === 'moat' ? G.edge - 4 : 66;
-      if (Math.abs(x) > lim || Math.abs(z) > lim) continue;
+      if (Math.abs(x) > lim || Math.abs(z) > lim || (G.world === 'moat' && nearPuzzleSite(x, z, 1))) continue;
       const h = groundAt(x, z); if (h > 0.4 || h < -0.3) continue;
       return V3(x, z);
     }

@@ -1,54 +1,58 @@
   // ---------- Ascension: the queens falling grows the world instead of ending the game ----------
   // Each time the Gorgon and the Empress fall, the Ascension count rises. The edge of the moat's land
-  // moves out (80 m, then 102, 124, 146, up to 168), revealing a ring of new forest, ruins and chests.
-  // Creeps hit 15% harder per Ascension and mythics wake more often. After a three-minute lull the queens
-  // rise again in the field (royal hunt, 46d) two levels stronger; climbing the roof calls them to the throne,
+  // moves out (EDGE_BASE 140 m, then 172, 204, 236, up to EDGE_MAX 268; constants in 03), revealing a ring of new
+  // forest, grass, ruins and chests. Creeps hit 15% harder per Ascension and mythics wake more often. After a three-minute
+  // lull the queens rise again in the field (royal hunt, 46d) two levels stronger; climbing the roof calls them to the throne,
   // where they start at least two levels higher per Ascension and hit a quarter harder per Ascension.
-  const EDGE_BASE = 80, EDGE_STEP = 22, EDGE_MAX = 168, ROYAL_LULL = 180;
+  const ROYAL_LULL = 180;
   const edgeFor = a => Math.min(EDGE_MAX, EDGE_BASE + EDGE_STEP * a);
 
-  // The border: runestones along the edge of the land, moved out on each Ascension
-  const borderGroup = new THREE.Group(); scene.add(borderGroup);
-  const borderStone = new THREE.MeshLambertMaterial({ color: 0x4a5056, flatShading: true });
-  const borderRune = new THREE.MeshBasicMaterial({ color: 0x9fd8ff });
-  const borderGeo = new THREE.BoxGeometry(0.6, 2.2, 0.6), runeGeo = new THREE.OctahedronGeometry(0.22);
+  // The border: runestones along the edge of the land, moved out on each Ascension (two instanced meshes)
+  const BORDER_MAX = 4 * Math.ceil(EDGE_MAX * 2 / 12 + 2);
+  const borderPosts = new THREE.InstancedMesh(new THREE.BoxGeometry(0.6, 2.2, 0.6), new THREE.MeshLambertMaterial({ color: 0x4a5056 }), BORDER_MAX);
+  const borderRunes = new THREE.InstancedMesh(new THREE.OctahedronGeometry(0.22), new THREE.MeshBasicMaterial({ color: 0x9fd8ff }), BORDER_MAX);
+  [borderPosts, borderRunes].forEach(m => { m.frustumCulled = false; scene.add(m); });
   function buildBorder(e) {
-    while (borderGroup.children.length) borderGroup.remove(borderGroup.children[0]);
-    const zMax = e - 8;
+    const zMax = e - 8, bm = new THREE.Matrix4(); let n = 0;
     const post = (x, z) => {
-      const m = new THREE.Mesh(borderGeo, borderStone); m.position.set(x, 1.1, z); borderGroup.add(m);
-      const r = new THREE.Mesh(runeGeo, borderRune); r.position.set(x, 2.5, z); borderGroup.add(r);
+      if (n >= BORDER_MAX) return;
+      borderPosts.setMatrixAt(n, bm.makeTranslation(x, 1.1, z)); borderRunes.setMatrixAt(n, bm.makeTranslation(x, 2.5, z)); n++;
     };
     for (let x = -e; x <= e; x += 12) { post(x, -e); post(x, zMax); }
     for (let z = -e + 12; z < zMax; z += 12) { post(-e, z); post(e, z); }
+    borderPosts.count = borderRunes.count = n;
+    borderPosts.instanceMatrix.needsUpdate = borderRunes.instanceMatrix.needsUpdate = true;
   }
 
-  // The rings of new land, built once at load and revealed one per Ascension
-  const ruinStone = new THREE.MeshLambertMaterial({ color: 0x6f7468, flatShading: true });
+  // The rings of new land, built once at load and revealed one per Ascension. Their trees are planted after the
+  // base wildlands, so revealing ring a just raises the forest count to RING_TREES_END[a]; grass works the same way.
+  const ruinStone = new THREE.MeshLambertMaterial({ color: 0x6f7468 });
   const ruinGlow = new THREE.MeshBasicMaterial({ color: 0xc8a0ff, transparent: true, opacity: 0.45, depthWrite: false });
-  const RINGS = [];
+  const RINGS = [], RING_TREES_END = [forestSpots.length];
   for (let a = 1; EDGE_BASE + EDGE_STEP * a <= EDGE_MAX; a++) {
     const inner = edgeFor(a - 1), outer = edgeFor(a);
-    const ring = { trees: [], ruins: new THREE.Group(), chestSpots: [], chests: [] };
+    const ring = { ruins: new THREE.Group(), chestSpots: [], chests: [] };
     scene.add(ring.ruins); ring.ruins.visible = false;
-    const inRing = (x, z) => { const m = Math.max(Math.abs(x), Math.abs(z)); return m > inner + 3 && m < outer - 4 && z < outer - 12; };
-    const spot = () => { for (let t = 0; t < 80; t++) { const x = -outer + sr() * outer * 2, z = -outer + sr() * outer * 2; if (inRing(x, z)) return [x, z]; } return null; };
-    for (let i = 0; i < 16 + a * 4; i++) {
-      const p = spot(); if (!p) continue;
-      const n = trees.length; makeTree(p[0], p[1]);
-      const tr = trees[n]; tr.g.visible = false; ring.trees.push(tr);
+    const inRing = (x, z) => inEdge(x, z, outer - 4) && !inEdge(x, z, inner + 3) && z < outer - 12;
+    const spot = () => { for (let t = 0; t < 120; t++) { const x = -outer + sr() * outer * 2, z = -outer + sr() * outer * 2; if (inRing(x, z) && !nearPuzzleSite(x, z, 4)) return [x, z]; } return null; };
+    for (let i = 0, t = 0; i < 90 + a * 20 && t < 4000; t++) {
+      const p = spot(); if (!p || !forestFree(p[0], p[1], 6)) continue;
+      plantTree(p[0], p[1], sr() < 0.12 ? 'dead' : sr() < 0.3 ? 'dark' : 'pine'); i++;
     }
-    // Broken stone circles: old places the land remembers
-    for (let k = 0; k < 2; k++) {
+    RING_TREES_END.push(forestSpots.length);
+    // Broken stone circles: old places the land remembers (merged: one mesh of stone and one of glow per ring)
+    const stones = [], glows = [];
+    for (let k = 0; k < 3; k++) {
       const p = spot(); if (!p) continue;
       for (let i = 0; i < 7; i++) {
         const ang = i / 7 * TAU, h = 1 + sr() * 2.2;
-        const m = new THREE.Mesh(new THREE.BoxGeometry(0.8, h, 0.8), ruinStone);
-        m.position.set(p[0] + Math.cos(ang) * 5, h / 2, p[1] + Math.sin(ang) * 5); m.rotation.y = sr() * 3; ring.ruins.add(m);
+        stones.push(new THREE.BoxGeometry(0.8, h, 0.8).rotateY(sr() * 3).translate(p[0] + Math.cos(ang) * 5, h / 2, p[1] + Math.sin(ang) * 5));
       }
-      const glow = new THREE.Mesh(new THREE.RingGeometry(3.2, 3.6, 32).rotateX(-Math.PI / 2), ruinGlow); glow.position.set(p[0], 0.04, p[1]); ring.ruins.add(glow);
+      glows.push(new THREE.RingGeometry(3.2, 3.6, 32).rotateX(-Math.PI / 2).translate(p[0], 0.04, p[1]));
     }
-    for (let k = 0; k < 2; k++) { const p = spot(); if (p) ring.chestSpots.push(p); }
+    if (stones.length) ring.ruins.add(new THREE.Mesh(mergeGeos(stones), ruinStone));
+    if (glows.length) ring.ruins.add(new THREE.Mesh(mergeGeos(glows), ruinGlow));
+    for (let k = 0; k < 3; k++) { const p = spot(); if (p) ring.chestSpots.push(p); }
     RINGS.push(ring);
   }
 
@@ -56,11 +60,13 @@
     const before = G.edge;
     G.edge = edgeFor(G.ascension);
     buildBorder(G.edge);
+    const open = Math.min(RINGS.length, G.ascension);
+    showForest(RING_TREES_END[open]);
+    grass.count = GRASS_END[open];
     RINGS.forEach((ring, i) => {
-      const open = i < G.ascension;
-      ring.trees.forEach(tr => { tr.g.visible = open; });
-      ring.ruins.visible = open;
-      if (open && !ring.chests.length) ring.chestSpots.forEach(([x, z]) => { const c = makeChest(x, z); c.tier = 3; chestLook(c); tag(c.g, 1); ring.chests.push(c); });
+      const isOpen = i < G.ascension;
+      ring.ruins.visible = isOpen;
+      if (isOpen && !ring.chests.length) ring.chestSpots.forEach(([x, z]) => { const c = makeChest(x, z); c.tier = 3; chestLook(c); tag(c.g, 1); ring.chests.push(c); });
     });
     return G.edge > before;
   }
@@ -83,6 +89,7 @@
   }
 
   function updateAscension(dt, real) {
+    updateWildlands();
     if (!(G.royalLull > 0) || G.state === 'dead') return;
     G.royalLull -= real;
     if (G.royalLull > 0) return;

@@ -30,7 +30,7 @@
   for (let tries = 0; pods.length < 32 && tries < 1500; tries++) {
     const x = -70 + sr() * 140, z = -70 + sr() * 134;
     if (Math.abs(x) < 22 && z < -15 && z > -40) continue;
-    if (inMaze(x, z) || inKeep(x, z)) continue;
+    if (inMaze(x, z) || inKeep(x, z) || nearPuzzleSite(x, z, 3)) continue;
     if (Math.hypot(x - LAKE.x, z - LAKE.z) < LAKE.r + 2.5) continue;
     if (Math.abs(x) < 2.5 && z > 4) continue;
     if (pods.some(p => Math.hypot(p.x - x, p.z - z) < 6)) continue;

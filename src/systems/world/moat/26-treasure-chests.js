@@ -21,6 +21,8 @@
     return c;
   }
   [[-30, 20], [34, 26], [-50.5, -30.5], [60, -30], [-46, 52], [48, 58], [0, 62], [-66, 40], [70, 12], [-18, -58], [28, -60], [0, -70], [-70, -62], [66, -66], [57, -52, 10], [47, 38, 10]].forEach(([x, z, y]) => makeChest(x, z, y));
+  // One iron chest in each wildland region (09), to make the walk out there worth it
+  WILD_CHESTS.forEach(([x, z]) => { const c = makeChest(x, z); c.tier = 2; chestLook(c); });
   function chestLook(c) {
     const T = CHEST_TIERS[c.tier];
     c.baseMat.color.setHex(T.color); c.trimMat.color.setHex(T.trim); c.glowM.color.setHex(T.gleam);

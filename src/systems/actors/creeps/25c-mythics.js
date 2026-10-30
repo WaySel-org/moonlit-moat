@@ -163,7 +163,7 @@
       const x = -e + Math.random() * e * 2, z = -e + Math.random() * (e * 2 - 8);
       if (Math.max(Math.abs(x), Math.abs(z)) < r0) continue;
       if ([[0, 0], [2.5, 0], [-2.5, 0], [0, 2.5], [0, -2.5]].some(([dx, dz]) => groundAt(x + dx, z + dz) !== 0)) continue;
-      if (inMaze(x, z) || inKeep(x, z)) continue;
+      if (inMaze(x, z) || inKeep(x, z) || nearPuzzleSite(x, z, 4)) continue;
       if (Math.hypot(x - player.position.x, z - player.position.z) < 24) continue;
       return new THREE.Vector3(x, 0, z);
     }
