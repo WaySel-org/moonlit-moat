@@ -1,7 +1,7 @@
   // ---------- Neutral camps: farm them on the clock ----------
   // Six camps of neutral creeps sit around the moat. They ignore you unless you attack or walk right up.
   // Every minute on the clock, any fully cleared camp restocks. Neutral kills give 50% more experience.
-  const NEUTRAL_CAMPS = [[24, 40], [-48, 38], [55, -10], [-10, -66], [22, 64], [-62, -74]].map(([x, z], i) => ({ id: i, x, z, alive: true, members: [] }));
+  const NEUTRAL_CAMPS = [[24, 40], [-48, 38], [55, -10], [-10, -66], [22, 64], [-62, -74]].concat(WILD_CAMPS).map(([x, z], i) => ({ id: i, x, z, alive: true, members: [] }));
   const campStoneMat = new THREE.MeshLambertMaterial({ color: 0x6b7072, flatShading: true });
   const campRuneMat = new THREE.MeshBasicMaterial({ color: 0x7fdc8a, transparent: true, opacity: 0.5, depthWrite: false });
   const CAMP_PERIOD = 60;
@@ -41,5 +41,5 @@
       cp.alive = true; if ((cp.world || 'moat') === G.world) restocked++;
       cp.members.forEach(m => { m.respawn = 0.05; m.provoked = false; });
     });
-    if (restocked) floatText(`${restocked} neutral camp${restocked > 1 ? 's' : ''} restocked`, player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', '#7fdc8a');
+    if (restocked) showTip('Camps restocked', [`${restocked} neutral camp${restocked > 1 ? 's are' : ' is'} full again.`], 4);
   }

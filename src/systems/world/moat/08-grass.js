@@ -31,17 +31,41 @@
         gl_FragColor = vec4(col, 1.0);
       }`
   });
-  const N = 26000, grass = new THREE.InstancedMesh(blade, grassMat, N);
+  // The old meadow is dense; the base wildlands and each Ascension ring are looser (half again on low graphics).
+  // Blades are stored band by band, so 46c reveals a ring's grass with its trees by raising grass.count.
+  const OUTER = GFX === 'high' ? 1 : 0.5, sqArea = e => 2 * e * (2 * e - 8);
+  const GRASS_BANDS = [{ e0: 0, e1: 0, n: 26000 }, { e0: 80, e1: EDGE_BASE, n: Math.round(22000 * OUTER) }];
+  for (let e = EDGE_BASE; e + EDGE_STEP <= EDGE_MAX; e += EDGE_STEP) GRASS_BANDS.push({ e0: e, e1: e + EDGE_STEP, n: Math.round(0.12 * (sqArea(e + EDGE_STEP) - sqArea(e)) * OUTER) });
+  const N = GRASS_BANDS.reduce((a, b) => a + b.n, 0), grass = new THREE.InstancedMesh(blade, grassMat, N);
+  const grassX = new Float32Array(N), grassZ = new Float32Array(N), GRASS_END = [];
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), eu = new THREE.Euler(), p3 = new THREE.Vector3(), s3 = new THREE.Vector3();
   let placed = 0;
-  while (placed < N) {
-    const x = -79 + sr() * 158, z = -79 + sr() * 150;
-    if (Math.abs(x) < 19 && z < -17.5 && z > -38) continue;
-    if (Math.hypot(x - LAKE.x, z - LAKE.z) < LAKE.r + 0.6) continue;
-    if (Math.abs(x) < 1.2 && z > 5.5) continue;
-    eu.set((sr() - 0.5) * 0.3, sr() * Math.PI, (sr() - 0.5) * 0.3); q.setFromEuler(eu);
-    m4.compose(p3.set(x, 0, z), q, s3.set(1, 0.35 + sr() * 0.6, 1));
-    grass.setMatrixAt(placed++, m4);
+  GRASS_BANDS.forEach((b, bi) => {
+    const end = placed + b.n;
+    while (placed < end) {
+      let x, z;
+      if (bi === 0) {
+        x = -79 + sr() * 158; z = -79 + sr() * 150;
+        if (Math.abs(x) < 19 && z < -17.5 && z > -38) continue;
+        if (Math.hypot(x - LAKE.x, z - LAKE.z) < LAKE.r + 0.6) continue;
+        if (Math.abs(x) < 1.2 && z > 5.5) continue;
+      } else {
+        x = -b.e1 + sr() * b.e1 * 2; z = -b.e1 + sr() * b.e1 * 2;
+        if (!inEdge(x, z, b.e1) || (bi === 1 ? (Math.abs(x) < 79 && z > -79 && z < 71) : inEdge(x, z, b.e0))) continue;
+      }
+      if (nearPuzzleSite(x, z, 1)) continue;
+      eu.set((sr() - 0.5) * 0.3, sr() * Math.PI, (sr() - 0.5) * 0.3); q.setFromEuler(eu);
+      m4.compose(p3.set(x, 0, z), q, s3.set(1, (0.35 + sr() * 0.6) * (bi ? 0.85 : 1), 1));
+      grassX[placed] = x; grassZ[placed] = z;
+      grass.setMatrixAt(placed++, m4);
+    }
+    if (bi) GRASS_END.push(placed);
+  });
+  // Clears the blades where test(x, z) holds (the wildlands call this for their water and stone)
+  function grassClear(test) {
+    const zero = new THREE.Matrix4().makeScale(0, 0, 0);
+    for (let i = 26000; i < N; i++) if (test(grassX[i], grassZ[i])) grass.setMatrixAt(i, zero);
+    grass.instanceMatrix.needsUpdate = true;
   }
   grass.frustumCulled = false;
   scene.add(grass);

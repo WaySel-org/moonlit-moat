@@ -29,19 +29,20 @@
     if (code === 'ShiftLeft' || code === 'ShiftRight') P.blockT = 0;
     if (HELD.includes(code)) keys.add(code);
   }
+  // Bindings (50b-controls.js) turn a physical key into its action's default code, so everything below speaks default codes
   window.addEventListener('keydown', ev => {
-    if (!ui.banner.hidden && !ui.bbtn.hidden && (ev.code === 'Enter' || ev.code === 'KeyR')) { ev.preventDefault(); restart(); return; }
-    if (G.shop && (ev.code === 'KeyE' || ev.code === 'Escape' || (ev.code === 'KeyB' && G.invUI))) { ev.preventDefault(); closeShop(); return; }
+    const c = keyAct(ev.code);
+    if (!ui.banner.hidden && !ui.bbtn.hidden && (ev.code === 'Enter' || c === 'KeyR')) { ev.preventDefault(); restart(); return; }
+    if (G.shop && (c === 'KeyE' || ev.code === 'Escape' || (c === 'KeyB' && G.invUI))) { ev.preventDefault(); closeShop(); return; }
     if (ev.code === 'Escape') { ev.preventDefault(); togglePause(); return; }
     if (G.paused) return;
     if (ev.target.closest && ev.target.closest('input, button, summary')) return;
-    const handled = HELD.includes(ev.code) || ['KeyJ', 'KeyK', 'Space', 'KeyL', 'KeyH', 'KeyX', 'KeyF', 'KeyY', 'KeyU', 'KeyI', 'KeyO', 'KeyE', 'KeyQ', 'KeyB', 'KeyN', 'KeyM', 'KeyP', 'KeyR', 'KeyT'].includes(ev.code);
-    if (!handled) return;
+    if (!c) return;
     ev.preventDefault();
     if (ev.repeat) return;
-    press(ev.code);
+    press(c);
   });
-  window.addEventListener('keyup', ev => keys.delete(ev.code));
+  window.addEventListener('keyup', ev => { const c = keyAct(ev.code); if (c) keys.delete(c); });
   window.addEventListener('blur', () => keys.clear());
 
   let yaw = 0, drag = null;

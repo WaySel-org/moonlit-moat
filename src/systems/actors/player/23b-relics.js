@@ -69,7 +69,7 @@
       if (sp.ok && flatDist(player.position, r.g.position) < 30) { r.label.hidden = false; r.label.style.transform = `translate(${sp.x}px, ${sp.y}px) translate(-50%, -100%)`; }
       if (P.act === 'dead' || flatDist(player.position, r.g.position) > 1.4 || Math.abs(player.position.y - r.y) > 1.6) continue;
       if (PR.relics.length < RELIC_SLOTS) { takeRelic(r.id); removeGroundRelic(i); }
-      else if (r.msgCd <= 0) { r.msgCd = 2.5; floatText('Relic slots full. Drop one from the hero sheet (P)', player.position.clone().add(new THREE.Vector3(0, 2.6, 0)), 'word', '#ffd36a'); }
+      else if (r.msgCd <= 0) { r.msgCd = 2.5; showTip('Relic slots full', [`Drop one from the hero sheet (${tipKey('KeyP', 'Hero')}).`], 4); }
     }
   }
   function clearGroundRelics() { while (groundRelics.length) removeGroundRelic(groundRelics.length - 1); }

@@ -1,20 +1,21 @@
   // ---------- HUD: prompt, skill bar, creep health, world tier ----------
   let hudT = 0;
   function updateHud(real) {
+    updateStatusStrip(real);
     const cc = document.getElementById('campclock'); if (cc) cc.textContent = `Camps restock ${fmtTime(Math.max(0, G.campClock))}`;
     const it = nearestInteract();
     ui.prompt.hidden = !it || G.shop;
-    if (it) ui.prompt.textContent = it.kind === 'chest' ? `E \u00b7 Open ${CHEST_TIERS[it.c.tier].name.toLowerCase()} chest`
-      : it.kind === 'gate' ? `E \u00b7 Challenge the Gate Warden (Lv ${worldTier() + 2}). Recommended: level ${worldTier() + 4}, you are ${PR.level}`
-      : it.kind === 'beast' ? (PR.level >= BEAST_TYPES[it.b.type].level ? `E \u00b7 Ride the ${BEAST_TYPES[it.b.type].name}` : `Ride the ${BEAST_TYPES[it.b.type].name} at level ${BEAST_TYPES[it.b.type].level} (you are ${PR.level})`)
-      : it.kind === 'dismount' ? `E \u00b7 Dismount the ${BEAST_TYPES[P.mount.type].name}`
-      : it.kind === 'wgate' ? 'E \u00b7 World Gate: travel between worlds'
-      : it.kind === 'survivor' ? (G.story.unlocked.ash ? 'E \u00b7 Lead the survivor to safety' : 'The survivor is too frightened to move. Ashfall is still sealed.')
-      : 'E \u00b7 Moon Shrine';
+    if (it) ui.prompt.textContent = it.kind === 'chest' ? `${keyLabel('KeyE')} \u00b7 Open ${CHEST_TIERS[it.c.tier].name.toLowerCase()} chest`
+      : it.kind === 'gate' ? `${keyLabel('KeyE')} \u00b7 Challenge the Gate Warden (Lv ${worldTier() + 2}). Recommended: level ${worldTier() + 4}, you are ${PR.level}`
+      : it.kind === 'beast' ? (PR.level >= BEAST_TYPES[it.b.type].level ? `${keyLabel('KeyE')} \u00b7 Ride the ${BEAST_TYPES[it.b.type].name}` : `Ride the ${BEAST_TYPES[it.b.type].name} at level ${BEAST_TYPES[it.b.type].level} (you are ${PR.level})`)
+      : it.kind === 'dismount' ? `${keyLabel('KeyE')} \u00b7 Dismount the ${BEAST_TYPES[P.mount.type].name}`
+      : it.kind === 'wgate' ? `${keyLabel('KeyE')} \u00b7 World Gate: travel between worlds`
+      : it.kind === 'survivor' ? (G.story.unlocked.ash ? `${keyLabel('KeyE')} \u00b7 Lead the survivor to safety` : 'The survivor is too frightened to move. Ashfall is still sealed.')
+      : `${keyLabel('KeyE')} \u00b7 Moon Shrine`;
     if (!it && !G.shop && G.world !== 'moat') { const wp = worldPrompt(); if (wp) { ui.prompt.hidden = false; ui.prompt.textContent = wp; } }
     if (!it && !G.shop && G.world === 'moat') {
       const nr = nearestRift();
-      if (nr.d < 4) { ui.prompt.hidden = false; ui.prompt.textContent = G.realm === 'spirit' ? 'Q \u00b7 Return through the Veil Rift' : 'Q \u00b7 Step into the Spirit Realm (Q works anywhere)'; }
+      if (nr.d < 4) { ui.prompt.hidden = false; ui.prompt.textContent = G.realm === 'spirit' ? `${keyLabel('KeyQ')} \u00b7 Return through the Veil Rift` : `${keyLabel('KeyQ')} \u00b7 Step into the Spirit Realm (${keyLabel('KeyQ')} works anywhere)`; }
     }
     if (!ui.prompt.hidden) { const pt = touchSay(ui.prompt.textContent); if (pt !== ui.prompt.textContent) ui.prompt.textContent = pt; }
     drawMinimap(real);

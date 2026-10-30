@@ -178,7 +178,7 @@ output { font-variant-numeric: tabular-nums; color: var(--fg); min-width: 44px; 
 .combat { display: grid; gap: 4px; border-top: 1px solid var(--line); padding-top: 10px; }
 #pausebtn { position: fixed; right: 16px; bottom: calc(60px + env(safe-area-inset-bottom, 0px)); font: inherit; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--moon); background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; cursor: pointer; }
 #pause { position: fixed; inset: 0; display: grid; place-items: center; padding-inline: 16px; background: rgba(0,0,0,.55); z-index: 4; }
-#pause .card { width: min(340px, 100%); box-sizing: border-box; display: grid; gap: 12px; text-align: center; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 22px; font-size: 12px; }
+#pause .card { width: min(460px, 100%); box-sizing: border-box; display: grid; gap: 12px; text-align: center; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 22px; font-size: 12px; }
 #pause h2 { margin: 0; font-size: 22px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--moon); font-weight: 600; }
 #pause p { margin: 0; color: var(--muted); line-height: 1.45; }
 #pause .close { font: inherit; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #11161a; background: var(--moon); border: 0; border-radius: 4px; padding: 9px 16px; cursor: pointer; }
@@ -259,4 +259,42 @@ body.touch { touch-action: manipulation; -webkit-user-select: none; user-select:
 body.touch #inv .card, body.touch #hero .body, body.touch #panel { touch-action: pan-y; }
 #newgame { font: inherit; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 7px 14px; cursor: pointer; }
 #newgame[data-armed="1"] { color: var(--blood); border-color: var(--blood); }
-#soulmeter { margin: 4px 0 0; color: #bff6ff; font-size: 12px; } #soulmeter.hungry { color: #ff6a8a; }
+
+/* ---------- Controls: key help, rebinding, pause controls list (controls agent) ---------- */
+#keyhelp kbd + kbd { margin-left: 1px; }
+#keyhelp .khint { color: var(--muted); opacity: .8; }
+#pause .card { max-height: calc(100dvh - 32px); grid-template-rows: auto auto auto auto minmax(0, 1fr); }
+#controlsbox { min-height: 0; max-height: min(46vh, 340px); overflow-y: auto; overscroll-behavior: contain; text-align: left; border-top: 1px solid var(--line); padding: 10px 2px 2px; scrollbar-width: thin; }
+#controlsbox h3 { margin: 0 0 2px; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--moon); }
+#controlsbox h4 { margin: 10px 0 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+#controlsbox .cnote { margin: 0; font-size: 11px; color: var(--muted); }
+#controlsbox .cnote:last-of-type { margin-top: 10px; }
+#controlsbox .cgrp { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; }
+#controlsbox .cgrp h4 { grid-column: 1 / -1; }
+#controlsbox .crow { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 2px 0; color: var(--fg); }
+#controlsbox .ckey { font: inherit; font-size: 11px; min-width: 46px; color: var(--moon); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 3px 6px; cursor: pointer; }
+#controlsbox .ckey:hover, #controlsbox .ckey:focus-visible { border-color: var(--moon); outline: none; }
+#controlsbox .ckey.cap { color: #11161a; background: var(--moon); border-color: var(--moon); }
+#ckreset { margin-top: 10px; width: 100%; font: inherit; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 7px 14px; cursor: pointer; }
+#ckreset:hover { color: var(--fg); }
+@media (max-width: 420px) { #controlsbox .cgrp { grid-template-columns: 1fr; } }
+body.touch #controlsbox { display: none; }
+
+/* ---------- Status strip and tip cards (HUD agent) ---------- */
+#statusstrip:not([hidden]) { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+#statusstrip .sc { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px 2px 5px; font-size: 11px; line-height: 16px; color: var(--c, var(--moon)); background: var(--panel); border: 1px solid color-mix(in srgb, var(--c, var(--moon)) 45%, transparent); border-radius: 10px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#statusstrip .sc b { font-weight: 400; font-size: 12px; width: 13px; text-align: center; }
+#statusstrip .ride, #statusstrip .soul, #statusstrip .away { --c: #bff6ff; } #statusstrip .away { opacity: 0.8; }
+#statusstrip .ride.low { --c: #ffd36a; } #statusstrip .soul.hungry { --c: #ff6a8a; }
+#statusstrip .spin { --c: #ffd36a; } #statusstrip .stone { --c: #c8c8c0; } #statusstrip .chill { --c: #bfe8ff; } #statusstrip .burn { --c: #ff8a3a; } #statusstrip .poison { --c: #7fdc5a; }
+#statusstrip .ride.low, #statusstrip .soul.hungry { animation: scpulse 1s ease-in-out infinite alternate; }
+@keyframes scpulse { to { border-color: var(--c); box-shadow: 0 0 6px color-mix(in srgb, var(--c) 50%, transparent); } }
+#tipcard { position: fixed; left: 50%; bottom: calc(112px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); width: max-content; max-width: min(340px, calc(100vw - 32px)); box-sizing: border-box; display: grid; gap: 3px; padding: 9px 14px 10px; background: var(--panel); border: 1px solid var(--line); border-left: 2px solid #bff6ff; border-radius: 6px; backdrop-filter: blur(6px); pointer-events: none; font-size: 12px; line-height: 1.45; color: var(--moon); z-index: 2; }
+#tipcard[hidden] { display: none; }
+#tipcard b { font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #bff6ff; margin-bottom: 2px; }
+#tipcard span { color: #d6dccd; }
+#tipcard.in { animation: tipin 0.22s ease-out; }
+@keyframes tipin { from { opacity: 0; transform: translate(-50%, 6px); } }
+body.touch #tipcard { bottom: auto; top: calc(34% + env(safe-area-inset-top, 0px)); }
+@media (max-width: 760px) { body.touch #tipcard { top: calc(46% + env(safe-area-inset-top, 0px)); } }
+@media (prefers-reduced-motion: reduce) { #tipcard.in, #statusstrip .sc { animation: none; } }
