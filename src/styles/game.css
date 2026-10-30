@@ -261,3 +261,7 @@ body.touch #inv .card, body.touch #hero .body, body.touch #panel { touch-action:
 #newgame[data-armed="1"] { color: var(--blood); border-color: var(--blood); }
 #soulmeter { margin: 4px 0 0; color: #bff6ff; font-size: 12px; } #soulmeter.hungry { color: #ff6a8a; }
 #ridemeter { margin: 4px 0 0; color: #bff6ff; font-size: 12px; } #ridemeter.low { color: #ffd36a; }
+
+/* ---------- Controls: key help, rebinding, pause controls list (controls agent) ---------- */
+
+/* ---------- Status strip and tip cards (HUD agent) ---------- */
