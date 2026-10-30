@@ -48,7 +48,7 @@
     for (const c of wavePool[w]) {
       if (out.length >= n) break; if (c.alive) continue;
       const a = Math.random() * TAU, r = r0 + Math.random() * (r1 - r0), p = V3(around.x + Math.cos(a) * r, around.z + Math.sin(a) * r);
-      if (groundAt(p.x, p.z) > 0.4) continue;
+      if (groundAt(p.x, p.z) > 0.4 || (G.world === 'moat' && nearPuzzleSite(p.x, p.z, 1))) continue;
       if (raiseMob(c, p, 0, rise)) out.push(c);
     }
     return out;
