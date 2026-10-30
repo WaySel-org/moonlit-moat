@@ -32,6 +32,7 @@
       c.fillStyle = 'rgba(200,200,190,0.55)'; c.fillRect(X(-15.5), Z(-36), 31 * sc, 16 * sc);
       c.strokeStyle = 'rgba(120,170,110,0.7)'; c.lineWidth = 1; c.strokeRect(X(MAZE.x0), Z(MAZE.z0), MAZE.n * MAZE.cell * sc, MAZE.n * MAZE.cell * sc);
       KEEPS.forEach(k => { c.strokeStyle = 'rgba(200,200,190,0.7)'; c.strokeRect(X(k.x - 10), Z(k.z - 10), 20 * sc, 20 * sc); });
+      drawWildMap(c, X, Z, sc, big);
       RIFTS.forEach(r => dot(r.x, r.z, big ? 4 : 2.5, '#c8a0ff'));
       if (G.realm === 'material') {
         dot(SHRINE.x, SHRINE.z, big ? 4 : 2.5, '#bfe8ff');
@@ -48,10 +49,38 @@
     const rk = realmKey();
     creeps.forEach(cr => { if (cr.alive && cr.realm === rk) dot(cr.pos.x, cr.pos.z, cr.ai === 'godling' ? (big ? 5 : 3.5) : cr.ancient ? (big ? 3.5 : 2.5) : (big ? 2 : 1.3), cr.ai === 'godling' ? '#e0a0ff' : cr.ancient ? '#ff9a4a' : '#ff5a4a'); });
     if (!W && G.realm === 'material') drawMythics(c, X, Z, big);
+    if (!W && big && G.realm === 'material') {
+      // Region names on the big map; ones you have not set foot in yet are dimmer
+      c.font = '11px "IBM Plex Mono", monospace'; c.textAlign = 'center';
+      WILD_REGIONS.forEach(R => {
+        const t = R.name.toUpperCase(), hw = c.measureText(t).width / 2 + 4;
+        c.fillStyle = R.seen ? R.col : 'rgba(207,220,215,0.5)';
+        c.fillText(t, Math.min(size - hw, Math.max(hw, X(R.x))), Math.min(size - 6, Math.max(30, Z(R.z - R.r * 0.55))));
+      });
+      c.textAlign = 'left';
+    }
     // you: an arrow pointing where you face
     const px = X(player.position.x), pz = Z(player.position.z), a = P.facing;
     c.save(); c.translate(px, pz); c.rotate(-a + Math.PI); c.fillStyle = '#fff6e0';
     c.beginPath(); c.moveTo(0, big ? -8 : -5); c.lineTo(big ? 5 : 3.5, big ? 6 : 4); c.lineTo(big ? -5 : -3.5, big ? 6 : 4); c.closePath(); c.fill(); c.restore();
     c.fillStyle = 'rgba(207,220,215,0.8)'; c.font = `${big ? 12 : 9}px "IBM Plex Mono", monospace`;
     c.fillText(W ? W.name.toUpperCase() : G.realm === 'spirit' ? 'SPIRIT REALM' : 'MAP (M)', 6, big ? 16 : 12);
+  }
+  // The outer wildlands (09) and the puzzle sites (03c): region landmarks, then a puzzle glyph per site, dimmed once solved
+  function drawWildMap(c, X, Z, sc, big) {
+    WILD_MAP.forEach(m => {
+      c.fillStyle = c.strokeStyle = m.col; c.lineWidth = 1;
+      if (m.line) { c.lineWidth = big ? 3 : 2; c.beginPath(); c.moveTo(X(m.line[0][0]), Z(m.line[0][1])); c.lineTo(X(m.line[1][0]), Z(m.line[1][1])); c.stroke(); }
+      else if (m.x0 !== undefined) c.fillRect(X(m.x0), Z(m.z0), Math.max(1, (m.x1 - m.x0) * sc), (m.z1 - m.z0) * sc);
+      else { c.beginPath(); c.arc(X(m.x), Z(m.z), Math.max(1, m.r * sc), 0, TAU); if (m.ring) c.stroke(); else c.fill(); }
+    });
+    PUZZLE_SITES.forEach(s => {
+      const x = X(s.x), z = Z(s.z), k = big ? 6 : 3.6, col = s.solved ? 'rgba(255,217,138,0.3)' : '#ffd98a';
+      c.strokeStyle = s.solved ? 'rgba(255,217,138,0.18)' : 'rgba(255,217,138,0.4)'; c.lineWidth = 1;
+      c.beginPath(); c.arc(x, z, Math.max(k + 1, s.r * sc), 0, TAU); c.stroke();
+      // a jigsaw piece: a square with a knob on top and on the right
+      c.fillStyle = col;
+      c.fillRect(x - k * 0.7, z - k * 0.5, k * 1.2, k * 1.2);
+      c.beginPath(); c.arc(x - k * 0.1, z - k * 0.62, k * 0.32, 0, TAU); c.fill(); c.beginPath(); c.arc(x + k * 0.62, z + k * 0.1, k * 0.32, 0, TAU); c.fill();
+    });
   }

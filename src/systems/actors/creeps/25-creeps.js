@@ -121,9 +121,9 @@
   function groundAtRealm(x, z, realm) { const r = G.realm; G.realm = realm; const h = groundAt(x, z); G.realm = r; return h; }
   function spiritSpot(c) {
     for (let i = 0; i < 60; i++) {
-      const x = -112 + Math.random() * 224, z = -112 + Math.random() * 216;
-      if (c.ai === 'godling' && Math.hypot(x, z) < 88) continue;
-      if (groundAtRealm(x, z, 'spirit') !== 0) continue;
+      const L = Math.max(116, G.edge + 20) - 4, x = -L + Math.random() * L * 2, z = -L + Math.random() * (L * 2 - 8);
+      if (c.ai === 'godling' && Math.hypot(x, z) < Math.max(88, G.edge * 0.6)) continue;
+      if (groundAtRealm(x, z, 'spirit') !== 0 || nearPuzzleSite(x, z, 2)) continue;
       if (Math.abs(x) < 24 && z < -6 && z > -40) continue;
       if (Math.hypot(x - player.position.x, z - player.position.z) < 16) continue;
       return new THREE.Vector3(x, 0, z);
@@ -226,8 +226,9 @@
   }
   function creepSpot() {
     for (let i = 0; i < 40; i++) {
-      const e = G.edge - 6, x = -e + Math.random() * e * 2, z = -e + Math.random() * (e * 2 - 8);
-      if (groundAt(x, z) !== 0) continue;
+      // Half the spawns stay within the old meadow so the middle of the bigger land never empties out
+      const e = (Math.random() < 0.5 ? Math.min(G.edge, 86) : G.edge) - 6, x = -e + Math.random() * e * 2, z = -e + Math.random() * (e * 2 - 8);
+      if (groundAt(x, z) !== 0 || nearPuzzleSite(x, z, 2)) continue;
       if (Math.abs(x) < 24 && z < -6 && z > -40) continue;
       if (inMaze(x, z) || inKeep(x, z)) continue;
       if (Math.hypot(x - player.position.x, z - player.position.z) < 18 || Math.hypot(x - SPAWN.x, z - SPAWN.z) < 14) continue;

@@ -1,6 +1,6 @@
   // ---------- The Spirit Realm: a dream laid over the same world ----------
   const SPIRIT_ENV = { name: 'Spirit Realm', hor: [0.28, 0.16, 0.42], zen: [0.06, 0.02, 0.14], moon: 0xe0c8ff, aur: 1.4, fog: 0.024, fogCol: 0x3a2458, embers: 0 };
-  const RIFTS = [[10, 26], [-28, 10], [34, -14], [-20, 46], [62, 6], [-50, -72], [6, -56]].map(([x, z]) => ({ x, z }));
+  const RIFTS = [[10, 26], [-28, 10], [34, -14], [-20, 46], [62, 6], [-50, -72], [6, -56], [0, 120], [-62, -120], [124, 22]].map(([x, z]) => ({ x, z }));
   const riftMat = new THREE.MeshBasicMaterial({ color: 0xc8a0ff });
   const riftInner = new THREE.MeshBasicMaterial({ color: 0x8a6aff, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false });
   const riftBeam = new THREE.MeshBasicMaterial({ color: 0xc8a0ff, transparent: true, opacity: 0.1, depthWrite: false });
@@ -29,10 +29,13 @@
   const spiritProps = new THREE.Group(); spiritProps.visible = false; scene.add(spiritProps);
   {
     const crystal = [spiritMat(0x9fe8ff, 0.55), spiritMat(0xc8a0ff, 0.55), spiritMat(0xe0f0ff, 0.45)];
-    for (let i = 0; i < 70; i++) {
-      const a = Math.random() * TAU, rr = i < 50 ? 84 + Math.random() * 30 : 20 + Math.random() * 55;
+    // 60 out in the wildlands up to the spirit edge, 25 beyond it (for later Ascensions), 25 in the old meadow
+    const spiritEdge = EDGE_BASE + 16;
+    for (let i = 0; i < 110; i++) {
+      const a = Math.random() * TAU, rr = i < 60 ? 84 + Math.random() * (spiritEdge - 84) : i < 85 ? spiritEdge + Math.random() * (EDGE_MAX + 16 - spiritEdge) : 20 + Math.random() * 55;
       const x = Math.cos(a) * rr, z = Math.sin(a) * rr;
       if (Math.abs(x) < 24 && z < -6 && z > -40) continue;
+      if (nearPuzzleSite(x, z, 2) || wildGround(x, z) !== null) continue;
       const h = 3 + Math.random() * 7, t = new THREE.Mesh(new THREE.ConeGeometry(0.4 + Math.random() * 0.5, h, 5), crystal[i % 3]);
       t.position.set(x, h / 2, z); spiritProps.add(t);
       const o = new THREE.Mesh(new THREE.OctahedronGeometry(0.3), crystal[(i + 1) % 3]); o.position.set(x, h + 0.8, z); spiritProps.add(o);
