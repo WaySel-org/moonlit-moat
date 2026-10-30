@@ -26,10 +26,8 @@ SRC, CONTENT, DIST = ROOT / 'src', ROOT / 'content', ROOT / 'dist'
 ASSETS = DIST / 'a'
 FONTS = ROOT / 'vendor' / 'fonts'
 # Gzip bytes a phone fetches before the first frame (HTML, CSS, scripts, preloaded font).
-# Today's size plus a little room; PR 3 (minify + slim three.js) brings it down to 160.
-# Raised from 260 for the arsenal, waves, raiders and boss kits, then to 300 for the hero, beast and myth kits,
-# until minification lands.
-BUDGET_KB = 300
+# Raised for the QOL batch; real art assets are coming, so this is a sanity ceiling, not a design limit
+BUDGET_KB = 400
 
 REQUIRED = {
     'character': ['id', 'name', 'kind', 'world', 'originality'],

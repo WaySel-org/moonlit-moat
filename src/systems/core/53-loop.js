@@ -36,6 +36,7 @@
     updateLoot(dt); updateRelics(dt, real);
     updateFxRings(dt);
     if (inMoat) updateTraps(dt);
+    if (inMoat) updatePuzzles(dt);
     updateSwooshes(dt);
     if (inMoat) { updateBeasts(dt); if (!G.storm) updateHunt(dt); }
     if (inMoat && !G.storm && G.state === 'interlude' && !(G.royalLull > 0) && player.position.y > ROOF.y - 0.5 && Math.abs(player.position.z) > 20) startRoyal();
