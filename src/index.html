@@ -2,7 +2,7 @@
 
 <div id="hud">
   <h1>Moonlit Moat</h1>
-  <p id="keyhelp"><kbd>WASD</kbd> move &nbsp; <kbd>J</kbd>/click attack &nbsp; <kbd>K</kbd> heavy &nbsp; <kbd>Y</kbd> dagger &nbsp; <kbd>U</kbd> bolt &nbsp; <kbd>I</kbd> volley &nbsp; <kbd>O</kbd> leap &nbsp; <kbd>H</kbd> spin &nbsp; <kbd>Space</kbd> jump &nbsp; <kbd>L</kbd> roll &nbsp; <kbd>Shift</kbd> block &nbsp; <kbd>F</kbd> flask &nbsp; <kbd>E</kbd> use &nbsp; <kbd>B</kbd> bag &nbsp; <kbd>N</kbd> upgrade sword &nbsp; <kbd>R</kbd> lock &nbsp; <kbd>T</kbd> target &nbsp; <kbd>P</kbd> hero &nbsp; <kbd>Q</kbd> spirit realm &nbsp; <kbd>M</kbd> map &nbsp; <kbd>Esc</kbd> pause</p>
+  <p id="keyhelp"><kbd>WASD</kbd> move &nbsp; <kbd>J</kbd>/click attack &nbsp; <kbd>K</kbd> heavy &nbsp; <kbd>Space</kbd> jump &nbsp; <kbd>L</kbd> roll &nbsp; <kbd>Shift</kbd> block &nbsp; <kbd>E</kbd> use &nbsp; <kbd>Esc</kbd> pause <span class="khint">&middot; all controls</span></p>
   <p id="soulmeter" hidden></p>
   <p id="ridemeter" hidden></p>
   <p id="obj">Build up on creeps, ancients, chests and the hedge maze to the south-west. When you are ready, press E at the castle gate.</p>
@@ -145,7 +145,7 @@
 
 <div id="banner" hidden><div class="card"><h2 id="bh"></h2><p id="bp"></p><button type="button" id="bbtn" hidden>Fight again</button></div></div>
 
-<details id="panel" open>
+<details id="panel">
   <summary>Renderer</summary>
   <div class="body">
     <div class="ctl"><span class="lab">View</span>
@@ -171,25 +171,25 @@
     <details class="sub">
       <summary>How to fight</summary>
       <dl>
-        <dt>J</dt><dd>Light attack. Press again in rhythm for a three-hit combo.</dd>
-        <dt>K</dt><dd>Heavy attack. Slow, but breaks guards fast and makes the target Rend (bleed) for four seconds, up to three stacks.</dd>
-        <dt>Space</dt><dd>Jump. In the air, J slashes (twice per jump) and K plunges; two slashes then a plunge is Skyfall. A plunge costs stamina and leaves you open for a moment when you land.</dd>
-        <dt>L</dt><dd>Roll (X works too). You can't be hit for the first part of it. Roll through an attack that would have landed and you enter Flow: stamina returns twice as fast and every hit crits for a few seconds. Press J late in a roll or just after it for a lunging Roll Slash, or K for a Roll Cleave that hits all around you and knocks creeps back.</dd>
-        <dt>H</dt><dd>Blade Spin, from level 20: spin with your sword out for three seconds or more, hitting everything around you. You can steer while spinning, take less damage, and can't be knocked back, frozen or slowed. Costs 50 mana.</dd>
-        <dt>Shift</dt><dd>Block. Tap it just before a hit lands to parry and stun him. Your next hit within two seconds is a Riposte for double damage.</dd>
-        <dt>F</dt><dd>Drink a flask. Three per fight, and you stand still while drinking.</dd>
-        <dt>U</dt><dd>Cast a moon bolt. Costs 30 mana and homes in on him.</dd>
+        <dt data-k="KeyJ">J</dt><dd>Light attack. Press again in rhythm for a three-hit combo.</dd>
+        <dt data-k="KeyK">K</dt><dd>Heavy attack. Slow, but breaks guards fast and makes the target Rend (bleed) for four seconds, up to three stacks.</dd>
+        <dt data-k="Space">Space</dt><dd>Jump. In the air, J slashes (twice per jump) and K plunges; two slashes then a plunge is Skyfall. A plunge costs stamina and leaves you open for a moment when you land.</dd>
+        <dt data-k="KeyL">L</dt><dd>Roll (X works too, unless you bind X to something else). You can't be hit for the first part of it. Roll through an attack that would have landed and you enter Flow: stamina returns twice as fast and every hit crits for a few seconds. Press J late in a roll or just after it for a lunging Roll Slash, or K for a Roll Cleave that hits all around you and knocks creeps back.</dd>
+        <dt data-k="KeyH">H</dt><dd>Blade Spin, from level 20: spin with your sword out for three seconds or more, hitting everything around you. You can steer while spinning, take less damage, and can't be knocked back, frozen or slowed. Costs 50 mana.</dd>
+        <dt data-k="ShiftLeft">Shift</dt><dd>Block. Tap it just before a hit lands to parry and stun him. Your next hit within two seconds is a Riposte for double damage.</dd>
+        <dt data-k="KeyF">F</dt><dd>Drink a flask. Three per fight, and you stand still while drinking.</dd>
+        <dt data-k="KeyU">U</dt><dd>Cast a moon bolt. Costs 30 mana and homes in on him.</dd>
         <dt>Ranks</dt><dd>Dagger, bolt and volley hit harder every level and gain a rank at levels 6, 12 and 18: more blades and bolts, piercing, a burst on impact, bleeding. The skill bar shows the rank.</dd>
-        <dt>R</dt><dd>Lock the camera on him, or let it go.</dd>
-        <dt>T</dt><dd>Switch which enemy you're locked on to.</dd>
-        <dt>Y</dt><dd>Throw a dagger. Fast, costs a little stamina.</dd>
-        <dt>I</dt><dd>Arc Volley: five homing bolts. Unlocks at level 3, costs 50 mana.</dd>
-        <dt>O</dt><dd>Warden's Leap: jump onto a target or up onto the roof and slam the ground. Earned by beating the Warden.</dd>
-        <dt>E</dt><dd>Open a chest, use the Moon Shrine or a World Gate, or ride and leave a beast.</dd>
+        <dt data-k="KeyR">R</dt><dd>Lock the camera on him, or let it go.</dd>
+        <dt data-k="KeyT">T</dt><dd>Switch which enemy you're locked on to.</dd>
+        <dt data-k="KeyY">Y</dt><dd>Throw a dagger. Fast, costs a little stamina.</dd>
+        <dt data-k="KeyI">I</dt><dd>Arc Volley: five homing bolts. Unlocks at level 3, costs 50 mana.</dd>
+        <dt data-k="KeyO">O</dt><dd>Warden's Leap: jump onto a target or up onto the roof and slam the ground. Earned by beating the Warden.</dd>
+        <dt data-k="KeyE">E</dt><dd>Open a chest, use the Moon Shrine or a World Gate, or ride and leave a beast.</dd>
         <dt>Riding</dt><dd>The beast keeps running while it fights. J claws twice, then a third J rears up and stomps. K rampages forward. Y U I O are the beast's four skills. Space pounces; in the air J swipes and K slams down. L dashes, and J or K after a dash tramples.</dd>
-        <dt>P</dt><dd>Open your hero sheet to spend attribute points.</dd>
-        <dt>B</dt><dd>Open your bag to equip swords and charms.</dd>
-        <dt>N</dt><dd>Upgrade your sword when its edge bar is full.</dd>
+        <dt data-k="KeyP">P</dt><dd>Open your hero sheet to spend attribute points.</dd>
+        <dt data-k="KeyB">B</dt><dd>Open your bag to equip swords and charms.</dd>
+        <dt data-k="KeyN">N</dt><dd>Upgrade your sword when its edge bar is full.</dd>
       </dl>
       <p style="margin:8px 0 0">After the Warden falls, the red ward on the stairs beside the gate breaks. Climb to the roof to face two queens. Vesthra the Gorgon sweeps her tail all around her, lunges, and fires a stone gaze down a long red lane: turn your back or roll before it lands, or you are frozen in place. Nyxara the Thorn Empress floats out of reach, throws fans of thorns, calls a burst of briars under your feet, and vanishes to the far side of the roof when you get close. Kill one and the other gets faster. Die on the roof and you start again at the foot of the stairs.</p>
       <p style="margin:8px 0 0">Beating the Gorgon and the Empress does not end the game. It is an Ascension: the edge of the land moves out with new forest, ruins and chests, creeps grow fiercer, and after three minutes the queens rise again in the land, stronger; climb the roof to call them to the throne for the next Ascension. Every couple of minutes a mythical creature wakes far from the castle, marked by a red diamond on the map: the Minotaur, the Oni, the Manticore, the Basilisk, the Kitsune, the Cyclops and the Hydra as the world tier rises, and after an Ascension, three tyrants of their own. Each one drops a relic and a large bounty.</p>

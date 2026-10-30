@@ -14,4 +14,6 @@
   $('#edges').addEventListener('change', ev => { S.edges = ev.target.checked; postU.uEdges.value = S.edges ? 1 : 0; });
   $('#reflect').addEventListener('change', ev => { S.reflect = ev.target.checked; waterU.uOn.value = S.reflect ? 1 : 0; });
   $('#sound').addEventListener('change', ev => { S.sound = ev.target.checked; });
-  if (window.innerWidth < 900) $('#panel').open = false;
+  // Closed on first load at every width; after that it remembers the player's choice
+  try { if (localStorage.getItem('mm-panel') === '1') $('#panel').open = true; } catch (e) { /* storage blocked */ }
+  $('#panel').addEventListener('toggle', () => { try { localStorage.setItem('mm-panel', $('#panel').open ? '1' : '0'); } catch (e) { /* private mode */ } });
