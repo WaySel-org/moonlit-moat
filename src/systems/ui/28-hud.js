@@ -1,6 +1,7 @@
   // ---------- HUD: prompt, skill bar, creep health, world tier ----------
   let hudT = 0;
   function updateHud(real) {
+    updateStatusStrip(real);
     const cc = document.getElementById('campclock'); if (cc) cc.textContent = `Camps restock ${fmtTime(Math.max(0, G.campClock))}`;
     const it = nearestInteract();
     ui.prompt.hidden = !it || G.shop;

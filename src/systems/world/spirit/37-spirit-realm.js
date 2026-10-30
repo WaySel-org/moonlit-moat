@@ -47,10 +47,9 @@
     if (silent) return;
     sfx('parry'); G.shake = Math.max(G.shake, 0.3);
     for (let i = 0; i < 80; i++) { fwColor.setHSL(0.72 + Math.random() * 0.1, 0.7, 0.75); const a = Math.random() * TAU, sp = 2 + Math.random() * 5; fwParticle(player.position.x, player.position.y + 1, player.position.z, Math.cos(a) * sp, 1 + Math.random() * 4, Math.sin(a) * sp, fwColor, 1.2, true); }
-    showBanner(r === 'spirit' ? 'Spirit Realm' : 'Material Realm', r === 'spirit'
-      ? 'A hunting ground: spirits rise to your level and give \u00d71.75 experience. You arrive sated, then soul hunger drains your life faster and faster until you devour souls. You drift through the hedge maze, but castles and keeps still hold. Return through a violet Veil Rift.'
-      : 'Back among the living.', 'title');
-    bannerTimer = r === 'spirit' ? 6 : 3.5;
+    showBanner(r === 'spirit' ? 'Spirit Realm' : 'Material Realm', r === 'spirit' ? 'A hunting ground. Souls are food.' : 'Back among the living.', 'title');
+    bannerTimer = r === 'spirit' ? 3 : 2.5;
+    if (r === 'spirit') showTip('Spirit Realm', ['Spirits match your level: \u00d71.75 XP.', 'Soul hunger drains life: devour souls.', 'You drift through hedges; walls still hold.', `Leave at a violet rift (${tipKey('KeyQ', 'Veil')}).`], 8);
   }
   function toggleRealm() {
     if (G.paused || G.shop || P.act === 'dead') return;

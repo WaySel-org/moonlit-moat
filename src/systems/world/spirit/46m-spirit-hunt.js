@@ -5,8 +5,6 @@
   const HUNGER = { enter: 12, soul: 8, cap: 24, start: 0.02, ramp: 0.004, top: 0.06 };
   Object.assign(P, { sated: 0, hungerT: 0 });
   const hungerRate = () => Math.min(HUNGER.top, HUNGER.start + HUNGER.ramp * P.hungerT);
-  const soulMeter = $('#soulmeter');
-  let meterTxt = '';
 
   // Veil Moth: a small, quick flutterer of pale dust on two see-through wings; it dives at the hero in swarms
   Object.assign(CREEP_NAME, { moth: 'Veil Moth' }); Object.assign(CREEP_BASE, { moth: 26 }); Object.assign(CREEP_XP, { moth: 16 });
@@ -61,8 +59,7 @@
   // setRealm runs this on every realm change, including death, respawn, restart and leaving for another world
   function hungerReset(r) {
     const on = r === 'spirit';
-    P.sated = on ? HUNGER.enter : 0; P.hungerT = 0; meterTxt = '';
-    soulMeter.hidden = !on; soulMeter.classList.remove('hungry');
+    P.sated = on ? HUNGER.enter : 0; P.hungerT = 0;
     ghostHedges(on);
     // The hunting ground wakes as you cross: spirits still queued from a fresh start or restart rise within a few seconds
     if (on) spirits.forEach(c => { if (!c.alive && c.ai !== 'godling' && c.respawn > 6) c.respawn = 0.5 + Math.random() * 4; });
@@ -75,7 +72,6 @@
   }
   function spiritHunt(real) {
     const on = G.realm === 'spirit';
-    if (soulMeter.hidden === on) soulMeter.hidden = !on;
     if (!on) return;
     const t = uTime.value;
     hedgeGhost.opacity = 0.16 + 0.06 * Math.sin(t * 1.7);
@@ -96,6 +92,4 @@
         if (P.hp <= 0) { forceReturn(); return; }
       }
     }
-    const txt = P.sated > 0 ? `Souls sated ${Math.ceil(P.sated)}s` : `SOUL HUNGER -${Math.round(hungerRate() * 100)}%/s: devour souls`;
-    if (txt !== meterTxt) { meterTxt = txt; soulMeter.textContent = txt; soulMeter.classList.toggle('hungry', P.sated <= 0); }
   }

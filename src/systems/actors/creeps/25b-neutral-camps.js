@@ -41,5 +41,5 @@
       cp.alive = true; if ((cp.world || 'moat') === G.world) restocked++;
       cp.members.forEach(m => { m.respawn = 0.05; m.provoked = false; });
     });
-    if (restocked) floatText(`${restocked} neutral camp${restocked > 1 ? 's' : ''} restocked`, player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', '#7fdc8a');
+    if (restocked) showTip('Camps restocked', [`${restocked} neutral camp${restocked > 1 ? 's are' : ' is'} full again.`], 4);
   }
