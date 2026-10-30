@@ -112,13 +112,14 @@
     kitRingFx(p.x, hit.pos.y, p.z, 0xbff6ff, 0.3); burst(p.x, p.y, p.z, 16, 6);
     live.forEach(t => { if (t !== hit && t.alive !== false && Math.abs(t.pos.y - hit.pos.y) < 3 && flatDist(p, t.pos) < b.blast + t.radius) strike(t, b.dmg * 0.5, b.poise * 0.5, false, { spell: true }); });
   }
-  // Level-up floats for each evolution, stacked above the level-3 Arc Volley line
+  // What each level-up unlocks, gathered into one tip card
   const RANK_NEWS = [[6, 'Moon Bolt II: pierces', 'Arc Volley II: 7 bolts', 'Dagger II: fan of three'],
     [12, 'Moon Bolt III: bursts on impact', 'Arc Volley III: 9 piercing bolts', 'Dagger III: pierces and Rends'],
     [18, 'Moon Bolt IV: two side bolts', 'Arc Volley IV: 11 bolts, 3 s cooldown', 'Dagger IV: fan of five']];
   function heroNews(was) {
-    const lines = [], say = (t, i, c) => floatText(t, player.position.clone().add(new THREE.Vector3(0, 4.4 + 0.6 * i, 0)), 'word', c);
+    const lines = [];
+    if (was < 3 && PR.level >= 3) lines.push(`Arc Volley learned (${tipKey('KeyI', 'Volley')})`);
     RANK_NEWS.forEach(([lv, ...l]) => { if (was < lv && PR.level >= lv) lines.push(...l); });
-    lines.forEach((t, i) => say(t, i, '#c8a9ff'));
-    if (was < SPIN_LV && PR.level >= SPIN_LV) say('Blade Spin learned (H)', lines.length, '#ffd36a');
+    if (was < SPIN_LV && PR.level >= SPIN_LV) lines.push(`Blade Spin learned (${tipKey('KeyH', 'Spin')})`);
+    if (lines.length) showTip(`Level ${PR.level}: new powers`, lines, 7);
   }
