@@ -55,7 +55,7 @@
     {
       "id": "wanderer", "name": "The Wanderer",
       "look": { "body": "f", "skin": "#d9a07a", "hair": "long", "hairColor": "#3a2416", "brows": "fine", "beard": "none", "eyes": "hazel", "shape": { "height": 0.5, "build": 0.45, "shoulders": 0.45, "arms": 0.45, "legs": 0.5, "head": 0.5 } },
-      "gear": { "head": null, "chest": "ranger-tunic", "hands": "ranger-bracers", "legs": "ranger-breeches", "feet": "ranger-boots", "back": "wanderer-scarf", "offhand": "moon-lantern", "weapon": "iron-sword" }
+      "gear": { "head": null, "chest": "ranger-tunic", "hands": "ranger-bracers", "legs": "ranger-breeches", "feet": "ranger-boots", "back": "wanderer-scarf", "offhand": "moon-lantern", "weapon": "moatwatch" }
     },
     {
       "id": "warden", "name": "Grey Warden",
@@ -70,7 +70,7 @@
     {
       "id": "moat-knight", "name": "Moat Knight",
       "look": { "body": "m", "skin": "#8a5a3a", "hair": "parted", "hairColor": "#1b1410", "brows": "regular", "beard": "short", "eyes": "brown", "shape": { "height": 0.6, "build": 0.6, "shoulders": 0.65, "arms": 0.6, "legs": 0.55, "head": 0.5 } },
-      "gear": { "head": "great-helm", "chest": "plate-cuirass", "hands": "iron-gauntlets", "legs": "plate-greaves", "feet": "iron-sabatons", "back": "royal-cape", "offhand": "kite-shield", "weapon": "greatsword" }
+      "gear": { "head": "great-helm", "chest": "plate-cuirass", "hands": "iron-gauntlets", "legs": "plate-greaves", "feet": "iron-sabatons", "back": "royal-cape", "offhand": "kite-shield", "weapon": "wyrmbane" }
     }
   ]
 }

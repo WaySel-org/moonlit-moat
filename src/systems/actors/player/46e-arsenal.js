@@ -1,13 +1,15 @@
   // ---------- Arsenal: inventory, sword upgrades, jumping and air combos ----------
   // Gear: one sword and two charms equipped, eight bag slots, plus the armour the hero wears (actors/player/09h-hero-avatar.js). Elites, ancients, bosses, raiders and cleared waves drop gear.
   // The equipped sword feeds on kills; when its edge bar fills, press N (or Upgrade in the bag) to raise its rank.
+  // Swords that drop with rolled damage. Wyrmbane, the Monster-Breaker only drops from bosses (q 2).
   const SWORD_KINDS = [
-    { name: 'Ember Saber', affix: 'burn', note: '+15% damage as fire' },
-    { name: 'Leech Fang', affix: 'leech', note: 'heals 4% of damage dealt' },
-    { name: 'Gale Cutter', affix: 'swift', note: '+8% move speed' },
-    { name: 'Gravesteel', affix: null, note: '' },
-    { name: 'Starforged Blade', affix: 'burn', note: '+15% damage as fire' }
+    { name: 'Night Needle', affix: 'swift', note: '+8% move speed', model: 'night-needle' },
+    { name: 'Tidecutter', affix: 'leech', note: 'heals 4% of damage dealt', model: 'tidecutter' },
+    { name: 'Hollowfang', affix: 'burn', note: '+15% damage as fire', model: 'hollowfang' },
+    { name: 'Moatwatch Longsword', affix: null, note: '', model: 'moatwatch' }
   ];
+  const SLAYER_KIND = { name: 'Wyrmbane, the Monster-Breaker', affix: 'slayer', note: '+40% against bosses and monsters', model: 'wyrmbane' };
+  const STARTER_SWORD = () => ({ kind: 'sword', name: 'Moatwatch Longsword', dmg: 0.04, rank: 0, kills: 0, affix: null, note: '', model: 'moatwatch' });
   const CHARM_KINDS = [
     { name: 'Wolf Tooth', stat: 'st', unit: 'stamina', base: 18 },
     { name: 'Heartstone', stat: 'hp', unit: 'max health', base: 22 },
@@ -16,12 +18,12 @@
     { name: 'Feather Knot', stat: 'speed', unit: '% speed', base: 4 }
   ];
   const edgeNeed = s => 12 + 10 * s.rank;
-  PR.inv = { sword: { kind: 'sword', name: 'Iron Sword', dmg: 0, rank: 0, kills: 0, affix: null, note: '' }, charms: [null, null], bag: Array(8).fill(null) };
+  PR.inv = { sword: STARTER_SWORD(), charms: [null, null], bag: Array(8).fill(null) };
   function rollGear(q) {
     const t = worldTier() + q;
     if (Math.random() < 0.5) {
-      const k = SWORD_KINDS[Math.floor(Math.random() * SWORD_KINDS.length)];
-      return { kind: 'sword', name: k.name, dmg: Math.round((0.08 + 0.06 * t + Math.random() * 0.1) * 100) / 100, rank: 0, kills: 0, affix: k.affix, note: k.note };
+      const k = q >= 2 && Math.random() < 0.25 ? SLAYER_KIND : SWORD_KINDS[Math.floor(Math.random() * SWORD_KINDS.length)];
+      return { kind: 'sword', name: k.name, dmg: Math.round((0.08 + 0.06 * t + Math.random() * 0.1 + (k === SLAYER_KIND ? 0.2 : 0)) * 100) / 100, rank: 0, kills: 0, affix: k.affix, note: k.note, model: k.model };
     }
     const k = CHARM_KINDS[Math.floor(Math.random() * CHARM_KINDS.length)];
     return { kind: 'charm', name: k.name, stat: k.stat, unit: k.unit, val: Math.round(k.base * (0.7 + 0.3 * t) * (0.8 + Math.random() * 0.4)) };
@@ -111,7 +113,7 @@
   gearEl.addEventListener('click', invClick); invBody.addEventListener('click', invClick);
   $('#invclose').addEventListener('click', closeShop);
   function resetArsenal() {
-    PR.inv = { sword: { kind: 'sword', name: 'Iron Sword', dmg: 0, rank: 0, kills: 0, affix: null, note: '' }, charms: [null, null], bag: Array(8).fill(null) };
+    PR.inv = { sword: STARTER_SWORD(), charms: [null, null], bag: Array(8).fill(null) };
     heroInvDefaults(); heroRefresh();
     P.jh = 0; P.jv = 0; P.airHits = 0; recalc(); renderGear();
   }

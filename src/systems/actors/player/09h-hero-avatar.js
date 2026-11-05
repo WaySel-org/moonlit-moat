@@ -8,8 +8,14 @@
   const GEAR_BY_ID = Object.fromEntries(CK_GEAR.items.map(it => [it.id, it]));
   const GEAR_SLOTS = CK_GEAR.slots.filter(s => s !== 'weapon');
   const GEAR_TEST = !!(CK_GEAR.testing && CK_GEAR.testing.unlockAll) || /allgear/.test(location.hash);
-  // Random sword drops from the arsenal are drawn with these models
-  const SWORD_MODEL = { 'Iron Sword': 'iron-sword', 'Ember Saber': 'ember-saber', 'Leech Fang': 'leech-fang', 'Gale Cutter': 'gale-cutter', 'Gravesteel': 'gravesteel', 'Starforged Blade': 'starforged' };
+  // Swords by name, for blades in older saves (before every sword carried its model): the old forged swords map onto
+  // the modelled ones that replaced them
+  const SWORD_MODEL = {
+    'Moatwatch Longsword': 'moatwatch', 'Night Needle': 'night-needle', 'Tidecutter': 'tidecutter', 'Hollowfang': 'hollowfang', 'Wyrmbane, the Monster-Breaker': 'wyrmbane',
+    'Iron Sword': 'moatwatch', 'Steel Longsword': 'moatwatch', 'Gale Cutter': 'night-needle', 'Leech Fang': 'tidecutter', 'Ember Saber': 'hollowfang',
+    'Starforged Blade': 'hollowfang', 'Gravesteel': 'wyrmbane', "Moat Knight's Greatsword": 'wyrmbane'
+  };
+  const STARTER_WEAPON = 'moatwatch';
   const STARTER_GEAR = { head: null, chest: 'ranger-tunic', hands: 'ranger-bracers', legs: 'ranger-breeches', feet: 'ranger-boots', back: 'wanderer-scarf', offhand: 'moon-lantern' };
 
   (function heroLoadLook() {
@@ -22,18 +28,25 @@
   // ---------- Armoury and gear stats (used by the arsenal's applyGear) ----------
   function heroInvDefaults() {
     if (!PR.inv.gear) PR.inv.gear = Object.assign({}, STARTER_GEAR);
-    if (!PR.inv.armoury) PR.inv.armoury = Object.values(STARTER_GEAR).filter(Boolean).concat(['iron-sword']);
+    if (!PR.inv.armoury) PR.inv.armoury = Object.values(STARTER_GEAR).filter(Boolean).concat([STARTER_WEAPON]);
+    PR.inv.armoury = PR.inv.armoury.filter(id => GEAR_BY_ID[id]); // drops ids of retired gear (the old forged swords)
     if (GEAR_TEST) PR.inv.armoury = CK_GEAR.items.map(i => i.id);
     GEAR_SLOTS.forEach(s => { if (!(s in PR.inv.gear)) PR.inv.gear[s] = null; });
   }
   const heroOwns = id => GEAR_TEST || (PR.inv.armoury || []).includes(id);
-  function heroWeaponId() { const s = PR.inv.sword; return (s && (s.model || SWORD_MODEL[s.name])) || 'iron-sword'; }
+  function heroWeaponId() {
+    const s = PR.inv && PR.inv.sword; if (!s) return STARTER_WEAPON;
+    if (!GEAR_BY_ID[s.model]) s.model = SWORD_MODEL[s.name] || STARTER_WEAPON; // older saves
+    return s.model;
+  }
+  // Sword range multiplier (Wyrmbane reaches further than a longsword)
+  function heroReach() { const it = PR.inv && GEAR_BY_ID[heroWeaponId()]; return (it && it.stats && it.stats.reach) || 1; }
   // Equipped items by slot, weapon included, as catalogue entries
   function heroGearItems() {
     heroInvDefaults();
     const out = {};
     GEAR_SLOTS.forEach(s => { out[s] = GEAR_BY_ID[PR.inv.gear[s]] || null; });
-    out.weapon = GEAR_BY_ID[heroWeaponId()] || GEAR_BY_ID['iron-sword'];
+    out.weapon = GEAR_BY_ID[heroWeaponId()] || GEAR_BY_ID[STARTER_WEAPON];
     return out;
   }
   // Sum of a stat over worn armour (not the weapon: its damage runs through the sword item, as before)
@@ -90,6 +103,7 @@
     pBody.children.forEach(c => { if (c !== swordPivot && !c.isLight) c.visible = false; });
     swordPivot.visible = false;
     pBody.add(HERO.avatar.root);
+    HERO.avatar.onAsync = heroMask; // sword models arrive a moment after the rest
     HERO.ready = true; heroMask();
     HERO.avatar.play('Idle_Loop');
   }

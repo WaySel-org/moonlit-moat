@@ -111,11 +111,29 @@
       }
       p.toArray(pos, i * 3);
     }
+    // Back cloth (cape, shawl, scarf) never crosses in front of the body. A plane runs down the hero's back, turned
+    // with the upper spine; the shoulder rows may wrap as far forward as their own anchors, easing to the plane by
+    // the third row. Without this, a spin or a lunge throws the cape over the shoulders onto the chest.
+    const backCloth = kind !== 'skirt';
+    const plane = { n: new THREE.Vector3(), q: new THREE.Vector3() }, depth = new Float32Array(cols);
+    function planeNow() {
+      if (!backCloth) return;
+      const sock = A.sockets.spine_02 || A.sockets[C.bone];
+      plane.n.set(0, 0, 1).transformDirection(sock.matrixWorld);
+      plane.q.setFromMatrixPosition(A.bones.spine_03.matrixWorld).addScaledVector(plane.n, -T.d * 0.42 * A.inner.scale.z);
+      for (let c = 0; c < cols; c++) depth[c] = Math.max(0, _v.copy(anchors[c]).sub(plane.q).dot(plane.n));
+    }
+    function behind(i) {
+      const r = Math.floor(i / cols), c = i % cols;
+      const limit = depth[c] * Math.max(0, 1 - r / 3) - 0.008;
+      const p = _v.fromArray(pos, i * 3), d = _a.copy(p).sub(plane.q).dot(plane.n);
+      if (d > limit) { p.addScaledVector(plane.n, limit - d); p.toArray(pos, i * 3); }
+    }
     C.update = function (dt, ext) {
       if (!dt) { write(); return; }
       A.root.updateWorldMatrix(true, true);
       if (C.first) reset();
-      anchorsNow(); capsNow();
+      anchorsNow(); capsNow(); planeNow();
       // A teleport (respawn, travel) resets the cloth instead of whipping it across the map
       if (_v.fromArray(pos, 0).distanceTo(anchors[0]) > 2) reset();
       C.t += dt;
@@ -125,11 +143,12 @@
         for (let i = 0; i < N; i++) {
           if (pin[i]) continue;
           const k = i * 3;
-          for (let a = 0; a < 3; a++) {
-            const cur = pos[k + a], vel = (cur - prev[k + a]) * 0.985;
-            prev[k + a] = cur;
-            pos[k + a] = cur + vel + ((a === 1 ? CL_G.y : 0) + (a === 0 ? windDir.x : a === 2 ? windDir.z : 0) * 3.5) * h * h;
-          }
+          // Damped velocity, capped so a hard turn can't fling the cloth (at most 9 m/s)
+          let vx = (pos[k] - prev[k]) * 0.982, vy = (pos[k + 1] - prev[k + 1]) * 0.982, vz = (pos[k + 2] - prev[k + 2]) * 0.982;
+          const vl = Math.sqrt(vx * vx + vy * vy + vz * vz), cap = 9 * h;
+          if (vl > cap) { const f = cap / vl; vx *= f; vy *= f; vz *= f; }
+          prev[k] = pos[k]; prev[k + 1] = pos[k + 1]; prev[k + 2] = pos[k + 2];
+          pos[k] += vx + windDir.x * 3.5 * h * h; pos[k + 1] += vy + CL_G.y * h * h; pos[k + 2] += vz + windDir.z * 3.5 * h * h;
         }
         for (let c = 0; c < cols; c++) anchors[c].toArray(pos, c * 3);
         for (let it = 0; it < 4; it++) {
@@ -143,7 +162,7 @@
             pos[ix] += dx * f * wi; pos[ix + 1] += dy * f * wi; pos[ix + 2] += dz * f * wi;
             pos[jx] -= dx * f * wj; pos[jx + 1] -= dy * f * wj; pos[jx + 2] -= dz * f * wj;
           }
-          for (let i = cols; i < N; i++) collide(i);
+          for (let i = cols; i < N; i++) { collide(i); if (backCloth) behind(i); }
         }
       }
       write();

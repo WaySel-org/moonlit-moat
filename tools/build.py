@@ -74,6 +74,8 @@ def load_character():
     if not d.exists(): return None
     kit = json.loads((KIT / 'kit.json').read_text())
     meshes, clips, tex = set(kit['nodes']), set(kit['clips']), {t.rsplit('.', 1)[0] for t in kit['textures']}
+    wpath = KIT / 'weapons.json'
+    models = {w['id'] for w in json.loads(wpath.read_text())['weapons']} if wpath.exists() else set()
     looks, gear = json.loads((d / 'looks.json').read_text()), json.loads((d / 'gear.json').read_text())
     def mesh_ok(ref, where):
         # A mesh is a kit name, "*_Rest" for the M_ and F_ versions, or {"m": ..., "f": ...}
@@ -94,6 +96,8 @@ def load_character():
         ids.add(it['id'])
         look = it.get('look', {})
         for m in look.get('meshes', []): mesh_ok(m, w)
+        for f in look.get('forge', []):
+            if f.get('shape') == 'model' and f.get('model') not in models: fail(f'{w} names weapon model "{f.get("model")}", which is not in assets/character/weapons.json')
         if look.get('tex') and look['tex'] not in tex: fail(f'{w} names texture "{look["tex"]}", which is not in the kit')
     return {'looks': looks, 'gear': gear}
 
@@ -152,7 +156,7 @@ def build():
     # Lazy assets: fetched after the game starts, so they sit outside the first-load budget
     lazy = {'gltfLoader': emit('gltf-loader.js', (ROOT / 'vendor' / 'three-r128-GLTFLoader.js').read_bytes())}
     if KIT.exists():
-        lazy['character'] = {f.stem if f.parent == KIT else 'tex/' + f.stem: emit(f.name, f.read_bytes())
+        lazy['character'] = {f.relative_to(KIT).with_suffix('').as_posix(): emit(f.name, f.read_bytes())
                              for f in sorted(KIT.rglob('*')) if f.suffix in ('.glb', '.jpg', '.png')}
     game_js = ('window.MM_CONTENT = ' + json.dumps(content, separators=(',', ':')) + ';\n'
                'window.MM_ASSETS = ' + json.dumps(lazy, separators=(',', ':')) + ';\n'

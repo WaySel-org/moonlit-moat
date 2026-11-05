@@ -34,7 +34,7 @@
     const pts = document.getElementById('hpts'); pts.hidden = !PR.points; pts.textContent = `+${PR.points}`;
     set('xptxt', `${PR.xp} / ${xpNext()}`); document.getElementById('xpfill').style.width = (PR.xp / xpNext() * 100) + '%';
     set('gold', PR.gold); set('a_str', PR.str); set('a_vit', PR.vit); set('a_agi', PR.agi); set('a_spi', PR.spi);
-    set('g_weapon', `+${PR.weapon} \u00b7 ${SWORDS[swordTier].name}`); set('g_armor', `+${PR.armorLv}`); set('g_flask', PR.flaskMax);
+    set('g_weapon', `+${PR.weapon} \u00b7 ${PR.inv ? PR.inv.sword.name : SWORDS[swordTier].name}`); set('g_armor', `+${PR.armorLv}`); set('g_flask', PR.flaskMax);
     const gw = document.getElementById('g_warden'); gw.textContent = PR.warden ? 'Earned' : 'Not yet earned'; gw.className = PR.warden ? 'gold' : 'muted';
     document.querySelectorAll('.attr button').forEach(b => { b.disabled = !PR.points; });
     set('c_dmg', `\u00d7${PR.dmg.toFixed(2)}`); set('c_spell', `\u00d7${PR.spell.toFixed(2)}`);

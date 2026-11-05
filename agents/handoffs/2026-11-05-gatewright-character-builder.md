@@ -43,3 +43,14 @@ Warden's Leap, spin, death, the spirit realm.
   (`ck`, `fg`, `cl`, `hero`, `b`).
 - The lab (`tools/character-lab/`, gitignored, local only) loads the kit without the game for fitting gear:
   serve the repo root on 8790 and open /tools/character-lab/.
+
+## Update: modelled swords and the cape fix
+- The forged swords are gone. Five Sketchfab models (credits in THIRD_PARTY.md) replace them, built by
+  `tools/character/build_weapons.mjs` into `assets/character/weapons/` (12.5 MB of downloads became 1.7 MB): Moatwatch
+  Longsword (starter, +4%), Night Needle (swift, +12%), Tidecutter (leech, +14%; its model is CC-BY-NC, kept by the
+  owner's choice), Hollowfang (burn, +26%), and Wyrmbane, the Monster-Breaker, a Zweihänder (+45%, 1.2x reach, -5%
+  speed, and the new `slayer` affix: +40% against bosses, royals, mythics, godlings, elites and ancients). Only bosses
+  drop Wyrmbane (a quarter of their sword drops). Older saves map the old sword names onto the new blades.
+- New stat `reach` multiplies sword range in `playerStrike`.
+- Cloth: cape, shawl and scarf now stay behind a plane down the hero's back that turns with the spine, and particle
+  speed is capped, so fast animations no longer throw the cape over the shoulders onto the chest.

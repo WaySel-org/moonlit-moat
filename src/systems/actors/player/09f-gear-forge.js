@@ -272,16 +272,6 @@
     if (o.rune) { const r = fgMesh(new THREE.BoxGeometry(w * 0.1, 0.014, len * 0.62), M.glow, curve * 0.15, 0, len * 0.38); g.add(r); g.userData.rune = r; }
     return g;
   }
-  function fgHilt(M, o, gripLen) {
-    const g = new THREE.Group(), gl = gripLen || 0.16;
-    g.add(fgMesh(new THREE.CylinderGeometry(0.016, 0.018, gl, 10).rotateX(Math.PI / 2), M.leather, 0, 0, 0));
-    for (let i = 0; i < 6; i++) g.add(fgMesh(new THREE.TorusGeometry(0.0175, 0.003, 4, 10), M.dark, 0, 0, -gl / 2 + (i + 0.5) * gl / 6));
-    g.add(fgMesh(new THREE.SphereGeometry(0.026, 12, 8).scale(1, 1, 0.8), M.trim, 0, 0, -gl / 2 - 0.018));
-    const guard = new THREE.CatmullRomCurve3([fgV(-0.11, 0, -0.02), fgV(-0.05, 0, 0.005), fgV(0.05, 0, 0.005), fgV(0.11, 0, -0.02)]);
-    g.add(new THREE.Mesh(new THREE.TubeGeometry(guard, 16, 0.012, 8, false), M.trim)).position.z = gl / 2 + 0.01;
-    g.add(fgMesh(new THREE.BoxGeometry(0.05, 0.03, 0.03), M.trim, 0, 0, gl / 2 + 0.01));
-    return g;
-  }
   function fgWeapon(A, g, o) {
     const s = A.sockets.hand_r; if (!s) return;
     const holder = new THREE.Group(); holder.position.copy(FG_GRIP.pos); holder.rotation.copy(FG_GRIP.rot);
@@ -289,12 +279,6 @@
     A.weapon = holder; A.weaponMats = []; g.traverse(c => { if (c.isMesh && c.material.userData.kind === 'metal') A.weaponMats.push(c.material); });
     A.weaponReach = o.reach || 1;
   }
-  FG.sword = (A, o, M) => {
-    const g = new THREE.Group(), len = o.len || 0.85, w = o.w || 0.055, gl = o.grip || 0.16;
-    g.add(fgHilt(M, o, gl));
-    const b = fgBlade(len, w, o.curve || 0, M, o); b.position.z = gl / 2 + 0.02; g.add(b);
-    fgWeapon(A, g, o);
-  };
   FG.axe = (A, o, M) => {
     const g = new THREE.Group(), L = o.len || 0.75;
     g.add(fgMesh(new THREE.CylinderGeometry(0.017, 0.02, L, 10).rotateX(Math.PI / 2), M.wood, 0, 0, L * 0.35));
@@ -337,6 +321,38 @@
     const orb = fgMesh(new THREE.SphereGeometry(0.045, 16, 12), M.glow, top.x + 0.01, 0.005, top.z + 0.1); g.add(orb);
     g.add(new THREE.PointLight(ckHex(o.glow || '#9fe0ff'), 0.6, 2.5, 2)).position.copy(orb.position);
     fgWeapon(A, g, o);
+  };
+
+  // ---------- Modelled swords (assets/character/weapons/<model>.glb, see tools/character/build_weapons.mjs) ----------
+  // Each file is baked with the grip at the origin and the blade along +Z, so it drops straight into the hand.
+  // Loaded once on first use and cloned; the hand holds an empty group until it arrives.
+  const FG_MODELS = {};
+  function fgModelLoad(id) {
+    if (FG_MODELS[id]) return FG_MODELS[id];
+    const url = CK.urls && CK.urls['weapons/' + id];
+    if (!url || !THREE.GLTFLoader) return Promise.reject(new Error('no weapon model ' + id));
+    return (FG_MODELS[id] = new Promise((ok, no) => new THREE.GLTFLoader().load(url, g => {
+      g.scene.traverse(o => {
+        if (!o.isMesh) return;
+        const m = o.material;
+        // Match the rest of the hero: linear colour textures, the stage's reflections, a flash-able metal tag
+        ['map', 'emissiveMap'].forEach(k => { if (m[k]) { m[k].encoding = THREE.LinearEncoding; m[k].needsUpdate = true; } });
+        if (CK.env) { m.envMap = CK.env; m.envMapIntensity = 0.9; }
+        m.userData.kind = 'metal'; m.userData.base = m.color.clone(); m.needsUpdate = true;
+        o.castShadow = true;
+      });
+      ok(g.scene);
+    }, undefined, no)));
+  }
+  FG.model = (A, o) => {
+    const g = new THREE.Group(); g.name = 'weapon:' + o.model;
+    fgWeapon(A, g, o);
+    fgModelLoad(o.model).then(src => {
+      const c = src.clone(true);
+      c.traverse(n => { if (n.isMesh) { n.material = n.material.clone(); n.material.userData = { kind: 'metal', base: n.material.color.clone() }; A.mats.push(n.material); (A.weaponMats = A.weaponMats || []).push(n.material); } });
+      g.add(c);
+      if (A.onAsync) A.onAsync();
+    }).catch(e => console.warn('gear forge:', e.message));
   };
 
   // ---------- Entry point (called by the avatar for each equipped item) ----------
