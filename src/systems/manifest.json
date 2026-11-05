@@ -11,6 +11,7 @@
   "world/moat/08-grass.js",
   "world/moat/09-wildlands.js",
   "actors/player/09-player-model.js",
+  "actors/player/09d-moonlit-her.js",
   "actors/bosses/10-warden-model.js",
   "render/11-telegraphs-and-sparks.js",
   "world/moat/12-water.js",

@@ -1,6 +1,9 @@
   // ---------- Readability: tag what matters so the ASCII pass can make it stand out ----------
   const maskFriend = new THREE.MeshBasicMaterial({ color: 0xff0000, depthTest: false, depthWrite: false, transparent: true, blending: THREE.AdditiveBlending });
   const maskFoe = new THREE.MeshBasicMaterial({ color: 0x00ff00, depthTest: false, depthWrite: false, transparent: true, blending: THREE.AdditiveBlending });
+  // three r128 compiles one shader per material on first use, so a skinned mesh drawn with maskFriend (first used on
+  // plain meshes) drops out of the mask. Skinned friends (the animated hero) sit on layer 3 with their own material.
+  const maskFriendSkinned = new THREE.MeshBasicMaterial({ color: 0xff0000, depthTest: false, depthWrite: false, transparent: true, blending: THREE.AdditiveBlending, skinning: true });
   const tag = (o, L) => { if (o && !o.userData['mk' + L]) { o.userData['mk' + L] = true; o.traverse(c => { if (!c.isPoints && !c.isSprite) c.layers.enable(L); }); } };
   tag(player, 1);
   beasts.forEach(b => tag(b.g, 1));
