@@ -1,5 +1,5 @@
 {
-  "note": "Every piece of gear the hero can wear. look.meshes are kit meshes (* = M_ or F_ for the body worn), look.forge are shapes built in actors/player/09f-gear-forge.js, look.cloth is simulated cloth (09g). look.hides names body regions the piece covers. stats: armor (max armour), hp, st (stamina), mana, dmg and spell (% bonus), speed (% move speed, can be negative). Weapons: dmg is a fraction (0.12 = +12%), reach multiplies sword range, affix is burn | leech | swift | slayer. Sword models (forge shape \"model\") are assets/character/weapons/<model>.glb, built by tools/character/build_weapons.mjs. trophy: an item that only joins the armoury when that foe falls (\"warden\": the Gate Warden), unless testing unlocks everything.",
+  "note": "Every piece of gear the hero can wear. look.meshes are kit meshes (* = M_ or F_ for the body worn), look.forge are shapes built in actors/player/09f-gear-forge.js, look.cloth is simulated cloth (09g). look.hides names body regions the piece covers. stats: armor (max armour), hp, st (stamina), mana, dmg and spell (% bonus), speed (% move speed, can be negative). Weapons: dmg is a fraction (0.12 = +12%), reach multiplies sword range, affix is burn | leech | swift | slayer. Sword models (forge shape \"model\") are assets/character/weapons/<model>.glb, built by tools/character/build_weapons.mjs. Modelled armour: forge shape \"piece\" (assets/character/armor/<model>.glb; fit head | chest | shield, size, offset) and \"outfit\" with \"parts\" (skinned sets in assets/character/outfits/<id>.glb). Credits in THIRD_PARTY.md.",
   "testing": {
     "unlockAll": true,
     "why": "Every item is in the armoury from the first second, for play-testing. Set false to make gear drop-only."
@@ -57,71 +57,6 @@
         ],
         "tex": "ranger_b",
         "hideHair": true
-      }
-    },
-    {
-      "id": "kettle-helm",
-      "name": "Kettle Helm",
-      "slot": "head",
-      "tier": 2,
-      "stats": {
-        "armor": 14
-      },
-      "look": {
-        "forge": [
-          {
-            "shape": "kettle",
-            "metal": "#8d9399",
-            "trim": "#a88a4a"
-          }
-        ]
-      }
-    },
-    {
-      "id": "horned-helm",
-      "name": "Horned Helm of the Fen",
-      "slot": "head",
-      "tier": 3,
-      "stats": {
-        "armor": 16,
-        "dmg": 3
-      },
-      "look": {
-        "forge": [
-          {
-            "shape": "horned",
-            "metal": "#6f747a",
-            "trim": "#8a6a3a",
-            "horn": "#d8ccb0"
-          }
-        ]
-      }
-    },
-    {
-      "id": "great-helm",
-      "name": "Moat Great Helm",
-      "slot": "head",
-      "tier": 4,
-      "stats": {
-        "armor": 26,
-        "hp": 10,
-        "speed": -2
-      },
-      "look": {
-        "forge": [
-          {
-            "shape": "greathelm",
-            "metal": "#b5bcc4",
-            "trim": "#c9a456",
-            "crest": true,
-            "cloth": "#2a3f7a"
-          }
-        ],
-        "hideHair": true,
-        "hideBeard": true,
-        "hides": [
-          "head"
-        ]
       }
     },
     {
@@ -184,23 +119,27 @@
       }
     },
     {
-      "id": "hounskull",
-      "name": "Hounskull Bascinet",
+      "id": "crusader-helm",
+      "name": "Crusader's Great Helm",
       "slot": "head",
       "tier": 3,
       "stats": {
-        "armor": 24,
-        "hp": 6,
+        "armor": 26,
+        "hp": 8,
         "speed": -1
       },
       "look": {
         "forge": [
           {
-            "shape": "bascinet",
-            "metal": "#9aa1a8",
-            "trim": "#a88a4a",
-            "mail": "#5f646a",
-            "surface": "hammered"
+            "shape": "piece",
+            "model": "great-helm",
+            "fit": "head",
+            "size": 1.22,
+            "offset": [
+              0,
+              0.08,
+              0.02
+            ]
           }
         ],
         "hideHair": true,
@@ -211,41 +150,118 @@
       }
     },
     {
-      "id": "lake-barbute",
-      "name": "Barbute of the Still Lake",
+      "id": "engraved-helm",
+      "name": "Engraved Great Helm",
+      "slot": "head",
+      "tier": 4,
+      "stats": {
+        "armor": 30,
+        "dmg": 3,
+        "speed": -1
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "piece",
+            "model": "ornate-helm",
+            "fit": "head",
+            "size": 1.22,
+            "offset": [
+              0,
+              0.06,
+              0.02
+            ]
+          }
+        ],
+        "hideHair": true,
+        "hideBeard": true,
+        "hides": [
+          "head"
+        ]
+      }
+    },
+    {
+      "id": "visored-bascinet",
+      "name": "Visored Bascinet",
       "slot": "head",
       "tier": 3,
       "stats": {
+        "armor": 24,
+        "hp": 12
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "piece",
+            "model": "bascinet",
+            "fit": "head",
+            "size": 1.9,
+            "offset": [
+              0,
+              -0.08,
+              0.0
+            ]
+          }
+        ],
+        "hideHair": true,
+        "hideBeard": true,
+        "hides": [
+          "head"
+        ]
+      }
+    },
+    {
+      "id": "gothic-bascinet",
+      "name": "Gothic Bascinet",
+      "slot": "head",
+      "tier": 3,
+      "stats": {
+        "armor": 22,
+        "dmg": 4
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "piece",
+            "model": "gothic-bascinet",
+            "fit": "head",
+            "size": 1.3,
+            "offset": [
+              0,
+              0.02,
+              0.04
+            ]
+          }
+        ],
+        "hideHair": true,
+        "hideBeard": true,
+        "hides": [
+          "head"
+        ]
+      }
+    },
+    {
+      "id": "griffin-sallet",
+      "name": "Griffin Sallet",
+      "slot": "head",
+      "tier": 4,
+      "stats": {
         "armor": 20,
+        "spell": 6,
         "dmg": 3
       },
       "look": {
         "forge": [
           {
-            "shape": "barbute",
-            "metal": "#b8c0c8",
-            "trim": "#c9a456"
-          }
-        ],
-        "hideHair": true
-      }
-    },
-    {
-      "id": "pilgrim-cowl",
-      "name": "Pilgrim's Cowl",
-      "slot": "head",
-      "tier": 2,
-      "stats": {
-        "armor": 6,
-        "mana": 20,
-        "spell": 5
-      },
-      "look": {
-        "forge": [
-          {
-            "shape": "cowl",
-            "cloth": "#4a4238",
-            "eyes": "#7fb8ff"
+            "shape": "piece",
+            "model": "griffin-sallet",
+            "fit": "head",
+            "size": 1.45,
+            "offset": [
+              0,
+              0.05,
+              0.0
+            ]
           }
         ],
         "hideHair": true,
@@ -256,23 +272,48 @@
       }
     },
     {
-      "id": "hollow-cowl",
-      "name": "Hollow Cowl of the Gate",
+      "id": "italian-sallet",
+      "name": "Sallet of the Lake Wardens",
       "slot": "head",
-      "tier": 4,
-      "trophy": "warden",
+      "tier": 2,
       "stats": {
-        "armor": 16,
-        "hp": 20,
-        "spell": 8
+        "armor": 18,
+        "speed": 1
       },
       "look": {
         "forge": [
           {
-            "shape": "cowl",
-            "cloth": "#1e1b18",
-            "eyes": "#ffb060"
+            "shape": "piece",
+            "model": "italian-sallet",
+            "fit": "head",
+            "size": 1.3,
+            "offset": [
+              0,
+              0.05,
+              0.0
+            ]
           }
+        ],
+        "hideHair": true,
+        "hideBeard": true,
+        "hides": [
+          "head"
+        ]
+      }
+    },
+    {
+      "id": "imperial-hood",
+      "name": "Imperial Mail Hood",
+      "slot": "head",
+      "tier": 3,
+      "stats": {
+        "armor": 14,
+        "mana": 12
+      },
+      "look": {
+        "outfit": "imperial",
+        "parts": [
+          "Imperial_Hood"
         ],
         "hideHair": true,
         "hideBeard": true,
@@ -366,68 +407,6 @@
       }
     },
     {
-      "id": "iron-cuirass",
-      "name": "Iron Cuirass",
-      "slot": "chest",
-      "tier": 2,
-      "stats": {
-        "armor": 28,
-        "speed": -2
-      },
-      "look": {
-        "meshes": [
-          "*_Peasant_Body"
-        ],
-        "tex": "peasant_b",
-        "hides": [
-          "torso",
-          "hips"
-        ],
-        "forge": [
-          {
-            "shape": "cuirass",
-            "metal": "#7d848b",
-            "trim": "#5a4a3a",
-            "leather": "#3a2618",
-            "pauldrons": true
-          }
-        ]
-      }
-    },
-    {
-      "id": "plate-cuirass",
-      "name": "Moat Knight's Plate",
-      "slot": "chest",
-      "tier": 4,
-      "stats": {
-        "armor": 46,
-        "hp": 20,
-        "speed": -4
-      },
-      "look": {
-        "meshes": [
-          "*_Ranger_Body"
-        ],
-        "tex": "ranger_b",
-        "hides": [
-          "torso",
-          "hips"
-        ],
-        "forge": [
-          {
-            "shape": "cuirass",
-            "metal": "#c4ccd4",
-            "trim": "#c9a456",
-            "leather": "#2a1a10",
-            "pauldrons": true,
-            "big": true,
-            "gorget": true,
-            "faulds": 4
-          }
-        ]
-      }
-    },
-    {
       "id": "mystic-robe",
       "name": "Robe of Still Water",
       "slot": "chest",
@@ -455,41 +434,6 @@
           "trim": "#c9a456",
           "pattern": "stripes"
         }
-      }
-    },
-    {
-      "id": "brigandine",
-      "name": "Studded Brigandine",
-      "slot": "chest",
-      "tier": 2,
-      "stats": {
-        "armor": 22,
-        "st": 10
-      },
-      "look": {
-        "meshes": [
-          "*_Peasant_Body"
-        ],
-        "tex": "peasant_b",
-        "hides": [
-          "torso",
-          "hips"
-        ],
-        "forge": [
-          {
-            "shape": "brigandine",
-            "fabric": "#6a1e1e",
-            "trim": "#b8a070",
-            "leather": "#2a1a10",
-            "pauldrons": true,
-            "metal": "#7d848b"
-          },
-          {
-            "shape": "belt",
-            "leather": "#2a1a10",
-            "trim": "#a88a4a"
-          }
-        ]
       }
     },
     {
@@ -535,8 +479,8 @@
       }
     },
     {
-      "id": "knight-tabard",
-      "name": "Moat Knight's Tabard",
+      "id": "engraved-cuirass",
+      "name": "Engraved Cuirass",
       "slot": "chest",
       "tier": 3,
       "stats": {
@@ -555,90 +499,39 @@
         ],
         "forge": [
           {
-            "shape": "cuirass",
-            "metal": "#b5bcc4",
-            "trim": "#c9a456",
-            "leather": "#2a1a10",
-            "pauldrons": true,
-            "faulds": 2
-          }
-        ],
-        "cloth": [
-          {
-            "kind": "panel",
-            "side": "front",
-            "w": 0.62,
-            "len": 0.85,
-            "cols": 7,
-            "rows": 11,
-            "color": "#1e2f63",
-            "trim": "#c9a456",
-            "pattern": "moon"
-          },
-          {
-            "kind": "panel",
-            "side": "back",
-            "w": 0.62,
-            "len": 0.85,
-            "cols": 7,
-            "rows": 11,
-            "color": "#1e2f63",
-            "trim": "#c9a456"
+            "shape": "piece",
+            "model": "cuirass",
+            "fit": "chest",
+            "size": 1.2,
+            "offset": [
+              0,
+              0,
+              0.02
+            ]
           }
         ]
       }
     },
     {
-      "id": "warden-hauberk",
-      "name": "Gatewarden's Harness",
+      "id": "imperial-coat",
+      "name": "Imperial Coronation Coat",
       "slot": "chest",
       "tier": 4,
-      "trophy": "warden",
       "stats": {
-        "armor": 52,
-        "hp": 25,
-        "speed": -4
+        "armor": 32,
+        "hp": 14,
+        "st": 10
       },
       "look": {
-        "meshes": [
-          "*_Peasant_Body"
+        "outfit": "imperial",
+        "parts": [
+          "Imperial_Tunic"
         ],
-        "tex": "peasant_b",
         "hides": [
           "torso",
-          "hips"
-        ],
-        "forge": [
-          {
-            "shape": "cuirass",
-            "metal": "#5c6168",
-            "dark": "#2a2c30",
-            "trim": "#7a5a3a",
-            "leather": "#1a1410",
-            "surface": "hammered",
-            "pauldrons": true,
-            "big": true,
-            "gorget": true,
-            "tassets": true,
-            "faulds": 4
-          },
-          {
-            "shape": "mantle",
-            "fur": "#3a332c",
-            "trim": "#7a5a3a"
-          }
-        ],
-        "cloth": {
-          "kind": "panel",
-          "side": "front",
-          "w": 0.55,
-          "len": 0.95,
-          "cols": 7,
-          "rows": 12,
-          "color": "#4a1a1a",
-          "trim": "#2a0e0e",
-          "tatter": 3
-        }
+          "hips",
+          "arms"
+        ]
       }
     },
     {
@@ -708,29 +601,21 @@
       }
     },
     {
-      "id": "iron-gauntlets",
-      "name": "Iron Gauntlets",
+      "id": "imperial-gauntlets",
+      "name": "Imperial Gauntlets",
       "slot": "hands",
-      "tier": 2,
+      "tier": 3,
       "stats": {
-        "armor": 14,
+        "armor": 12,
         "dmg": 4
       },
       "look": {
-        "meshes": [
-          "*_Peasant_Arms"
+        "outfit": "imperial",
+        "parts": [
+          "Imperial_Hands"
         ],
-        "tex": "peasant_b",
         "hides": [
-          "arms",
           "hands"
-        ],
-        "forge": [
-          {
-            "shape": "gauntlets",
-            "metal": "#8d9399",
-            "trim": "#a88a4a"
-          }
         ]
       }
     },
@@ -824,30 +709,22 @@
       }
     },
     {
-      "id": "plate-greaves",
-      "name": "Plate Greaves",
+      "id": "imperial-greaves",
+      "name": "Imperial Greaves",
       "slot": "legs",
       "tier": 3,
       "stats": {
-        "armor": 22,
-        "speed": -2
+        "armor": 18,
+        "speed": -1
       },
       "look": {
-        "meshes": [
-          "*_Ranger_Legs"
+        "outfit": "imperial",
+        "parts": [
+          "Imperial_Pants"
         ],
-        "tex": "ranger_b",
         "hides": [
           "legs",
           "hips"
-        ],
-        "forge": [
-          {
-            "shape": "greaves",
-            "metal": "#b5bcc4",
-            "trim": "#c9a456",
-            "cuisses": true
-          }
         ]
       }
     },
@@ -909,27 +786,20 @@
       }
     },
     {
-      "id": "iron-sabatons",
-      "name": "Iron Sabatons",
+      "id": "imperial-sabatons",
+      "name": "Imperial Sabatons",
       "slot": "feet",
-      "tier": 2,
+      "tier": 3,
       "stats": {
-        "armor": 10,
-        "speed": -1
+        "armor": 10
       },
       "look": {
-        "meshes": [
-          "*_Ranger_Feet"
+        "outfit": "imperial",
+        "parts": [
+          "Imperial_Boots"
         ],
-        "tex": "ranger_b",
         "hides": [
           "feet"
-        ],
-        "forge": [
-          {
-            "shape": "sabatons",
-            "metal": "#8d9399"
-          }
         ]
       }
     },
@@ -1031,55 +901,6 @@
       }
     },
     {
-      "id": "wolfskin-mantle",
-      "name": "Wolfskin Mantle",
-      "slot": "back",
-      "tier": 2,
-      "stats": {
-        "armor": 6,
-        "st": 12
-      },
-      "look": {
-        "forge": [
-          {
-            "shape": "mantle",
-            "fur": "#6a5a48",
-            "trim": "#a88a4a"
-          }
-        ],
-        "cloth": {
-          "kind": "cape",
-          "len": 0.7,
-          "w": 1.0,
-          "color": "#3a2e24",
-          "trim": "#2a2018"
-        }
-      }
-    },
-    {
-      "id": "warden-shroud",
-      "name": "Shroud of the Gate",
-      "slot": "back",
-      "tier": 4,
-      "trophy": "warden",
-      "stats": {
-        "armor": 8,
-        "hp": 20
-      },
-      "look": {
-        "cloth": {
-          "kind": "cape",
-          "len": 1.35,
-          "w": 1.2,
-          "cols": 13,
-          "rows": 16,
-          "color": "#2a1414",
-          "trim": "#140808",
-          "tatter": 5
-        }
-      }
-    },
-    {
       "id": "moon-lantern",
       "name": "Moon Lantern",
       "slot": "offhand",
@@ -1093,46 +914,6 @@
             "shape": "lantern",
             "dark": "#2a2622",
             "flame": "#ffe0a0"
-          }
-        ]
-      }
-    },
-    {
-      "id": "round-shield",
-      "name": "Moatwood Shield",
-      "slot": "offhand",
-      "tier": 1,
-      "stats": {
-        "armor": 16
-      },
-      "look": {
-        "forge": [
-          {
-            "shape": "roundshield",
-            "wood": "#6a4a2e",
-            "metal": "#7d848b",
-            "trim": "#a88a4a",
-            "paint": "#7a2a24"
-          }
-        ]
-      }
-    },
-    {
-      "id": "kite-shield",
-      "name": "Kite Shield of the Crescent",
-      "slot": "offhand",
-      "tier": 3,
-      "stats": {
-        "armor": 28,
-        "hp": 10,
-        "speed": -1
-      },
-      "look": {
-        "forge": [
-          {
-            "shape": "kiteshield",
-            "paint": "#1e3a6e",
-            "trim": "#c9a456"
           }
         ]
       }
@@ -1153,6 +934,46 @@
             "cloth": "#3a1e2e",
             "trim": "#c9a456",
             "glow": "#d0a8ff"
+          }
+        ]
+      }
+    },
+    {
+      "id": "viking-shield",
+      "name": "Iron-rimmed Round Shield",
+      "slot": "offhand",
+      "tier": 1,
+      "stats": {
+        "armor": 18
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "piece",
+            "model": "viking-shield",
+            "fit": "shield",
+            "size": 0.78
+          }
+        ]
+      }
+    },
+    {
+      "id": "wolf-shield",
+      "name": "Wolfcrest Shield",
+      "slot": "offhand",
+      "tier": 3,
+      "stats": {
+        "armor": 28,
+        "hp": 8,
+        "speed": -1
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "piece",
+            "model": "wolf-shield",
+            "fit": "shield",
+            "size": 0.72
           }
         ]
       }

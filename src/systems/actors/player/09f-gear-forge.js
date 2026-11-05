@@ -382,8 +382,9 @@
   };
 
   // ---------- Off hand ----------
-  // Held in the left fist; a shield's face looks out from the forearm (calibrated against Idle_Shield_Loop)
-  const FG_OFF = { pos: fgV(0.06, -0.03, 0.0), rot: new THREE.Euler(0, 0, Math.PI / 2) };
+  // Held in the left fist (calibrated against Idle_Loop, Idle_Shield_Loop and Sword_Idle)
+  // Rest pose: the face looks out from the back of the forearm (up in the T-pose), so a relaxed arm turns it outward
+  const FG_OFF = { pos: fgV(0.06, 0.04, 0.0), rot: new THREE.Euler(0, 0, 0) };
   function fgOffHand(A, g, o) {
     const s = A.sockets.hand_l; if (!s) return;
     const holder = new THREE.Group(); holder.position.copy(o.at || FG_OFF.pos); holder.rotation.copy(o.rot || FG_OFF.rot);
@@ -531,6 +532,54 @@
     fgModelLoad(o.model).then(src => {
       const c = src.clone(true);
       c.traverse(n => { if (n.isMesh) { n.material = n.material.clone(); n.material.userData = { kind: 'metal', base: n.material.color.clone() }; A.mats.push(n.material); (A.weaponMats = A.weaponMats || []).push(n.material); } });
+      g.add(c);
+      if (A.onAsync) A.onAsync();
+    }).catch(e => console.warn('gear forge:', e.message));
+  };
+
+  // ---------- Modelled armour (assets/character/armor/<model>.glb, prepared in Blender) ----------
+  // Each file faces +Z with +Y up, centred on its bounding box, 1 unit wide. "fit" says what to size it against:
+  //   head: width = head width x size, centred on the skull (+ offset in head widths), on the Head bone
+  //   chest: width = chest width x size, centred on the ribcage, on spine_03
+  //   shield: width = size metres, in the off hand with its face outward
+  const FG_PIECES = {};
+  function fgPieceLoad(id) {
+    if (FG_PIECES[id]) return FG_PIECES[id];
+    const url = CK.urls && CK.urls['armor/' + id];
+    if (!url || !THREE.GLTFLoader) return Promise.reject(new Error('no armour model ' + id));
+    return (FG_PIECES[id] = new Promise((ok, no) => new THREE.GLTFLoader().load(url, g => {
+      g.scene.traverse(o => {
+        if (!o.isMesh) return;
+        const m = o.material;
+        ['map', 'emissiveMap'].forEach(k => { if (m[k]) { m[k].encoding = THREE.LinearEncoding; m[k].needsUpdate = true; } });
+        // Pure metal reads black under a dark sky; keep some diffuse so the lantern and the moon light it
+        m.metalness = Math.min(m.metalness === undefined ? 1 : m.metalness, 0.7); m.roughness = Math.max(m.roughness === undefined ? 0.5 : m.roughness, 0.32);
+        m.side = THREE.DoubleSide; o.castShadow = true; o.receiveShadow = true;
+      });
+      ok(g.scene);
+    }, undefined, no)));
+  }
+  FG.piece = (A, o) => {
+    const g = new THREE.Group(); g.name = 'piece:' + o.model;
+    const size = o.size || 1, off = o.offset || [0, 0, 0];
+    if (o.fit === 'shield') { g.scale.setScalar(size); fgOffHand(A, g, o); }
+    else if (o.fit === 'chest') {
+      const T = fgTorso(A), w = T.w * size;
+      g.scale.setScalar(w);
+      fgHang(A, 'spine_03', g, fgV(T.c.x + off[0] * w, (T.top + T.bot) / 2 + (T.top - T.bot) * 0.12 + off[1] * w, T.c.z + off[2] * w));
+    } else {
+      const h = fgHead(A), w = h.r * 2 * size;
+      g.scale.setScalar(w);
+      fgHang(A, 'Head', g, h.c.clone().add(fgV(off[0] * w, off[1] * w, off[2] * w)));
+    }
+    fgPieceLoad(o.model).then(src => {
+      const c = src.clone(true);
+      c.traverse(n => {
+        if (!n.isMesh) return;
+        n.material = n.material.clone();
+        if (CK.env) { n.material.envMap = CK.env; n.material.envMapIntensity = 1.2; }
+        n.material.userData = { kind: 'metal', base: n.material.color.clone() }; A.mats.push(n.material);
+      });
       g.add(c);
       if (A.onAsync) A.onAsync();
     }).catch(e => console.warn('gear forge:', e.message));

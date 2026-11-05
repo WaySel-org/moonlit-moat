@@ -6,7 +6,7 @@
   "world": "moat",
   "chapter": 1,
   "lore": "A stone-armoured giant bound to the castle gate. Its power, once taken, lets the bearer leap.",
-  "look": "A giant in a deep hood whose face is lost in shadow, two embers for eyes; hammered iron harness with a fur mantle, a tattered red tabard and shroud, a two-handed maul.",
+  "look": "A towering knight in rust-streaked plate under a flat-topped great helm, two embers burning in the eye slit; a long torn cape and a two-handed maul.",
   "stats": {
     "baseHealth": 1500
   },
@@ -21,33 +21,9 @@
   "originality": "original",
   "dataDriven": false,
   "avatar": {
-    "note": "Built with the character kit (actors/bosses/10b-warden-avatar.js). scale is the size in the world (the hero is 1). Gear ids are in content/character/gear.json.",
-    "scale": 3.0,
-    "look": {
-      "body": "m",
-      "skin": "#8a7a6a",
-      "hair": "none",
-      "brows": "none",
-      "beard": "none",
-      "eyes": "grey",
-      "shape": {
-        "height": 0.6,
-        "build": 0.85,
-        "shoulders": 0.9,
-        "arms": 0.85,
-        "legs": 0.7,
-        "head": 0.5
-      }
-    },
-    "gear": {
-      "head": "hollow-cowl",
-      "chest": "warden-hauberk",
-      "hands": "iron-gauntlets",
-      "legs": "plate-greaves",
-      "feet": "iron-sabatons",
-      "back": "warden-shroud",
-      "offhand": null,
-      "weapon": "war-hammer"
-    }
+    "note": "assets/character/bosses/warden.glb, rigged onto the kit's bone names (actors/bosses/10b-warden-avatar.js). scale is the size in the world (the hero is about 1.8 m); weapon is a gear id from content/character/gear.json.",
+    "scale": 3.1,
+    "weapon": "war-hammer",
+    "model": "Undead Grave-Knight (male) by milakpro, CC-BY 4.0"
   }
 }

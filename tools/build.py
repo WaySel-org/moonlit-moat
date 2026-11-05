@@ -98,6 +98,8 @@ def load_character():
         for m in look.get('meshes', []): mesh_ok(m, w)
         for f in look.get('forge', []):
             if f.get('shape') == 'model' and f.get('model') not in models: fail(f'{w} names weapon model "{f.get("model")}", which is not in assets/character/weapons.json')
+            if f.get('shape') == 'piece' and not (KIT / 'armor' / f'{f.get("model")}.glb').exists(): fail(f'{w} names armour model "{f.get("model")}", which is not in assets/character/armor/')
+        if look.get('outfit') and not (KIT / 'outfits' / f'{look["outfit"]}.glb').exists(): fail(f'{w} names outfit "{look["outfit"]}", which is not in assets/character/outfits/')
         if look.get('tex') and look['tex'] not in tex: fail(f'{w} names texture "{look["tex"]}", which is not in the kit')
     return {'looks': looks, 'gear': gear}
 

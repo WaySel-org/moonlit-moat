@@ -69,3 +69,16 @@ Warden's Leap, spin, death, the spirit realm.
   chest/waist) and cloth that works at any scale.
 - Fixed: body-shape sliders compounded down the spine (a build of 0.85 made the chest twice as wide); each bone now
   gets the size it should end at.
+
+## Update (2026-11-06): real armour models and a knightly Warden
+- The procedural helmets, plate, gauntlets, greaves, sabatons, fur mantle and shields are retired from gear.json
+  (their forge code remains for the circlet, crown and witch's hat). In their place, Sketchfab CC-BY models
+  (credits in THIRD_PARTY.md): six helmets and a cuirass (`assets/character/armor/`, forge shape `piece` fitted to the
+  head or chest), two shields, and the five-part Imperial Coronation set (`assets/character/outfits/imperial.glb`,
+  skinned to the kit's bone names, gear `look.outfit` + `parts`).
+- The Gate Warden is "Undead Grave-Knight (male)": its Character Creator rig mapped onto the kit's bone names and a
+  copy of the kit rig with its joints moved onto the knight's (bone directions kept), so the kit clips play on it;
+  hip height scaled. `assets/character/bosses/warden.glb`, loaded by `actors/bosses/10b-warden-avatar.js`.
+  The hooded design and its trophies are gone.
+- How the Blender work was done: models in a T-pose or A-pose rig cleanly; one-piece sculpts with the arms against
+  the body (tried "The Broken Vow") tear when the arms move, so they were dropped.

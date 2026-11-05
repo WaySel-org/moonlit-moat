@@ -35,6 +35,24 @@
     return CK.loading;
   }
   const ckMesh = name => CK.kit && CK.kit.getObjectByName(name);
+  // Outfits: skinned armour sets rigged onto the kit's bone names in Blender (assets/character/outfits/<id>.glb).
+  // Loaded on first use; an avatar wearing one rebuilds when it arrives.
+  const CK_OUTFITS = {};
+  function ckOutfit(id) {
+    if (CK_OUTFITS[id]) return CK_OUTFITS[id];
+    const o = CK_OUTFITS[id] = { scene: null };
+    const url = CK.urls && CK.urls['outfits/' + id];
+    o.promise = !url ? Promise.reject(new Error('no outfit ' + id)) : new Promise((ok, no) => new THREE.GLTFLoader().load(url, g => {
+      g.scene.updateMatrixWorld(true);
+      g.scene.traverse(n => {
+        if (!n.isMesh) return;
+        ['map', 'emissiveMap'].forEach(k => { if (n.material[k]) { n.material[k].encoding = THREE.LinearEncoding; n.material[k].needsUpdate = true; } });
+      });
+      o.scene = g.scene; ok(o);
+    }, undefined, no));
+    o.promise.catch(e => console.warn('character kit:', e.message));
+    return o;
+  }
   function ckTexture(name) {
     if (!name) return null;
     if (CK.tex[name]) return CK.tex[name];
@@ -200,13 +218,16 @@
 
     // A kit part may load as one skinned mesh or, with two materials, as a group of them. Primitives cut from
     // the bare body's material (MI_Regular_*, MI_Superhero_*) get this hero's skin instead of mat.
-    function part(name, mat, geometry, skin) {
-      const src = ckMesh(name); if (!src) return null;
+    function part(name, mat, geometry, skin, srcObj) {
+      const src = srcObj || ckMesh(name); if (!src) return null;
       const list = src.isSkinnedMesh ? [src] : src.children.filter(c => c.isSkinnedMesh);
       const out = [];
       list.forEach(sm => {
         const isSkin = skin && /^MI_(Regular|Superhero)/.test(sm.material && sm.material.name || '');
-        const m = new THREE.SkinnedMesh(geometry || sm.geometry, isSkin ? skin : mat);
+        // An outfit keeps its own (textured) material, cloned so flashes and stone don't touch the shared one
+        let useMat = isSkin ? skin : mat;
+        if (mat === 'own') { useMat = sm.material.clone(); useMat.skinning = true; useMat.metalness = Math.min(useMat.metalness, 0.65); useMat.roughness = Math.max(useMat.roughness, 0.35); if (CK.env) { useMat.envMap = CK.env; useMat.envMapIntensity = 0.6; } useMat.userData = { kind: 'cloth', base: useMat.color.clone() }; A.mats.push(useMat); }
+        const m = new THREE.SkinnedMesh(geometry || sm.geometry, useMat);
         m.name = name; m.frustumCulled = false; m.castShadow = true; m.receiveShadow = true;
         // World transform of the kit mesh, so it sits where it was bound
         sm.updateWorldMatrix(true, false); sm.matrixWorld.decompose(m.position, m.quaternion, m.scale);
@@ -269,6 +290,11 @@
           const m = ckMaterial('cloth', { map: lk.tex, color: lk.tint || 0xffffff, skinned: true }); A.mats.push(m);
           part(name, m, null, regMat);
         });
+        if (lk.outfit) {
+          const o = ckOutfit(lk.outfit);
+          if (o.scene) (lk.parts || []).forEach(n => { const src = o.scene.getObjectByName(n); if (src) part(n, 'own', null, null, src); });
+          else if (!o.waiting) { o.waiting = true; o.promise.then(() => { o.waiting = false; build(); if (A.onAsync) A.onAsync(); }, () => {}); }
+        }
         if (typeof forgeGear === 'function') forgeGear(A, it);
       });
       applyShape();
