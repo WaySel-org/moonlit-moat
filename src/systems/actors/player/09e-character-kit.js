@@ -44,6 +44,36 @@
     return (CK.tex[name] = t);
   }
 
+  // ---------- Surfaces: small generated textures that give forged gear its grain ----------
+  // Grey maps used as bump and roughness: brushed and hammered metal, leather grain, a cloth weave, quilting.
+  // Made once on first use (256 px canvases, nothing downloaded).
+  const CK_SURF = {};
+  function ckSurface(kind) {
+    if (CK_SURF[kind]) return CK_SURF[kind];
+    const N = 256, c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d');
+    const rnd = (a, b) => a + Math.random() * (b - a);
+    x.fillStyle = '#808080'; x.fillRect(0, 0, N, N);
+    if (kind === 'brushed') {
+      for (let i = 0; i < 900; i++) { x.fillStyle = `rgba(${Math.random() < 0.5 ? '0,0,0' : '255,255,255'},${rnd(0.03, 0.12)})`; x.fillRect(rnd(-40, N), rnd(0, N), rnd(30, 160), 1); }
+      for (let i = 0; i < 40; i++) { x.strokeStyle = `rgba(255,255,255,${rnd(0.15, 0.4)})`; x.lineWidth = 0.7; x.beginPath(); const a = rnd(0, N), b = rnd(0, N); x.moveTo(a, b); x.lineTo(a + rnd(-30, 30), b + rnd(-12, 12)); x.stroke(); }
+    } else if (kind === 'hammered') {
+      for (let i = 0; i < 260; i++) { const px = rnd(0, N), py = rnd(0, N), r = rnd(4, 14), g = x.createRadialGradient(px, py, 0, px, py, r); g.addColorStop(0, 'rgba(0,0,0,0.22)'); g.addColorStop(0.7, 'rgba(255,255,255,0.06)'); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(px - r, py - r, r * 2, r * 2); }
+      for (let i = 0; i < 30; i++) { x.strokeStyle = `rgba(0,0,0,${rnd(0.2, 0.45)})`; x.lineWidth = rnd(0.5, 1.2); x.beginPath(); const a = rnd(0, N), b = rnd(0, N); x.moveTo(a, b); x.lineTo(a + rnd(-25, 25), b + rnd(-25, 25)); x.stroke(); }
+    } else if (kind === 'leather') {
+      for (let i = 0; i < 2600; i++) { x.fillStyle = `rgba(0,0,0,${rnd(0.05, 0.2)})`; x.beginPath(); x.ellipse(rnd(0, N), rnd(0, N), rnd(1, 3.5), rnd(0.6, 2), rnd(0, 3), 0, 7); x.fill(); }
+      for (let i = 0; i < 25; i++) { x.strokeStyle = `rgba(0,0,0,${rnd(0.15, 0.3)})`; x.lineWidth = rnd(0.6, 1.4); x.beginPath(); x.moveTo(rnd(0, N), rnd(0, N)); x.bezierCurveTo(rnd(0, N), rnd(0, N), rnd(0, N), rnd(0, N), rnd(0, N), rnd(0, N)); x.stroke(); }
+    } else if (kind === 'weave') {
+      for (let y = 0; y < N; y += 2) { x.fillStyle = `rgba(0,0,0,${0.08 + 0.05 * Math.random()})`; x.fillRect(0, y, N, 1); }
+      for (let xx = 0; xx < N; xx += 2) { x.fillStyle = `rgba(255,255,255,${0.04 + 0.05 * Math.random()})`; x.fillRect(xx, 0, 1, N); }
+    } else if (kind === 'quilt') {
+      x.strokeStyle = 'rgba(0,0,0,0.45)'; x.lineWidth = 3;
+      for (let i = -N; i < N * 2; i += 32) { x.beginPath(); x.moveTo(i, 0); x.lineTo(i + N, N); x.stroke(); x.beginPath(); x.moveTo(i, N); x.lineTo(i + N, 0); x.stroke(); }
+      for (let i = 0; i < 1400; i++) { x.fillStyle = `rgba(255,255,255,${rnd(0.02, 0.06)})`; x.fillRect(rnd(0, N), rnd(0, N), 2, 1); }
+    }
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(2, 2); t.anisotropy = 4;
+    return (CK_SURF[kind] = t);
+  }
+
   // ---------- Materials ----------
   // kind: skin | hair | eye | cloth | metal | leather | glow. Colour x 2 on tint maps (see above).
   function ckMaterial(kind, o) {
@@ -55,8 +85,8 @@
     else if (kind === 'stubble') Object.assign(P, { map: ckTexture('hair_1'), roughness: 0.8, metalness: 0, transparent: true, opacity: 0.55, depthWrite: false, color: col.multiplyScalar(2) });
     else if (kind === 'eye') Object.assign(P, { map: ckTexture(o.map), roughness: 0.15, metalness: 0 });
     else if (kind === 'cloth') Object.assign(P, { map: ckTexture(o.map), normalMap: o.map ? ckTexture(o.map.replace(/_[ab]$/, '') + '_n') : null, roughness: 0.85, metalness: 0, side: o.side || THREE.FrontSide });
-    else if (kind === 'metal') Object.assign(P, { roughness: o.rough === undefined ? 0.32 : o.rough, metalness: 0.85 });
-    else if (kind === 'leather') Object.assign(P, { roughness: 0.7, metalness: 0.05 });
+    else if (kind === 'metal') { const sf = ckSurface(o.surface || 'brushed'); Object.assign(P, { roughness: o.rough === undefined ? 0.36 : o.rough, metalness: 0.85, bumpMap: sf, bumpScale: 0.012, roughnessMap: sf }); }
+    else if (kind === 'leather') { const sf = ckSurface(o.surface || 'leather'); Object.assign(P, { roughness: 0.74, metalness: 0.04, bumpMap: sf, bumpScale: 0.02, roughnessMap: sf }); }
     else if (kind === 'glow') return new THREE.MeshBasicMaterial({ color: col, skinning: !!o.skinned, toneMapped: false });
     if (o.side) P.side = o.side;
     const m = new THREE.MeshStandardMaterial(P);
@@ -247,23 +277,23 @@
 
     function applyShape() {
       const L = A.look, sh = L.shape || {};
-      Object.values(A.bones).forEach(b => b.scale.set(1, 1, 1));
+      // What size each shaped bone should end up (not its local scale): bones inherit their parent's scale, so a
+      // chain like pelvis > spine_01 > spine_02 > spine_03 would otherwise compound (1.2 each became 2x at the chest)
+      const want = {};
       Object.entries(CK_SHAPE).forEach(([k, list]) => {
         const s = 1 + ((sh[k] === undefined ? 0.5 : sh[k]) - 0.5) * 2 * CK_SHAPE_RANGE[k];
         list.forEach(([bn, axes]) => {
-          const b = A.bones[bn]; if (!b) return;
-          ['x', 'y', 'z'].forEach(a => { if (axes.includes(a)) b.scale[a] *= s; });
+          const w = want[bn] || (want[bn] = new THREE.Vector3(1, 1, 1));
+          ['x', 'y', 'z'].forEach(a => { if (axes.includes(a)) w[a] *= s; });
         });
       });
-      // Counter-scale direct children that aren't scaled themselves, so a thick spine doesn't swell the head or hands
-      Object.values(A.bones).forEach(b => {
-        if (b.scale.x === 1 && b.scale.y === 1 && b.scale.z === 1) return;
-        b.children.forEach(c => {
-          if (!c.isBone || c.name === 'Head') return;
-          const own = Object.values(CK_SHAPE).some(l => l.some(([n]) => n === c.name));
-          if (!own) c.scale.set(1 / b.scale.x, 1 / b.scale.y, 1 / b.scale.z);
-        });
-      });
+      // Walk the rig: each bone's local scale is what it wants divided by what it already inherits
+      const one = new THREE.Vector3(1, 1, 1);
+      (function walk(b, inherited) {
+        const w = want[b.name] || one;
+        b.scale.set(w.x / inherited.x, w.y / inherited.y, w.z / inherited.z);
+        b.children.forEach(c => { if (c.isBone) walk(c, w); });
+      })(A.bones.root || Object.values(A.bones)[0], one);
       const h = 1 + ((sh.height === undefined ? 0.5 : sh.height) - 0.5) * 0.16;
       A.inner.scale.setScalar(h * (L.body === 'f' ? 1 : 1));
     }

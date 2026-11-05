@@ -54,3 +54,18 @@ Warden's Leap, spin, death, the spirit realm.
 - New stat `reach` multiplies sword range in `playerStrike`.
 - Cloth: cape, shawl and scarf now stay behind a plane down the hero's back that turns with the spine, and particle
   speed is capped, so fast animations no longer throw the cape over the shoulders onto the chest.
+
+## Update: the hooded Warden and better armour
+- The Gate Warden is built with the character kit (`actors/bosses/10b-warden-avatar.js`, data in
+  `content/characters/bosses/warden.json` "avatar"): a giant (3x) in the Hollow Cowl (a void with ember eyes that
+  flare red in phase two), the Gatewarden's Harness (hammered plate, big pauldrons, gorget, tassets, fur mantle, a red
+  tabard), the Shroud of the Gate and the Warden's Maul. The fight code is untouched; each attack plays a clip timed
+  so its blow lands as the wind-up ends. Skinned foes draw in a new mask pass on layer 4.
+- The three Warden pieces are trophies (`"trophy": "warden"`): they join the armoury when the Warden falls.
+- Gear quality: generated surface maps (brushed and hammered metal, leather grain, weave, quilting) on every forged
+  piece; rivets, straps and buckles merged into single meshes; layered gorget, riveted faulds, finger lames, knee
+  fans. New: Hounskull Bascinet, Barbute of the Still Lake, Pilgrim's Cowl, Studded Brigandine, Fenwalker Longcoat
+  (coat tails), Moat Knight's Tabard (front and back cloth), Wolfskin Mantle. New cloth kind `panel` (front/back,
+  chest/waist) and cloth that works at any scale.
+- Fixed: body-shape sliders compounded down the spine (a build of 0.85 made the chest twice as wide); each bone now
+  gets the size it should end at.

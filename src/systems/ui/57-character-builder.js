@@ -155,6 +155,7 @@
     if (HERO.firstVisit) openBuilder(true);
     setTimeout(() => ckLoad().then(() => {
       if (!BLD.stage) BLD.stage = bsStage(renderer); // also makes the environment the hero's metal reflects
+      wardenAttach();
       if (!G.builder) { heroAttach(); heroRefresh(); }
     }).catch(e => console.warn('Moonlit Moat: the character kit did not load; keeping the block figure', e)), 50);
   }

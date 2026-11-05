@@ -204,6 +204,7 @@
       visorMat.color.setRGB(0.1, 0.06, 0.04);
     }
     boss.rotation.y = B.facing + B.spin;
+    wardenAvatarUpdate(dt);
 
     // Phase change at half health
     if (B.phase === 1 && B.hp <= B.max / 2 && B.state !== 'dead') {

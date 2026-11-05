@@ -33,7 +33,8 @@
     if (GEAR_TEST) PR.inv.armoury = CK_GEAR.items.map(i => i.id);
     GEAR_SLOTS.forEach(s => { if (!(s in PR.inv.gear)) PR.inv.gear[s] = null; });
   }
-  const heroOwns = id => GEAR_TEST || (PR.inv.armoury || []).includes(id);
+  // Trophies join the armoury when their foe falls (the Warden's set once PR.warden is earned)
+  const heroOwns = id => GEAR_TEST || (PR.inv.armoury || []).includes(id) || (GEAR_BY_ID[id] && GEAR_BY_ID[id].trophy === 'warden' && PR.warden);
   function heroWeaponId() {
     const s = PR.inv && PR.inv.sword; if (!s) return STARTER_WEAPON;
     if (!GEAR_BY_ID[s.model]) s.model = SWORD_MODEL[s.name] || STARTER_WEAPON; // older saves
@@ -74,7 +75,7 @@
   function heroGearDrop(at, q) {
     if (GEAR_TEST) return false;
     const want = Math.min(4, worldTier() + q);
-    const pool = CK_GEAR.items.filter(it => it.slot !== 'weapon' && (it.tier || 0) <= want && !heroOwns(it.id));
+    const pool = CK_GEAR.items.filter(it => it.slot !== 'weapon' && !it.trophy && (it.tier || 0) <= want && !heroOwns(it.id));
     if (!pool.length) return false;
     const it = pool[Math.floor(Math.random() * pool.length)];
     PR.inv.armoury.push(it.id); sfx('pickup');

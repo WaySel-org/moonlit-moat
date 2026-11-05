@@ -16,6 +16,7 @@
   "actors/player/09g-cloth.js",
   "actors/player/09h-hero-avatar.js",
   "actors/bosses/10-warden-model.js",
+  "actors/bosses/10b-warden-avatar.js",
   "render/11-telegraphs-and-sparks.js",
   "world/moat/12-water.js",
   "render/13-ascii-pass.js",

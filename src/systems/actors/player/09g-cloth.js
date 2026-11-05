@@ -1,7 +1,9 @@
   // ---------- Cloth: capes, cloaks, scarves and skirts that hang, swing and keep out of the body ----------
   // A small Verlet grid per garment. The top row is pinned to points on a bone (shoulders, neck or hips); the rest
   // falls under gravity and wind and is pushed out of capsules around the torso and legs every step.
-  // Spec (gear.json "cloth"): { kind: cape|scarf|skirt|shawl, w, len, cols, rows, color, trim, pattern, tatter }
+  // Spec (gear.json "cloth", one spec or a list): { kind: cape|scarf|skirt|shawl|panel, w, len, cols, rows, color, trim,
+  // pattern, tatter }. A panel hangs straight down the front or back (side) from the chest or the waist (at): tabards,
+  // aprons and coat tails. Works at any scale (the Warden is three times the hero's size).
   const CL_G = new THREE.Vector3(0, -9.8, 0);
   // Capsules: [from bone, to bone, radius as a share of the torso's depth or a fixed size]
   const CL_COLLIDE = [['pelvis', 'spine_03', 0.62], ['spine_03', 'neck_01', 0.55], ['thigh_l', 'calf_l', 0.075], ['thigh_r', 'calf_r', 0.075],
@@ -32,6 +34,16 @@
     } else if (kind === 'scarf') {
       const n = A.rest.neck_01, y = n.y - 0.03;
       for (let i = 0; i < cols; i++) top.push(new THREE.Vector3(0.05 + i * 0.035, y, n.z - 0.09));
+    } else if (kind === 'panel') {
+      const front = spec.side === 'front', sg = front ? 1 : -1;
+      if (spec.at === 'waist') {
+        bone = 'pelvis';
+        const h = A.regions.hips, y = h.max.y - (h.max.y - h.min.y) * 0.12, w = (spec.w || 0.8) * (h.max.x - h.min.x), z = (h.max.z + h.min.z) / 2 + sg * ((h.max.z - h.min.z) * 0.58 + 0.015);
+        for (let i = 0; i < cols; i++) { const u = i / (cols - 1) - 0.5; top.push(new THREE.Vector3(u * w, y, z - sg * u * u * 0.08)); }
+      } else {
+        const w = (spec.w || 0.7) * T.w, y = T.top - 0.05, z = T.c.z + sg * (T.d * 0.5 + 0.03);
+        for (let i = 0; i < cols; i++) { const u = i / (cols - 1) - 0.5; top.push(new THREE.Vector3(u * w, y - Math.abs(u) * 0.04, z - sg * u * u * T.d * 0.5)); }
+      }
     } else if (kind === 'skirt') {
       bone = 'pelvis';
       const h = A.regions.hips, y = h.max.y - (h.max.y - h.min.y) * 0.15, rx = (h.max.x - h.min.x) * 0.56, rz = (h.max.z - h.min.z) * 0.62, cz = (h.max.z + h.min.z) / 2;
@@ -39,7 +51,7 @@
       for (let i = 0; i < cols; i++) { const a = i / cols * Math.PI * 2; top.push(new THREE.Vector3(Math.sin(a) * rx, y, cz + Math.cos(a) * rz)); }
     }
     const ring = kind === 'skirt';
-    const len = (spec.len || (kind === 'cape' ? 1.0 : kind === 'shawl' ? 0.45 : kind === 'skirt' ? 0.5 : 0.7));
+    const len = (spec.len || (kind === 'cape' ? 1.0 : kind === 'shawl' ? 0.45 : kind === 'skirt' ? 0.5 : kind === 'panel' ? 0.8 : 0.7));
     const seg = len / (rows - 1);
     const N = cols * rows, pos = new Float32Array(N * 3), prev = new Float32Array(N * 3), pin = new Uint8Array(N);
     const C = { A, spec, bone, top, cols, rows, pos, prev, pin, seg, cons: [], first: true, wind: 0, t: Math.random() * 10 };
@@ -68,7 +80,9 @@
     const mesh = new THREE.Mesh(geo, mat); mesh.castShadow = true; mesh.receiveShadow = true; mesh.frustumCulled = false; mesh.name = 'cloth:' + kind;
     A.root.add(mesh); C.mesh = mesh;
 
-    const _m = new THREE.Matrix4(), _v = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _inv = new THREE.Matrix4();
+    const _m = new THREE.Matrix4(), _v = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _inv = new THREE.Matrix4(), _ws = new THREE.Vector3();
+    // The avatar's size in the world (the hero is 1, the Warden about 3.9): rest lengths and colliders scale with it
+    const WS = () => A.inner.getWorldScale(_ws).y;
     const anchors = top.map(() => new THREE.Vector3());
     function anchorsNow() {
       // Avatar-space rest point -> bone-local -> world
@@ -81,11 +95,11 @@
     }
     function reset() {
       anchorsNow();
-      const down = new THREE.Vector3(0, -1, 0), back = new THREE.Vector3(0, 0, -1).transformDirection(A.root.matrixWorld);
+      const down = new THREE.Vector3(0, -1, 0), back = new THREE.Vector3(0, 0, spec.side === 'front' ? 1 : -1).transformDirection(A.root.matrixWorld), sc = WS();
       for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-        const i = r * cols + c, p = _v.copy(anchors[c]).addScaledVector(down, r * seg * A.inner.scale.y);
+        const i = r * cols + c, p = _v.copy(anchors[c]).addScaledVector(down, r * seg * sc);
         if (kind === 'skirt') { const out = _a.copy(anchors[c]).sub(_b.setFromMatrixPosition(A.bones.pelvis.matrixWorld)).setY(0).normalize(); p.addScaledVector(out, r * seg * 0.25); }
-        else p.addScaledVector(back, r * seg * 0.05);
+        else p.addScaledVector(back, r * seg * 0.05 * sc);
         pos.set([p.x, p.y, p.z], i * 3); prev.set([p.x, p.y, p.z], i * 3);
       }
       C.first = false;
@@ -93,7 +107,7 @@
     // Capsules in world space, rebuilt each step from the bones
     const caps = CL_COLLIDE.map(() => ({ a: new THREE.Vector3(), b: new THREE.Vector3(), r: 0 }));
     function capsNow() {
-      const s = A.inner.scale.x;
+      const s = WS();
       CL_COLLIDE.forEach(([f, t, r], i) => {
         const bf = A.bones[f], bt = A.bones[t]; if (!bf || !bt) { caps[i].r = 0; return; }
         caps[i].a.setFromMatrixPosition(bf.matrixWorld); caps[i].b.setFromMatrixPosition(bt.matrixWorld);
@@ -114,13 +128,15 @@
     // Back cloth (cape, shawl, scarf) never crosses in front of the body. A plane runs down the hero's back, turned
     // with the upper spine; the shoulder rows may wrap as far forward as their own anchors, easing to the plane by
     // the third row. Without this, a spin or a lunge throws the cape over the shoulders onto the chest.
-    const backCloth = kind !== 'skirt';
+    // A front panel gets the same treatment mirrored: it stays in front of the chest or hips.
+    const backCloth = kind !== 'skirt', waist = C.bone === 'pelvis', hipsBox = A.regions.hips;
     const plane = { n: new THREE.Vector3(), q: new THREE.Vector3() }, depth = new Float32Array(cols);
     function planeNow() {
       if (!backCloth) return;
-      const sock = A.sockets.spine_02 || A.sockets[C.bone];
-      plane.n.set(0, 0, 1).transformDirection(sock.matrixWorld);
-      plane.q.setFromMatrixPosition(A.bones.spine_03.matrixWorld).addScaledVector(plane.n, -T.d * 0.42 * A.inner.scale.z);
+      const sock = waist ? A.sockets.pelvis : (A.sockets.spine_02 || A.sockets[C.bone]);
+      plane.n.set(0, 0, spec.side === 'front' ? -1 : 1).transformDirection(sock.matrixWorld);
+      const d = waist ? (hipsBox.max.z - hipsBox.min.z) * 0.45 : T.d * 0.42;
+      plane.q.setFromMatrixPosition(A.bones[waist ? 'pelvis' : 'spine_03'].matrixWorld).addScaledVector(plane.n, -d * WS());
       for (let c = 0; c < cols; c++) depth[c] = Math.max(0, _v.copy(anchors[c]).sub(plane.q).dot(plane.n));
     }
     function behind(i) {
@@ -135,9 +151,9 @@
       if (C.first) reset();
       anchorsNow(); capsNow(); planeNow();
       // A teleport (respawn, travel) resets the cloth instead of whipping it across the map
-      if (_v.fromArray(pos, 0).distanceTo(anchors[0]) > 2) reset();
+      if (_v.fromArray(pos, 0).distanceTo(anchors[0]) > 2 * WS()) reset();
       C.t += dt;
-      const S = A.inner.scale.y, steps = 2, h = Math.min(dt, 1 / 30) / steps;
+      const S = WS(), steps = 2, h = Math.min(dt, 1 / 30) / steps;
       const windDir = new THREE.Vector3(Math.sin(C.t * 0.3), 0, Math.cos(C.t * 0.23)).multiplyScalar((ext && ext.wind || 0.3) * (1.2 + Math.sin(C.t * 1.7) * 0.6));
       for (let s = 0; s < steps; s++) {
         for (let i = 0; i < N; i++) {
@@ -145,7 +161,7 @@
           const k = i * 3;
           // Damped velocity, capped so a hard turn can't fling the cloth (at most 9 m/s)
           let vx = (pos[k] - prev[k]) * 0.982, vy = (pos[k + 1] - prev[k + 1]) * 0.982, vz = (pos[k + 2] - prev[k + 2]) * 0.982;
-          const vl = Math.sqrt(vx * vx + vy * vy + vz * vz), cap = 9 * h;
+          const vl = Math.sqrt(vx * vx + vy * vy + vz * vz), cap = 9 * h * Math.max(1, S);
           if (vl > cap) { const f = cap / vl; vx *= f; vy *= f; vz *= f; }
           prev[k] = pos[k]; prev[k + 1] = pos[k + 1]; prev[k + 2] = pos[k + 2];
           pos[k] += vx + windDir.x * 3.5 * h * h; pos[k + 1] += vy + CL_G.y * h * h; pos[k + 2] += vz + windDir.z * 3.5 * h * h;

@@ -136,6 +136,7 @@
     renderer.autoClear = false; scene.overrideMaterial = maskFoe; camera.layers.set(2);
     renderer.render(scene, camera);
     if (HERO.ready) { scene.overrideMaterial = maskFriendSkinned; camera.layers.set(3); renderer.render(scene, camera); }
+    if (WARDEN_AV.ready && boss.visible) { scene.overrideMaterial = maskFoeSkinned; camera.layers.set(4); renderer.render(scene, camera); }
     renderer.autoClear = true; scene.overrideMaterial = null; camera.layers.set(0);
     gfxBeforeScene();
     renderer.setRenderTarget(sceneRT); renderer.render(scene, camera);
