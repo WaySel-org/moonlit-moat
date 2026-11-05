@@ -3,12 +3,16 @@
   // One clip per player state (named after P.act); moonlitHerUpdate(), called at the end of updatePlayer,
   // picks the clip, stretches one-shot clips to the game's P.actDur and keeps the sword in her right hand.
   // Every clip is in place: the game moves the player, the clips only animate her.
-  const HER = { ready: false, mixer: null, actions: {}, cur: null, curName: '', lastActT: 0, wasAir: false, parryT: 0, lastRiposte: 0, mats: [], hand: null };
+  const HER = { ready: false, mixer: null, actions: {}, cur: null, curName: '', lastActT: 0, wasAir: false, parryT: 0, lastRiposte: 0, mats: [], hand: null, swing: 0 };
   const HER_SCALE = 0.9;      // the block figure is about 1.8 m tall; her model is 2.0 m
-  const HER_LOOPS = new Set(['idle', 'run', 'block', 'spin', 'sneak']);
+  const HER_LOOPS = new Set(['idle', 'run', 'block', 'spin', 'sneak', 'ride']);
   // The sword in her fist: the grip runs across the palm, the blade out past the thumb
   const HER_GRIP_POS = new THREE.Vector3(0, 0.08, 0.03);
   const HER_GRIP_ROT = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, -Math.PI / 2));
+  // Clips where the blade follows her wrist. Everything else (running, idling, throwing, riding) carries it
+  // trailing low behind her and out to her right, so her swinging arm never drives it through her legs.
+  const HER_SWINGS = new Set(['light1', 'light2', 'light3', 'heavy', 'rollslash', 'rollcleave', 'spin', 'airslash', 'plunge', 'block', 'parry', 'ride_light', 'ride_light2', 'ride_heavy']);
+  const HER_CARRY = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(-0.45, -0.35, -0.8).normalize());
 
   function loadMoonlitHer() {
     const A = window.MM_ASSETS;
@@ -45,6 +49,13 @@
 
   function herState(moving) {
     if (P.act === 'dead') return ['dead', 0];
+    // On a beast she stays seated: J claws (alternating arms), K rampage, the stomp and trample are heavy
+    if (P.mount) {
+      if (P.act === 'trample' || (P.act === 'gore' && P.gore !== 'claw')) return ['ride_heavy', P.actDur];
+      if (P.act === 'gore') return [P.claw % 2 ? 'ride_light' : 'ride_light2', P.actDur];
+      if (P.act && P.act !== 'tame' && P.actDur) return ['ride_light', P.actDur];
+      return ['ride', 0];
+    }
     if (P.act === 'light') return ['light' + Math.min(3, P.combo + 1), P.actDur];
     if (P.act === 'tame') return ['cast', 0];
     if (P.act && HER.actions[P.act]) return [P.act, HER_LOOPS.has(P.act) ? 0 : P.actDur];
@@ -87,8 +98,10 @@
     // Her clips animate rolls, leaps and the fall, so cancel the block figure's whole-body flips
     if (!P.mount) { pBody.rotation.x = 0; pBody.position.y = 0; }
 
-    // The sword follows her right hand
+    // The sword sits in her right hand: aimed by her wrist in a strike, carried trailing behind her otherwise.
+    // HER.swing eases between the two over 0.1 s so the blade never snaps.
     if (HER.hand) {
+      HER.swing = HER_SWINGS.has(HER.curName) ? Math.min(1, HER.swing + dt * 10) : Math.max(0, HER.swing - dt * 10);
       pBody.updateMatrixWorld(true);
       HER.hand.getWorldPosition(_hw);
       HER.hand.getWorldQuaternion(_hq);
@@ -96,7 +109,8 @@
       pBody.worldToLocal(_hw);
       swordPivot.position.copy(_hw);
       pBody.getWorldQuaternion(_bq).invert();
-      swordPivot.quaternion.copy(_bq).multiply(_hq).multiply(HER_GRIP_ROT);
+      _bq.multiply(_hq).multiply(HER_GRIP_ROT);
+      swordPivot.quaternion.copy(HER_CARRY).slerp(_bq, HER.swing);
     }
 
     // Hurt flash and petrify, as the old tunic material did
