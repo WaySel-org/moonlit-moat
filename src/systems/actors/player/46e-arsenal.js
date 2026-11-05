@@ -1,5 +1,5 @@
   // ---------- Arsenal: inventory, sword upgrades, jumping and air combos ----------
-  // Gear: one sword and two charms equipped, eight bag slots. Elites, ancients, bosses, raiders and cleared waves drop gear.
+  // Gear: one sword and two charms equipped, eight bag slots, plus the armour the hero wears (actors/player/09h-hero-avatar.js). Elites, ancients, bosses, raiders and cleared waves drop gear.
   // The equipped sword feeds on kills; when its edge bar fills, press N (or Upgrade in the bag) to raise its rank.
   const SWORD_KINDS = [
     { name: 'Ember Saber', affix: 'burn', note: '+15% damage as fire' },
@@ -29,6 +29,8 @@
   // q: 0 common, 1 elite, 2 boss
   function dropGear(at, q, chance) {
     if (Math.random() > (chance === undefined ? 1 : chance)) return;
+    // A third of drops are a piece of armour for the armoury instead (none while every piece is unlocked for testing)
+    if (Math.random() < 0.35 && heroGearDrop(at, q)) return;
     const it = rollGear(q), i = PR.inv.bag.indexOf(null), pos = (at || player.position).clone().add(new THREE.Vector3(0, 3, 0));
     if (i < 0) { floatText(`Bag full: left ${it.name} behind`, pos, 'word', '#ff9a4a'); return; }
     PR.inv.bag[i] = it; sfx('pickup');
@@ -37,13 +39,16 @@
   }
   const itemLine = it => it.kind === 'sword' ? `+${Math.round((it.dmg + 0.1 * it.rank) * 100)}% damage${it.note ? ', ' + it.note : ''}` : `+${it.val}${it.unit[0] === '%' ? '' : ' '}${it.unit}`;
   function gearSum(stat) { return PR.inv ? PR.inv.charms.reduce((s, c) => s + (c && c.stat === stat ? c.val : 0), 0) : 0; }
+  // Charms and worn armour (armor, hp, st, mana, dmg %, spell %, speed %)
+  const wornSum = stat => gearSum(stat) + heroGearStat(stat);
   // Called from recalc(): gear on top of level and attributes
   function applyGear() {
     if (!PR.inv) return;
     const s = PR.inv.sword;
-    P.max += gearSum('hp'); P.stMax += gearSum('st'); P.manaMax += gearSum('mana');
-    PR.dmg *= (1 + s.dmg + 0.1 * s.rank) * (1 + gearSum('dmg') / 100) * (s.affix === 'burn' ? 1.15 : 1);
-    PR.speed *= (1 + gearSum('speed') / 100) * (s.affix === 'swift' ? 1.08 : 1);
+    P.max += wornSum('hp'); P.stMax += wornSum('st'); P.manaMax += wornSum('mana'); P.armorMax += heroGearStat('armor');
+    PR.dmg *= (1 + s.dmg + 0.1 * s.rank) * (1 + wornSum('dmg') / 100) * (s.affix === 'burn' ? 1.15 : 1);
+    PR.spell *= 1 + heroGearStat('spell') / 100;
+    PR.speed *= Math.max(0.7, 1 + wornSum('speed') / 100) * (s.affix === 'swift' ? 1.08 : 1);
   }
   function gearOnHit(dmg) {
     if (PR.inv.sword.affix === 'leech' && P.hp > 0) P.hp = Math.min(P.max, P.hp + dmg * 0.04);
@@ -79,6 +84,7 @@
     if (invEl.hidden) return;
     invBody.innerHTML = `<p class="muted">Click a bag item to equip it. Click an equipped charm to take it off. &times; salvages for gold.</p>
       <h3>Equipped</h3><div class="slots">${slotHtml(s, 'sword', 0, 'Sword')}${I.charms.map((c, i) => slotHtml(c, 'charm', i, 'Charm')).join('')}</div>
+      <div class="row"><span>Armour, cloaks and weapons from the armoury</span><button type="button" class="shopbtn" data-act="builder">Character (${tipKey('KeyC', 'C')})</button></div>
       <div class="row"><span>Edge ${Math.min(s.kills, edgeNeed(s))} / ${edgeNeed(s)} kills</span><button type="button" class="shopbtn" data-act="upgrade"${ready ? '' : ' disabled'}>Upgrade sword (N)</button></div>
       <h3>Bag</h3><div class="slots bag">${I.bag.map((it, i) => it ? `<div class="cell">${slotHtml(it, 'bag', i)}<button type="button" class="x" data-act="salvage" data-i="${i}" aria-label="Salvage ${it.name}">&times;</button></div>` : `<div class="cell">${slotHtml(null, '', i, 'Empty')}</div>`).join('')}</div>`;
   }
@@ -90,12 +96,13 @@
     const b = ev.target.closest('button'); if (!b) return;
     if (b.dataset.open) { openInv(); return; }
     const I = PR.inv, act = b.dataset.act, i = +b.dataset.i;
+    if (act === 'builder') { closeShop(); openBuilder(); return; }
     if (act === 'upgrade') upgradeSword();
     else if (act === 'salvage' && I.bag[i]) { const g = 30 * worldTier(); I.bag[i] = null; reward(0, g, player.position.clone().add(new THREE.Vector3(0, 2.6, 0))); }
     else if (act === 'charm' && I.charms[i]) { const k = I.bag.indexOf(null); if (k >= 0) { I.bag[k] = I.charms[i]; I.charms[i] = null; } }
     else if (act === 'bag' && I.bag[i]) {
       const it = I.bag[i];
-      if (it.kind === 'sword') { I.bag[i] = I.sword; I.sword = it; }
+      if (it.kind === 'sword') { I.bag[i] = I.sword; I.sword = it; heroRefresh(); }
       else { const k = I.charms.indexOf(null) >= 0 ? I.charms.indexOf(null) : 0; I.bag[i] = I.charms[k]; I.charms[k] = it; }
       sfx('pickup');
     }
@@ -105,6 +112,7 @@
   $('#invclose').addEventListener('click', closeShop);
   function resetArsenal() {
     PR.inv = { sword: { kind: 'sword', name: 'Iron Sword', dmg: 0, rank: 0, kills: 0, affix: null, note: '' }, charms: [null, null], bag: Array(8).fill(null) };
+    heroInvDefaults(); heroRefresh();
     P.jh = 0; P.jv = 0; P.airHits = 0; recalc(); renderGear();
   }
 

@@ -27,7 +27,8 @@
     try {
       SAVED_PR.forEach(k => { if (s.pr[k] !== undefined) PR[k] = s.pr[k]; });
       PR.relics = (s.relics || []).filter(id => RELICS[id]);
-      if (s.inv && s.inv.sword && Array.isArray(s.inv.bag)) PR.inv = { sword: s.inv.sword, charms: (s.inv.charms || [null, null]).slice(0, 2), bag: s.inv.bag.slice(0, 8).concat(Array(8).fill(null)).slice(0, 8) };
+      if (s.inv && s.inv.sword && Array.isArray(s.inv.bag)) PR.inv = { sword: s.inv.sword, charms: (s.inv.charms || [null, null]).slice(0, 2), bag: s.inv.bag.slice(0, 8).concat(Array(8).fill(null)).slice(0, 8), gear: s.inv.gear || null, armoury: Array.isArray(s.inv.armoury) ? s.inv.armoury.filter(id => GEAR_BY_ID[id]) : null };
+      if (!PR.inv.gear) delete PR.inv.gear; if (!PR.inv.armoury) delete PR.inv.armoury;
       const ST = G.story;
       ['unlocked', 'shards', 'step', 'prog', 'stage', 'nextStage'].forEach(k => { if (s.story && s.story[k]) ST[k] = Object.assign(ST[k] || {}, s.story[k]); });
       Object.values(WORLDS).forEach(W => {
@@ -44,7 +45,7 @@
       G.runStart = uTime.value - Math.max(0, s.elapsed || 0);
       G.lastTier = worldTier(); G.env = ENVS[(G.lastTier - 1) % ENVS.length]; G.envSnap = true;
       G.lastPos = s.lastPos || {};
-      recalc(); resetVitals(); renderHero(); renderGear(); renderRelics();
+      heroInvDefaults(); recalc(); resetVitals(); renderHero(); renderGear(); renderRelics(); heroRefresh();
       const w = s.world, pos = s.pos || [0, 0];
       if (w && w !== 'moat' && WORLDS[w] && ST.unlocked[w]) enterWorld(w, { x: pos[0], z: pos[1] }, 'respawn');
       else {

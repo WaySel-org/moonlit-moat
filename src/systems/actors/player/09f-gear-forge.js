@@ -1,0 +1,352 @@
+  // ---------- Gear forge: armour, shields and weapons the kit doesn't have, built in code ----------
+  // Each piece is modelled upright in avatar space (Y up, Z forward, +X the hero's left) and hung on a bone socket
+  // (09e), sized from the body's own region boxes so it fits either body and any shape. gear.json lists recipes:
+  //   "forge": [{ "shape": "kettle", "metal": "#8d9399", "trim": "#b8944a", ... }]
+  // Weapons are built along +Z from the grip and go in the right hand (the game reads A.weapon for flashes).
+  const FG = {};
+  const fgV = (x, y, z) => new THREE.Vector3(x, y, z);
+  const fgLathe = (pts, segs) => new THREE.LatheGeometry(pts.map(p => new THREE.Vector2(p[0], p[1])), segs || 28);
+  function fgMats(o) {
+    return {
+      metal: ckMaterial('metal', { color: o.metal || '#8e959c', rough: o.rough }),
+      dark: ckMaterial('metal', { color: o.dark || '#3a3d42', rough: 0.55 }),
+      trim: ckMaterial('metal', { color: o.trim || '#b8944a', rough: 0.3 }),
+      leather: ckMaterial('leather', { color: o.leather || '#4a3020' }),
+      cloth: ckMaterial('leather', { color: o.cloth || '#6e2a2a' }),
+      wood: ckMaterial('leather', { color: o.wood || '#5a3d24' }),
+      glow: ckMaterial('glow', { color: o.glow || '#9fe0ff' })
+    };
+  }
+  // Put object o on bone bn so that its origin sits at avatar-space point at (rest pose)
+  function fgHang(A, bn, o, at) {
+    const s = A.sockets[bn]; if (!s) return o;
+    if (at) o.position.copy(at).sub(A.rest[bn]);
+    o.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+    s.add(o); return o;
+  }
+  const fgBox = (A, r) => A.regions[r] || new THREE.Box3(fgV(-0.15, 0, -0.1), fgV(0.15, 0.3, 0.1));
+  function fgMesh(geo, mat, x, y, z) { const m = new THREE.Mesh(geo, mat); m.position.set(x || 0, y || 0, z || 0); return m; }
+
+  // ---------- Helmets ----------
+  function fgHead(A) {
+    const b = fgBox(A, 'head'), c = b.getCenter(fgV()), s = b.getSize(fgV());
+    // The skull, not the jaw: centre a little above the box centre and slightly back
+    return { c: fgV(c.x, b.max.y - s.y * 0.38, c.z - s.z * 0.04), r: Math.max(s.x, s.z) * 0.56, top: b.max.y, s };
+  }
+  FG.kettle = (A, o, M) => {
+    const h = fgHead(A), g = new THREE.Group(), r = h.r;
+    g.add(fgMesh(new THREE.SphereGeometry(r * 1.06, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.52), M.metal, 0, -r * 0.05, 0));
+    const brim = fgMesh(fgLathe([[r * 1.0, 0], [r * 1.6, -r * 0.22], [r * 1.66, -r * 0.3], [r * 1.58, -r * 0.27], [r * 0.98, -r * 0.05]], 40), M.metal); brim.position.y = -r * 0.02; g.add(brim);
+    g.add(fgMesh(new THREE.TorusGeometry(r * 1.06, r * 0.05, 8, 40).rotateX(Math.PI / 2), M.trim, 0, r * 0.02, 0));
+    g.add(fgMesh(new THREE.BoxGeometry(r * 0.08, r * 0.12, r * 2.1), M.trim, 0, r * 0.92, 0).rotateX(0));
+    for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2; g.add(fgMesh(new THREE.SphereGeometry(r * 0.035, 6, 4), M.trim, Math.cos(a) * r * 1.08, r * 0.03, Math.sin(a) * r * 1.08)); }
+    fgHang(A, 'Head', g, h.c);
+  };
+  FG.greathelm = (A, o, M) => {
+    const h = fgHead(A), g = new THREE.Group(), r = h.r * 1.06, H = h.s.y * 0.98;
+    const shell = new THREE.CylinderGeometry(r * 0.96, r, H, 32, 1, true);
+    g.add(fgMesh(shell, M.metal, 0, -H * 0.22, 0));
+    g.add(fgMesh(new THREE.SphereGeometry(r * 0.96, 32, 10, 0, Math.PI * 2, 0, Math.PI * 0.3), M.metal, 0, H * 0.28 - r * 0.25, 0));
+    // Eye slits and breaths, cut in dark metal over the face
+    [-1, 1].forEach(sd => g.add(fgMesh(new THREE.BoxGeometry(r * 0.62, r * 0.07, r * 0.1), M.dark, sd * r * 0.36, H * 0.02, r * 0.95)));
+    g.add(fgMesh(new THREE.BoxGeometry(r * 0.14, H * 0.9, r * 0.12), M.trim, 0, -H * 0.2, r * 0.97));
+    g.add(fgMesh(new THREE.BoxGeometry(r * 2.04, r * 0.1, r * 0.12).translate(0, 0, 0), M.trim, 0, H * 0.02 + r * 0.12, r * 0.93));
+    for (let i = 0; i < 6; i++) [-1, 1].forEach(sd => g.add(fgMesh(new THREE.CylinderGeometry(r * 0.025, r * 0.025, r * 0.12, 6).rotateX(Math.PI / 2), M.dark, sd * r * (0.3 + (i % 3) * 0.13), -H * 0.3 - Math.floor(i / 3) * r * 0.16, r * 0.93)));
+    g.add(fgMesh(new THREE.TorusGeometry(r, r * 0.05, 8, 40).rotateX(Math.PI / 2), M.trim, 0, -H * 0.72, 0));
+    if (o.crest) { const cr = fgMesh(new THREE.BoxGeometry(r * 0.12, r * 0.5, r * 1.6), M.cloth, 0, H * 0.28 + r * 0.25, -r * 0.1); g.add(cr); }
+    fgHang(A, 'Head', g, h.c.clone().add(fgV(0, -h.s.y * 0.02, 0)));
+  };
+  FG.horned = (A, o, M) => {
+    const h = fgHead(A), g = new THREE.Group(), r = h.r;
+    g.add(fgMesh(new THREE.SphereGeometry(r * 1.06, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.55), M.metal, 0, -r * 0.08, 0));
+    g.add(fgMesh(new THREE.BoxGeometry(r * 0.2, r * 0.9, r * 0.12), M.metal, 0, -r * 0.42, r * 1.0));
+    g.add(fgMesh(new THREE.TorusGeometry(r * 1.06, r * 0.06, 8, 40).rotateX(Math.PI / 2), M.trim, 0, -r * 0.1, 0));
+    [-1, 1].forEach(sd => {
+      const curve = new THREE.CatmullRomCurve3([fgV(sd * r * 0.9, r * 0.1, 0), fgV(sd * r * 1.6, r * 0.45, r * 0.1), fgV(sd * r * 1.85, r * 1.2, -r * 0.1), fgV(sd * r * 1.55, r * 1.75, -r * 0.35)]);
+      const tube = new THREE.TubeGeometry(curve, 24, r * 0.16, 10, false), p = tube.attributes.position;
+      // Taper toward the tip
+      for (let i = 0; i < p.count; i++) { const t = Math.floor(i / 11) / 24, cp = curve.getPoint(t); const v = fgV(p.getX(i), p.getY(i), p.getZ(i)).sub(cp).multiplyScalar(1 - t * 0.85).add(cp); p.setXYZ(i, v.x, v.y, v.z); }
+      tube.computeVertexNormals();
+      g.add(new THREE.Mesh(tube, ckMaterial('leather', { color: o.horn || '#d8ccb0' })));
+    });
+    fgHang(A, 'Head', g, h.c);
+  };
+  FG.circlet = (A, o, M) => {
+    const h = fgHead(A), g = new THREE.Group(), r = h.r;
+    const ring = fgMesh(new THREE.TorusGeometry(r * 0.98, r * 0.035, 8, 48).rotateX(Math.PI / 2 + 0.18), M.trim, 0, r * 0.12, 0); g.add(ring);
+    g.add(fgMesh(new THREE.OctahedronGeometry(r * 0.1), M.glow, 0, r * 0.32, r * 0.98));
+    [-1, 1].forEach(sd => g.add(fgMesh(new THREE.ConeGeometry(r * 0.05, r * 0.28, 6), M.trim, sd * r * 0.18, r * 0.36, r * 0.94)));
+    fgHang(A, 'Head', g, h.c);
+  };
+  FG.crown = (A, o, M) => {
+    const h = fgHead(A), g = new THREE.Group(), r = h.r;
+    g.add(fgMesh(new THREE.CylinderGeometry(r * 0.99, r * 1.0, r * 0.22, 40, 1, true), M.trim, 0, r * 0.32, 0));
+    for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2; g.add(fgMesh(new THREE.ConeGeometry(r * 0.09, r * (i % 2 ? 0.3 : 0.48), 6), M.trim, Math.sin(a) * r, r * (i % 2 ? 0.58 : 0.66), Math.cos(a) * r)); }
+    g.add(fgMesh(new THREE.OctahedronGeometry(r * 0.09), M.glow, 0, r * 0.34, r * 1.0));
+    fgHang(A, 'Head', g, h.c);
+  };
+  FG.witchhat = (A, o, M) => {
+    const h = fgHead(A), g = new THREE.Group(), r = h.r, mat = ckMaterial('leather', { color: o.cloth || '#2a2433' });
+    mat.side = THREE.DoubleSide;
+    g.add(fgMesh(fgLathe([[r * 0.95, 0], [r * 2.4, -r * 0.05], [r * 2.5, -r * 0.14], [r * 2.35, -r * 0.1], [r * 0.95, r * 0.02]], 48), mat));
+    // A tall cone that slumps backward
+    const cone = new THREE.ConeGeometry(r * 1.0, r * 2.8, 32, 12, true), p = cone.attributes.position;
+    for (let i = 0; i < p.count; i++) { const y = p.getY(i) + r * 1.4, t = y / (r * 2.8); p.setZ(i, p.getZ(i) - t * t * r * 1.1); p.setY(i, y - t * t * r * 0.3); }
+    cone.computeVertexNormals(); g.add(fgMesh(cone, mat, 0, 0, 0));
+    g.add(fgMesh(new THREE.CylinderGeometry(r * 0.99, r * 0.97, r * 0.24, 40, 1, true), ckMaterial('leather', { color: o.band || '#7a3a28' }), 0, r * 0.12, 0));
+    g.add(fgMesh(new THREE.TorusGeometry(r * 0.1, r * 0.03, 6, 16), M.trim, 0, r * 0.14, r * 0.99));
+    fgHang(A, 'Head', g, h.c.clone().add(fgV(0, r * 0.1, 0)));
+  };
+
+  // ---------- Body armour ----------
+  function fgTorso(A) {
+    const b = fgBox(A, 'torso'), hips = fgBox(A, 'hips'), c = b.getCenter(fgV()), s = b.getSize(fgV());
+    const arms = fgBox(A, 'arms');
+    // The torso box is widened by the clavicles; the ribcage is about 70% of it
+    return { c, w: Math.min(s.x, (A.rest.upperarm_l.x - A.rest.upperarm_r.x) * 0.92), d: s.z, top: b.max.y, bot: hips.max.y - (hips.max.y - hips.min.y) * 0.2, hips, arms };
+  }
+  FG.cuirass = (A, o, M) => {
+    const T = fgTorso(A), H = T.top - T.bot, g = new THREE.Group();
+    // A lathed shell, flattened to the chest's width and depth, with a ridge down the front
+    const prof = [[0.78, 0], [0.86, 0.12], [0.98, 0.42], [1.02, 0.66], [0.96, 0.84], [0.62, 0.98], [0.5, 1.0]].map(([r, y]) => [r, y * H]);
+    const geo = fgLathe(prof, 40), p = geo.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      let x = p.getX(i) * T.w * 0.5, z = p.getZ(i) * T.d * 0.5 * 1.08;
+      if (z > 0) z *= 1 + 0.16 * Math.max(0, 1 - Math.abs(x) / (T.w * 0.3));
+      p.setXYZ(i, x, p.getY(i), z);
+    }
+    geo.computeVertexNormals();
+    const shell = fgMesh(geo, M.metal); g.add(shell);
+    // Rolled edges at the neck and waist
+    g.add(fgMesh(new THREE.TorusGeometry(1, 0.06, 6, 40).rotateX(Math.PI / 2).scale(T.w * 0.5 * 0.8, 1, T.d * 0.5 * 0.86), M.trim, 0, 0.01, 0));
+    g.add(fgMesh(new THREE.TorusGeometry(1, 0.05, 6, 40).rotateX(Math.PI / 2).scale(T.w * 0.5 * 0.52, 1, T.d * 0.5 * 0.56), M.trim, 0, H * 0.99, 0));
+    if (o.belt !== false) g.add(fgMesh(new THREE.CylinderGeometry(1, 1, 0.05, 40, 1, true).scale(T.w * 0.5 * 0.82, 1, T.d * 0.5 * 0.9), M.leather, 0, 0.0, 0));
+    fgHang(A, 'spine_02', g, fgV(T.c.x, T.bot, T.c.z));
+    // Faulds: overlapping lames over the hips, on the pelvis so they follow the legs' twist
+    const f = new THREE.Group(), n = o.faulds === undefined ? 3 : o.faulds;
+    for (let i = 0; i < n; i++) {
+      const r = 1.02 + i * 0.05;
+      const band = new THREE.CylinderGeometry(r, r + 0.06, 0.07, 40, 1, true, -Math.PI * 0.62, Math.PI * 1.24).scale(T.w * 0.5 * 0.86, 1, T.d * 0.5 * 0.98);
+      f.add(fgMesh(band, i % 2 ? M.metal : M.dark, 0, -i * 0.055, 0));
+    }
+    fgHang(A, 'pelvis', f, fgV(T.c.x, T.bot - 0.02, T.c.z));
+    if (o.pauldrons) FG.pauldrons(A, o, M);
+    if (o.gorget) FG.gorget(A, o, M);
+  };
+  FG.pauldrons = (A, o, M) => {
+    [['upperarm_l', 1], ['upperarm_r', -1]].forEach(([bn, sd]) => {
+      const g = new THREE.Group(), r = o.big ? 0.13 : 0.1;
+      for (let i = 0; i < (o.big ? 4 : 3); i++) {
+        const cap = new THREE.SphereGeometry(r * (1 - i * 0.08), 24, 10, 0, Math.PI * 2, 0, Math.PI * 0.42);
+        const m = fgMesh(cap, i ? M.metal : M.metal, sd * i * r * 0.32, -i * r * 0.42, 0); m.rotation.z = -sd * (0.45 + i * 0.18); g.add(m);
+        g.add(fgMesh(new THREE.TorusGeometry(r * (1 - i * 0.08) * 0.92, r * 0.05, 6, 24, Math.PI * 1.2).rotateX(Math.PI / 2), M.trim, sd * i * r * 0.32, -i * r * 0.42 + r * 0.02, 0)).rotation.z = -sd * (0.45 + i * 0.18);
+      }
+      fgHang(A, bn, g, A.rest[bn].clone().add(fgV(sd * 0.02, 0.07, -0.005)));
+    });
+  };
+  FG.gorget = (A, o, M) => {
+    const n = A.rest.neck_01, g = new THREE.Group();
+    g.add(fgMesh(fgLathe([[0.13, -0.05], [0.1, 0.02], [0.075, 0.08], [0.08, 0.09]], 32).scale(1.1, 1, 0.95), M.metal));
+    g.add(fgMesh(new THREE.TorusGeometry(0.135, 0.012, 6, 32).rotateX(Math.PI / 2).scale(1.1, 1, 0.95), M.trim, 0, -0.05, 0));
+    fgHang(A, 'spine_03', g, n.clone().add(fgV(0, -0.02, -0.005)));
+  };
+
+  // ---------- Hands, legs, feet ----------
+  FG.gauntlets = (A, o, M) => {
+    [['l', 1], ['r', -1]].forEach(([s, sd]) => {
+      const el = A.rest['lowerarm_' + s], wr = A.rest['hand_' + s], len = el.distanceTo(wr);
+      // Bracer: a flared tube from the elbow to the wrist (in the rest pose the arm points along X)
+      const tube = fgLathe([[0.042, 0], [0.046, len * 0.2], [0.05, len * 0.75], [0.062, len * 1.02], [0.064, len * 1.04]], 20).rotateZ(-sd * Math.PI / 2);
+      const g = new THREE.Group(); g.add(fgMesh(tube, M.metal));
+      g.add(fgMesh(new THREE.TorusGeometry(0.063, 0.008, 6, 20).rotateY(Math.PI / 2), M.trim, sd * len * 1.03, 0, 0));
+      fgHang(A, 'lowerarm_' + s, g, el.clone().add(fgV(sd * len * 0.05, 0, 0)));
+      // Back-of-hand plates and knuckles
+      const h = new THREE.Group();
+      h.add(fgMesh(new THREE.BoxGeometry(0.09, 0.022, 0.085), M.metal, sd * 0.045, 0.028, 0));
+      for (let i = 0; i < 4; i++) h.add(fgMesh(new THREE.BoxGeometry(0.022, 0.018, 0.02), M.dark, sd * 0.098, 0.028, -0.03 + i * 0.021));
+      fgHang(A, 'hand_' + s, h, wr);
+    });
+  };
+  FG.greaves = (A, o, M) => {
+    ['l', 'r'].forEach(s => {
+      const k = A.rest['calf_' + s], an = A.rest['foot_' + s], len = k.distanceTo(an);
+      const g = new THREE.Group();
+      const shell = fgLathe([[0.058, 0], [0.066, -len * 0.25], [0.06, -len * 0.7], [0.05, -len * 0.98]], 22, 0);
+      const p = shell.attributes.position;
+      for (let i = 0; i < p.count; i++) if (p.getZ(i) > 0) p.setZ(i, p.getZ(i) * 1.18);
+      shell.computeVertexNormals(); g.add(fgMesh(shell, M.metal));
+      // Knee cop with a fan
+      g.add(fgMesh(new THREE.SphereGeometry(0.068, 18, 10, 0, Math.PI * 2, 0, Math.PI * 0.5).rotateX(Math.PI / 2), M.metal, 0, 0.01, 0.045));
+      g.add(fgMesh(new THREE.TorusGeometry(0.066, 0.008, 6, 18), M.trim, 0, 0.01, 0.05));
+      fgHang(A, 'calf_' + s, g, k);
+      if (o.cuisses) {
+        const t = A.rest['thigh_' + s], tl = t.distanceTo(k), c = new THREE.Group();
+        c.add(fgMesh(new THREE.CylinderGeometry(0.085, 0.07, tl * 0.75, 20, 1, true, -Math.PI * 0.55, Math.PI * 1.1), M.metal, 0, -tl * 0.55, 0.0));
+        fgHang(A, 'thigh_' + s, c, t);
+      }
+    });
+  };
+  FG.sabatons = (A, o, M) => {
+    ['l', 'r'].forEach(s => {
+      const f = A.rest['foot_' + s], ball = A.rest['ball_' + s], len = Math.max(0.1, f.distanceTo(ball)), g = new THREE.Group();
+      // Overlapping lames from ankle to toe
+      for (let i = 0; i < 5; i++) {
+        const t = i / 4, w = 0.058 - t * 0.012;
+        const lame = new THREE.CylinderGeometry(w, w, 0.07, 16, 1, true, -Math.PI / 2 - 1.2, 2.4).rotateX(Math.PI / 2).scale(1, 0.75, 1);
+        g.add(fgMesh(lame, i % 2 ? M.dark : M.metal, 0, -0.035 - t * 0.04, 0.02 + t * (len + 0.06)));
+      }
+      g.add(fgMesh(new THREE.SphereGeometry(0.06, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), M.metal, 0, 0.0, -0.01));
+      fgHang(A, 'foot_' + s, g, f);
+    });
+  };
+
+  // ---------- Off hand ----------
+  // Held in the left fist; a shield's face looks out from the forearm (calibrated against Idle_Shield_Loop)
+  const FG_OFF = { pos: fgV(0.06, -0.03, 0.0), rot: new THREE.Euler(0, 0, Math.PI / 2) };
+  function fgOffHand(A, g, o) {
+    const s = A.sockets.hand_l; if (!s) return;
+    const holder = new THREE.Group(); holder.position.copy(o.at || FG_OFF.pos); holder.rotation.copy(o.rot || FG_OFF.rot);
+    holder.add(g); g.traverse(c => { if (c.isMesh) c.castShadow = true; }); s.add(holder);
+    A.offhand = holder; return holder;
+  }
+  FG.roundshield = (A, o, M) => {
+    const g = new THREE.Group(), R = o.r || 0.36;
+    const face = fgLathe([[0, 0.05], [R * 0.6, 0.04], [R * 0.98, 0.0], [R, -0.02], [R * 0.96, -0.025], [0, -0.01]], 40);
+    g.add(fgMesh(face, M.wood));
+    for (let i = 0; i < 8; i++) { const plank = fgMesh(new THREE.BoxGeometry(0.004, 0.003, R * 1.9), M.dark, -R + (i + 1) * R * 0.22, 0.045 - Math.abs(-R + (i + 1) * R * 0.22) * 0.05, 0); g.add(plank); }
+    g.add(fgMesh(new THREE.TorusGeometry(R * 0.99, 0.018, 8, 48).rotateX(Math.PI / 2), M.metal, 0, -0.005, 0));
+    g.add(fgMesh(new THREE.SphereGeometry(R * 0.2, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), M.metal, 0, 0.045, 0));
+    for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; g.add(fgMesh(new THREE.SphereGeometry(0.012, 6, 4), M.trim, Math.cos(a) * R * 0.9, 0.0, Math.sin(a) * R * 0.9)); }
+    if (o.paint) g.add(fgMesh(new THREE.CircleGeometry(R * 0.55, 3).rotateX(-Math.PI / 2), ckMaterial('leather', { color: o.paint }), 0, 0.047, 0));
+    fgOffHand(A, g, o);
+  };
+  FG.kiteshield = (A, o, M) => {
+    const g = new THREE.Group(), W = 0.3, H = 0.78;
+    const sh = new THREE.Shape();
+    sh.moveTo(0, -H * 0.62); sh.quadraticCurveTo(W * 0.95, -H * 0.15, W, H * 0.3); sh.quadraticCurveTo(W * 0.6, H * 0.4, 0, H * 0.38);
+    sh.quadraticCurveTo(-W * 0.6, H * 0.4, -W, H * 0.3); sh.quadraticCurveTo(-W * 0.95, -H * 0.15, 0, -H * 0.62);
+    const geo = new THREE.ExtrudeGeometry(sh, { depth: 0.03, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.014, bevelSegments: 3, curveSegments: 20 });
+    // Curve it around the arm
+    const p = geo.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, p.getZ(i) - p.getX(i) * p.getX(i) * 0.9);
+    geo.computeVertexNormals();
+    const face = fgMesh(geo, ckMaterial('leather', { color: o.paint || '#1e3a6e' })); face.rotation.x = -Math.PI / 2; g.add(face);
+    const rim = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(sh.getPoints(40).map(v => fgV(v.x, 0.05, -v.y)), true), 80, 0.012, 6, true), M.trim);
+    g.add(rim);
+    // Device: a pale crescent moon
+    const moon = new THREE.Shape(); moon.absarc(0, 0, 0.12, 0, Math.PI * 2, false); const bite = new THREE.Path(); bite.absarc(0.05, 0.03, 0.1, 0, Math.PI * 2, true); moon.holes.push(bite);
+    const mm = fgMesh(new THREE.ShapeGeometry(moon, 24), ckMaterial('metal', { color: '#e8e2cf', rough: 0.4 })); mm.rotation.x = -Math.PI / 2; mm.position.set(0, 0.075, -0.05); g.add(mm);
+    fgOffHand(A, g, o);
+  };
+  FG.lantern = (A, o, M) => {
+    const g = new THREE.Group();
+    g.add(fgMesh(new THREE.TorusGeometry(0.035, 0.006, 6, 16), M.dark, 0, 0, 0));
+    const cage = new THREE.Group(); cage.position.y = -0.17;
+    cage.add(fgMesh(fgLathe([[0.0, 0.1], [0.055, 0.075], [0.06, 0.06]], 8), M.dark));
+    cage.add(fgMesh(fgLathe([[0.06, -0.08], [0.055, -0.095], [0, -0.1]], 8), M.dark));
+    for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; cage.add(fgMesh(new THREE.BoxGeometry(0.008, 0.14, 0.008), M.dark, Math.cos(a) * 0.055, -0.01, Math.sin(a) * 0.055)); }
+    cage.add(fgMesh(new THREE.CylinderGeometry(0.05, 0.05, 0.13, 12), new THREE.MeshBasicMaterial({ color: 0xffd08a, transparent: true, opacity: 0.55 })));
+    const flame = fgMesh(new THREE.SphereGeometry(0.024, 10, 8).scale(1, 1.6, 1), ckMaterial('glow', { color: o.flame || '#ffe0a0' })); cage.add(flame);
+    g.add(cage); A.lanternAt = flame;
+    fgOffHand(A, g, Object.assign({ at: fgV(0.075, -0.02, 0.0), rot: new THREE.Euler(0, 0, 0) }, o));
+  };
+  FG.grimoire = (A, o, M) => {
+    const g = new THREE.Group(), c = ckMaterial('leather', { color: o.cloth || '#3a1e2e' });
+    g.add(fgMesh(new THREE.BoxGeometry(0.17, 0.05, 0.23), c));
+    g.add(fgMesh(new THREE.BoxGeometry(0.16, 0.042, 0.215), ckMaterial('leather', { color: '#e6dcc0' }), 0.008, 0, 0));
+    [-1, 1].forEach(sd => g.add(fgMesh(new THREE.BoxGeometry(0.03, 0.054, 0.03), M.trim, 0.07, 0, sd * 0.1)));
+    g.add(fgMesh(new THREE.OctahedronGeometry(0.022), M.glow, 0, 0.03, 0));
+    fgOffHand(A, g, Object.assign({ at: fgV(0.09, -0.05, 0.02), rot: new THREE.Euler(0, 0, -0.3) }, o));
+  };
+
+  // ---------- Weapons (built along +Z from the grip) ----------
+  const FG_GRIP = { pos: fgV(-0.085, -0.025, 0.0), rot: new THREE.Euler(0, 0, 0) };
+  function fgBlade(len, w, curve, M, o) {
+    const s = new THREE.Shape();
+    s.moveTo(-w / 2, 0); s.lineTo(-w / 2 + curve * 0.3, len * 0.82); s.quadraticCurveTo(-w * 0.1 + curve, len * 0.97, curve, len);
+    s.quadraticCurveTo(w * 0.35 + curve, len * 0.9, w / 2 + curve * 0.5, len * 0.78); s.lineTo(w / 2, 0); s.lineTo(-w / 2, 0);
+    const geo = new THREE.ExtrudeGeometry(s, { depth: 0.006, bevelEnabled: true, bevelThickness: 0.004, bevelSize: 0.005, bevelSegments: 1, curveSegments: 12 });
+    geo.translate(0, 0, -0.003); geo.rotateX(Math.PI / 2); geo.rotateX(Math.PI);
+    const g = new THREE.Group(); g.add(fgMesh(geo, M.metal));
+    // Fuller and, on better blades, a rune channel
+    g.add(fgMesh(new THREE.BoxGeometry(w * 0.16, 0.012, len * 0.7), M.dark, curve * 0.15, 0, len * 0.38));
+    if (o.rune) { const r = fgMesh(new THREE.BoxGeometry(w * 0.1, 0.014, len * 0.62), M.glow, curve * 0.15, 0, len * 0.38); g.add(r); g.userData.rune = r; }
+    return g;
+  }
+  function fgHilt(M, o, gripLen) {
+    const g = new THREE.Group(), gl = gripLen || 0.16;
+    g.add(fgMesh(new THREE.CylinderGeometry(0.016, 0.018, gl, 10).rotateX(Math.PI / 2), M.leather, 0, 0, 0));
+    for (let i = 0; i < 6; i++) g.add(fgMesh(new THREE.TorusGeometry(0.0175, 0.003, 4, 10), M.dark, 0, 0, -gl / 2 + (i + 0.5) * gl / 6));
+    g.add(fgMesh(new THREE.SphereGeometry(0.026, 12, 8).scale(1, 1, 0.8), M.trim, 0, 0, -gl / 2 - 0.018));
+    const guard = new THREE.CatmullRomCurve3([fgV(-0.11, 0, -0.02), fgV(-0.05, 0, 0.005), fgV(0.05, 0, 0.005), fgV(0.11, 0, -0.02)]);
+    g.add(new THREE.Mesh(new THREE.TubeGeometry(guard, 16, 0.012, 8, false), M.trim)).position.z = gl / 2 + 0.01;
+    g.add(fgMesh(new THREE.BoxGeometry(0.05, 0.03, 0.03), M.trim, 0, 0, gl / 2 + 0.01));
+    return g;
+  }
+  function fgWeapon(A, g, o) {
+    const s = A.sockets.hand_r; if (!s) return;
+    const holder = new THREE.Group(); holder.position.copy(FG_GRIP.pos); holder.rotation.copy(FG_GRIP.rot);
+    holder.add(g); g.traverse(c => { if (c.isMesh) c.castShadow = true; }); s.add(holder);
+    A.weapon = holder; A.weaponMats = []; g.traverse(c => { if (c.isMesh && c.material.userData.kind === 'metal') A.weaponMats.push(c.material); });
+    A.weaponReach = o.reach || 1;
+  }
+  FG.sword = (A, o, M) => {
+    const g = new THREE.Group(), len = o.len || 0.85, w = o.w || 0.055, gl = o.grip || 0.16;
+    g.add(fgHilt(M, o, gl));
+    const b = fgBlade(len, w, o.curve || 0, M, o); b.position.z = gl / 2 + 0.02; g.add(b);
+    fgWeapon(A, g, o);
+  };
+  FG.axe = (A, o, M) => {
+    const g = new THREE.Group(), L = o.len || 0.75;
+    g.add(fgMesh(new THREE.CylinderGeometry(0.017, 0.02, L, 10).rotateX(Math.PI / 2), M.wood, 0, 0, L * 0.35));
+    g.add(fgMesh(new THREE.CylinderGeometry(0.021, 0.021, 0.12, 10).rotateX(Math.PI / 2), M.leather, 0, 0, -0.02));
+    // A bearded head: the edge hooks down toward the hand
+    const s = new THREE.Shape();
+    s.moveTo(0, 0.04); s.lineTo(0.06, 0.05); s.quadraticCurveTo(0.12, 0.1, 0.2, 0.13); s.quadraticCurveTo(0.24, 0.0, 0.2, -0.17);
+    s.quadraticCurveTo(0.12, -0.12, 0.07, -0.04); s.lineTo(0, -0.03); s.lineTo(0, 0.04);
+    const geo = new THREE.ExtrudeGeometry(s, { depth: 0.014, bevelEnabled: true, bevelThickness: 0.006, bevelSize: 0.006, bevelSegments: 2, curveSegments: 14 });
+    geo.translate(0, 0, -0.007); geo.rotateY(Math.PI / 2);
+    const head = fgMesh(geo, M.metal, 0, 0, L * 0.78); head.rotation.x = Math.PI / 2; g.add(head);
+    g.add(fgMesh(new THREE.BoxGeometry(0.035, 0.04, 0.075), M.dark, 0, 0, L * 0.78));
+    fgWeapon(A, g, o);
+  };
+  FG.hammer = (A, o, M) => {
+    const g = new THREE.Group(), L = o.len || 0.8;
+    g.add(fgMesh(new THREE.CylinderGeometry(0.018, 0.02, L, 10).rotateX(Math.PI / 2), M.wood, 0, 0, L * 0.35));
+    g.add(fgMesh(new THREE.BoxGeometry(0.1, 0.1, 0.22), M.metal, 0, 0, L * 0.8).rotateX(0));
+    g.add(fgMesh(new THREE.BoxGeometry(0.11, 0.11, 0.03), M.trim, 0, 0, L * 0.8 + 0.1));
+    g.add(fgMesh(new THREE.BoxGeometry(0.11, 0.11, 0.03), M.trim, 0, 0, L * 0.8 - 0.1));
+    g.add(fgMesh(new THREE.ConeGeometry(0.03, 0.12, 6).rotateX(Math.PI / 2), M.metal, 0, 0, L * 0.8 + 0.17));
+    fgWeapon(A, g, o);
+  };
+  FG.spear = (A, o, M) => {
+    const g = new THREE.Group(), L = o.len || 1.7;
+    g.add(fgMesh(new THREE.CylinderGeometry(0.016, 0.018, L, 10).rotateX(Math.PI / 2), M.wood, 0, 0, L * 0.3));
+    const head = fgBlade(0.26, 0.06, 0, M, o); head.position.z = L * 0.8; g.add(head);
+    g.add(fgMesh(new THREE.CylinderGeometry(0.022, 0.018, 0.06, 10).rotateX(Math.PI / 2), M.trim, 0, 0, L * 0.79));
+    g.add(fgMesh(new THREE.ConeGeometry(0.02, 0.08, 8).rotateX(-Math.PI / 2), M.dark, 0, 0, -L * 0.2 - 0.04));
+    fgWeapon(A, g, o);
+  };
+  FG.staff = (A, o, M) => {
+    const g = new THREE.Group(), L = o.len || 1.6;
+    // A crooked branch with thorns, holding a captured light
+    const pts = []; for (let i = 0; i <= 8; i++) pts.push(fgV(Math.sin(i * 1.7) * 0.02, Math.cos(i * 2.3) * 0.015, -L * 0.25 + i / 8 * L));
+    const top = pts[8]; pts.push(fgV(top.x + 0.06, 0.02, top.z + 0.08), fgV(top.x + 0.02, 0.0, top.z + 0.16), fgV(top.x - 0.05, -0.01, top.z + 0.12));
+    const tube = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 60, 0.02, 8, false);
+    g.add(new THREE.Mesh(tube, M.wood));
+    for (let i = 0; i < 9; i++) { const t = pts[1 + Math.floor(i * 0.8)]; const th = fgMesh(new THREE.ConeGeometry(0.008, 0.05, 5), M.wood, t.x, t.y, t.z); th.rotation.set(Math.random() * 3, 0, Math.random() * 6); g.add(th); }
+    const orb = fgMesh(new THREE.SphereGeometry(0.045, 16, 12), M.glow, top.x + 0.01, 0.005, top.z + 0.1); g.add(orb);
+    g.add(new THREE.PointLight(ckHex(o.glow || '#9fe0ff'), 0.6, 2.5, 2)).position.copy(orb.position);
+    fgWeapon(A, g, o);
+  };
+
+  // ---------- Entry point (called by the avatar for each equipped item) ----------
+  function forgeGear(A, item) {
+    const lk = item.look || {};
+    (lk.forge || []).forEach(o => {
+      const f = FG[o.shape]; if (!f) { console.warn('gear forge: no shape', o.shape); return; }
+      const M = fgMats(o);
+      Object.values(M).forEach(m => A.mats.push(m));
+      f(A, o, M);
+    });
+    if (lk.cloth && typeof clothFor === 'function') A.cloth.push(clothFor(A, lk.cloth));
+  }

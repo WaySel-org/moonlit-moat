@@ -4,6 +4,9 @@
 - **Multi-world storyline ("The Sundering")**, Gatewright with the Shardkeepers of Veyra, Neon Verge and Ashfall. Being built by an agent against the earlier single-file version on branch `multi-world` (in the old working copy). When it lands it is folded into this tree with `python3 tools/split.py <merged single file>`, then reviewed before release.
   - Story switches on chapter completion, World Gates to revisit, rare rift storms (35% every 5 min, 75 s).
 
+## In review
+- **Character builder and visible gear** (`feature/character-maker`): male and female bodies, faces, hair, beards, body shape, 49 gear pieces in 8 slots with stats, cloth capes. Gear is all unlocked for testing (`content/character/gear.json` `testing.unlockAll`). Handoff: `agents/handoffs/2026-11-05-gatewright-character-builder.md`.
+
 ## Next
 - **Plug and play**: click the link, land in a live world with no menus, panels or loading screen; offline-first delivery; phone and tablet controls. Plan in [plug-and-play.md](plug-and-play.md) (Gatewright, Veilwarden).
 - Move world layouts and bosses from code into `content/` (Gatewright).

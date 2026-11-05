@@ -88,11 +88,31 @@
 <div id="prompt" hidden></div>
 <div id="tipcard" role="status" aria-live="polite" hidden></div>
 <button type="button" id="pausebtn" aria-label="Pause the game">&#10074;&#10074; Pause</button>
+<div id="builder" hidden>
+  <div id="bview" aria-label="Drag to turn the hero, scroll to zoom"></div>
+  <header class="bhead">
+    <p class="kicker">Moonlit Moat</p>
+    <h1>Who walks into the moat?</h1>
+    <p class="sub">Shape your hero, then dress them from the armoury. Drag to turn, scroll to zoom.</p>
+  </header>
+  <aside class="bside">
+    <nav id="btabs" role="tablist" aria-label="Builder sections"></nav>
+    <div id="bpanel"></div>
+    <div id="bstats" aria-live="polite"></div>
+  </aside>
+  <footer class="bbar">
+    <div id="bcams" class="grp"><span>View</span><button type="button" data-shot="body">Full</button><button type="button" data-shot="upper">Torso</button><button type="button" data-shot="face">Face</button><button type="button" data-shot="back">Back</button><button type="button" data-shot="feet">Feet</button></div>
+    <div id="bposes" class="grp"></div>
+    <div class="grp end"><button type="button" id="brandom">Randomize</button><button type="button" id="bdone" class="primary">Done</button></div>
+  </footer>
+  <div id="bload">Opening the wardrobe&hellip;</div>
+</div>
 <div id="pause" hidden>
   <div class="card">
     <h2>Paused</h2>
     <p>Everything is frozen: enemies, cooldowns, boosts and the world-tier clock.</p>
     <button type="button" class="close" id="resumebtn">Resume (Esc)</button>
+    <button type="button" id="bopen">Character (C)</button>
     <button type="button" id="newgame">New game</button>
     <div id="controlsbox"></div>
   </div>

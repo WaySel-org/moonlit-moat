@@ -11,6 +11,10 @@
   "world/moat/08-grass.js",
   "world/moat/09-wildlands.js",
   "actors/player/09-player-model.js",
+  "actors/player/09e-character-kit.js",
+  "actors/player/09f-gear-forge.js",
+  "actors/player/09g-cloth.js",
+  "actors/player/09h-hero-avatar.js",
   "actors/bosses/10-warden-model.js",
   "render/11-telegraphs-and-sparks.js",
   "world/moat/12-water.js",
@@ -36,6 +40,7 @@
   "ui/28-hud.js",
   "ui/28c-status-strip.js",
   "ui/28d-tips.js",
+  "ui/28e-builder-stage.js",
   "world/moat/29-maze-entrances.js",
   "world/moat/30-maze-traps.js",
   "world/moat/31-hedge-maze.js",
@@ -80,5 +85,6 @@
   "core/53-loop.js",
   "core/54-debug.js",
   "core/55-save.js",
-  "render/56-graphics.js"
+  "render/56-graphics.js",
+  "ui/57-character-builder.js"
 ]

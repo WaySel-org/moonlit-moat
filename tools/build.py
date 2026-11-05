@@ -7,7 +7,10 @@ Steps
 1. Validate every JSON file under content/ (required fields, originality, ids unique).
 2. Concatenate src/systems/** in manifest order inside one IIFE, with the content bundled in front
    as window.MM_CONTENT -> dist/a/game.<hash>.js.
-3. Copy three.js and the self-hosted fonts, and write styles -> dist/a/*.<hash>.*.
+3. Copy three.js and the self-hosted fonts, and write styles -> dist/a/*.<hash>.*. The character kit
+   (assets/character/: meshes, animations, textures) and the glTF loader are emitted the same way but fetched
+   after the game starts, so they sit outside the first-load budget; game.js finds them in window.MM_ASSETS.
+   content/character/*.json (appearance options and gear) is checked against assets/character/kit.json.
 4. Write dist/index.html (it is the only file that names the hashed ones) and dist/healthz.
 5. Write dist/vercel.json: security headers for every path (deploy/headers.json) and cache rules
    (deploy/cache.json): everything under /a/ is immutable, everything else revalidates.
@@ -23,6 +26,7 @@ import gzip, hashlib, json, pathlib, shutil, subprocess, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC, CONTENT, DIST = ROOT / 'src', ROOT / 'content', ROOT / 'dist'
+KIT = ROOT / 'assets' / 'character'
 ASSETS = DIST / 'a'
 FONTS = ROOT / 'vendor' / 'fonts'
 # Gzip bytes a phone fetches before the first frame (HTML, CSS, scripts, preloaded font).
@@ -60,7 +64,38 @@ def load_content():
     environments = json.loads(env_path.read_text()) if env_path.exists() else []
     for e in environments:
         if 'name' not in e: fail('every environment needs a "name"')
-    return {'characters': characters, 'worlds': worlds, 'environments': environments}
+    return {'characters': characters, 'worlds': worlds, 'environments': environments, 'character': load_character()}
+
+
+def load_character():
+    """content/character/looks.json and gear.json: what the character builder offers. Every mesh, clip and texture
+    they name must exist in the kit (assets/character/kit.json), and gear ids must be unique."""
+    d = CONTENT / 'character'
+    if not d.exists(): return None
+    kit = json.loads((KIT / 'kit.json').read_text())
+    meshes, clips, tex = set(kit['nodes']), set(kit['clips']), {t.rsplit('.', 1)[0] for t in kit['textures']}
+    looks, gear = json.loads((d / 'looks.json').read_text()), json.loads((d / 'gear.json').read_text())
+    def mesh_ok(ref, where):
+        # A mesh is a kit name, "*_Rest" for the M_ and F_ versions, or {"m": ..., "f": ...}
+        names = list(ref.values()) if isinstance(ref, dict) else [ref.replace('*', g, 1) for g in 'MF'] if ref.startswith('*') else [ref]
+        for n in names:
+            if n not in meshes: fail(f'{where} names mesh "{n}", which is not in assets/character/kit.json')
+    for h in looks['hair'] + looks['brows']:
+        if h.get('mesh'): mesh_ok(h['mesh'], f'looks.json hair/brows "{h["id"]}"')
+    for c in looks.get('clips', {}).values():
+        if c not in clips: fail(f'looks.json clips name "{c}", which is not in the kit')
+    ids, slots = set(), set(gear['slots'])
+    for it in gear['items']:
+        w = f'gear.json item "{it.get("id")}"'
+        for k in ('id', 'name', 'slot'):
+            if k not in it: fail(f'{w} is missing "{k}"')
+        if it['id'] in ids: fail(f'duplicate gear id "{it["id"]}"')
+        if it['slot'] not in slots: fail(f'{w} has unknown slot "{it["slot"]}"')
+        ids.add(it['id'])
+        look = it.get('look', {})
+        for m in look.get('meshes', []): mesh_ok(m, w)
+        if look.get('tex') and look['tex'] not in tex: fail(f'{w} names texture "{look["tex"]}", which is not in the kit')
+    return {'looks': looks, 'gear': gear}
 
 
 def emit(name, data):
@@ -114,7 +149,13 @@ def build():
     for rel in manifest:
         code = strip_line_comments((SRC / 'systems' / rel).read_text(), rel)
         parts.append(f'  // ===== src/systems/{rel} =====\n{code}')
+    # Lazy assets: fetched after the game starts, so they sit outside the first-load budget
+    lazy = {'gltfLoader': emit('gltf-loader.js', (ROOT / 'vendor' / 'three-r128-GLTFLoader.js').read_bytes())}
+    if KIT.exists():
+        lazy['character'] = {f.stem if f.parent == KIT else 'tex/' + f.stem: emit(f.name, f.read_bytes())
+                             for f in sorted(KIT.rglob('*')) if f.suffix in ('.glb', '.jpg', '.png')}
     game_js = ('window.MM_CONTENT = ' + json.dumps(content, separators=(',', ':')) + ';\n'
+               'window.MM_ASSETS = ' + json.dumps(lazy, separators=(',', ':')) + ';\n'
                '(function () {\n' + '\n'.join(parts) + '})();\n')
     game = emit('game.js', game_js)
     three = emit('three.js', (ROOT / 'vendor' / 'three.min.js').read_bytes())
@@ -145,7 +186,7 @@ def build():
     ]}
     (DIST / 'vercel.json').write_text(json.dumps(vercel, indent=2) + '\n')
 
-    for f in [DIST / 'index.html', *ASSETS.glob('*.js'), *ASSETS.glob('*.css')]:
+    for f in [DIST / 'index.html', *ASSETS.glob('*.js'), *ASSETS.glob('*.css'), *ASSETS.glob('*.glb')]:
         f.with_name(f.name + '.gz').write_bytes(gzip.compress(f.read_bytes(), 9, mtime=0))
 
     first_load = [DIST / 'index.html', DIST / styles, DIST / three, DIST / game, DIST / fonts['400']]

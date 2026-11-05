@@ -3,3 +3,10 @@ dist/
 .vercel/
 .DS_Store
 __pycache__/
+
+# Dev-only, never part of the game build
+# Character kit pipeline dependencies (tools/character: npm install)
+tools/character/node_modules/
+tools/character/package-lock.json
+# Character lab: a local test bench and screenshot scripts for the character kit
+tools/character-lab/

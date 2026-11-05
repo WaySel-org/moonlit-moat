@@ -4,8 +4,12 @@
 !src/
 !content/
 !vendor/
+!assets/
 !deploy/headers.json
 !deploy/cache.json
 !deploy/nginx.conf
 **/__pycache__
 **/.DS_Store
+# The build needs tools/build.py only, never the character kit pipeline or lab
+tools/character/
+tools/character-lab/

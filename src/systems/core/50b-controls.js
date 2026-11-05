@@ -5,7 +5,7 @@
     ['Move', [['KeyW', 'Forward'], ['KeyS', 'Back'], ['KeyA', 'Left'], ['KeyD', 'Right'], ['Space', 'Jump'], ['KeyL', 'Roll']]],
     ['Combat', [['KeyJ', 'Attack'], ['KeyK', 'Heavy attack'], ['ShiftLeft', 'Block / parry'], ['KeyH', 'Blade Spin'], ['KeyR', 'Lock camera'], ['KeyT', 'Next target']]],
     ['Skills', [['KeyY', 'Dagger'], ['KeyU', 'Moon bolt'], ['KeyI', 'Arc Volley'], ['KeyO', "Warden's Leap"], ['KeyF', 'Drink flask']]],
-    ['World', [['KeyE', 'Use / ride'], ['KeyQ', 'Spirit realm'], ['KeyB', 'Bag'], ['KeyN', 'Upgrade sword'], ['KeyP', 'Hero sheet'], ['KeyM', 'Map']]]
+    ['World', [['KeyE', 'Use / ride'], ['KeyQ', 'Spirit realm'], ['KeyB', 'Bag'], ['KeyN', 'Upgrade sword'], ['KeyP', 'Hero sheet'], ['KeyC', 'Character'], ['KeyM', 'Map']]]
   ];
   const ACT_IDS = ACTIONS.flatMap(g => g[1].map(a => a[0]));
   const FIXED = /^(Arrow|Escape$|Tab$|Meta|OS|ContextMenu$|F\d)/; // never bindable: arrows stay movement, Esc stays pause
