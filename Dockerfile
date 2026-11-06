@@ -13,6 +13,7 @@ COPY tools ./tools
 COPY src ./src
 COPY content ./content
 COPY vendor ./vendor
+COPY assets ./assets
 COPY deploy/headers.json deploy/cache.json ./deploy/
 RUN python3 tools/build.py \
  && python3 tools/nginx_headers.py > /security-headers.conf \

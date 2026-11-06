@@ -133,6 +133,7 @@
     renderer.setRenderTarget(maskRT); renderer.render(scene, camera);
     renderer.autoClear = false; scene.overrideMaterial = maskFoe; camera.layers.set(2);
     renderer.render(scene, camera);
+    if (HER.ready) { scene.overrideMaterial = maskFriendSkinned; camera.layers.set(3); renderer.render(scene, camera); }
     renderer.autoClear = true; scene.overrideMaterial = null; camera.layers.set(0);
     gfxBeforeScene();
     renderer.setRenderTarget(sceneRT); renderer.render(scene, camera);

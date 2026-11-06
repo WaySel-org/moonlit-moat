@@ -7,7 +7,9 @@ Steps
 1. Validate every JSON file under content/ (required fields, originality, ids unique).
 2. Concatenate src/systems/** in manifest order inside one IIFE, with the content bundled in front
    as window.MM_CONTENT -> dist/a/game.<hash>.js.
-3. Copy three.js and the self-hosted fonts, and write styles -> dist/a/*.<hash>.*.
+3. Copy three.js and the self-hosted fonts, and write styles -> dist/a/*.<hash>.*. The hero model and its
+   loader (assets/hero/, vendor/three-r128-GLTFLoader.js) are emitted the same way but fetched after start,
+   so they sit outside the first-load budget; game.js finds them in window.MM_ASSETS.
 4. Write dist/index.html (it is the only file that names the hashed ones) and dist/healthz.
 5. Write dist/vercel.json: security headers for every path (deploy/headers.json) and cache rules
    (deploy/cache.json): everything under /a/ is immutable, everything else revalidates.
@@ -114,7 +116,11 @@ def build():
     for rel in manifest:
         code = strip_line_comments((SRC / 'systems' / rel).read_text(), rel)
         parts.append(f'  // ===== src/systems/{rel} =====\n{code}')
+    # Lazy assets: fetched after the game starts, so they sit outside the first-load budget
+    lazy = {'gltfLoader': emit('gltf-loader.js', (ROOT / 'vendor' / 'three-r128-GLTFLoader.js').read_bytes()),
+            'hero': emit('moonlit-her.glb', (ROOT / 'assets' / 'hero' / 'moonlit-her.glb').read_bytes())}
     game_js = ('window.MM_CONTENT = ' + json.dumps(content, separators=(',', ':')) + ';\n'
+               'window.MM_ASSETS = ' + json.dumps(lazy) + ';\n'
                '(function () {\n' + '\n'.join(parts) + '})();\n')
     game = emit('game.js', game_js)
     three = emit('three.js', (ROOT / 'vendor' / 'three.min.js').read_bytes())
@@ -145,7 +151,7 @@ def build():
     ]}
     (DIST / 'vercel.json').write_text(json.dumps(vercel, indent=2) + '\n')
 
-    for f in [DIST / 'index.html', *ASSETS.glob('*.js'), *ASSETS.glob('*.css')]:
+    for f in [DIST / 'index.html', *ASSETS.glob('*.js'), *ASSETS.glob('*.css'), *ASSETS.glob('*.glb')]:
         f.with_name(f.name + '.gz').write_bytes(gzip.compress(f.read_bytes(), 9, mtime=0))
 
     first_load = [DIST / 'index.html', DIST / styles, DIST / three, DIST / game, DIST / fonts['400']]
