@@ -4,7 +4,7 @@
     {
       "id": "moatwatch",
       "file": "moatwatch.glb",
-      "len": 1.12,
+      "len": 1,
       "tris": 1020,
       "kb": 134,
       "source": "common_long_sword.glb",
@@ -16,7 +16,7 @@
     {
       "id": "nightneedle",
       "file": "nightneedle.glb",
-      "len": 1.1,
+      "len": 1,
       "tris": 2640,
       "kb": 239,
       "source": "sword.glb",
@@ -28,7 +28,7 @@
     {
       "id": "hollowfang",
       "file": "hollowfang.glb",
-      "len": 1.42,
+      "len": 1.15,
       "tris": 5380,
       "kb": 745,
       "source": "demon_sword.glb",
@@ -40,7 +40,7 @@
     {
       "id": "wyrmbane",
       "file": "wyrmbane.glb",
-      "len": 1.78,
+      "len": 1.42,
       "tris": 6668,
       "kb": 531,
       "source": "zweihander_sword.glb",
@@ -52,7 +52,7 @@
     {
       "id": "tidecutter",
       "file": "tidecutter.glb",
-      "len": 0.95,
+      "len": 0.85,
       "tris": 556,
       "kb": 70,
       "source": "pirate_sword.glb",

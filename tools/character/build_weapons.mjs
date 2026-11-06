@@ -26,11 +26,11 @@ if (!SRC || !fs.existsSync(SRC)) { console.error('usage: node build_weapons.mjs 
 // id: name used by content/character/gear.json ("model"), src: file in SRC, len: overall length in metres, tex: max texture size,
 // hilt: 'min' | 'max' to override the guard-finding when a curved blade is wider than its guard
 const WEAPONS = [
-  { id: 'moatwatch', src: 'common_long_sword.glb', len: 1.12, tex: 512 },
-  { id: 'nightneedle', src: 'sword.glb', len: 1.1, tex: 512 },
-  { id: 'hollowfang', src: 'demon_sword.glb', len: 1.42, tex: 1024 },
-  { id: 'wyrmbane', src: 'zweihander_sword.glb', len: 1.78, tex: 1024 },
-  { id: 'tidecutter', src: 'pirate_sword.glb', len: 0.95, tex: 512, hilt: 'min' } // the curve is wider than the guard
+  { id: 'moatwatch', src: 'common_long_sword.glb', len: 1.0, tex: 512 },
+  { id: 'nightneedle', src: 'sword.glb', len: 1.0, tex: 512 },
+  { id: 'hollowfang', src: 'demon_sword.glb', len: 1.15, tex: 1024 },
+  { id: 'wyrmbane', src: 'zweihander_sword.glb', len: 1.42, tex: 1024 },
+  { id: 'tidecutter', src: 'pirate_sword.glb', len: 0.85, tex: 512, hilt: 'min' } // the curve is wider than the guard
 ];
 
 const io = new NodeIO();

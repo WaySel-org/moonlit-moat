@@ -272,7 +272,7 @@
         }
       },
       "gear": {
-        "head": "witch-hat",
+        "head": "dusk-hood",
         "chest": "peasant-blouse",
         "hands": null,
         "legs": "peasant-skirt",
@@ -303,7 +303,7 @@
         }
       },
       "gear": {
-        "head": "imperial-hood",
+        "head": "engraved-helm",
         "chest": "imperial-coat",
         "hands": "imperial-gauntlets",
         "legs": "imperial-greaves",

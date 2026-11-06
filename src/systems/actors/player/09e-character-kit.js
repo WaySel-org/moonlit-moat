@@ -6,7 +6,8 @@
   // The bare body is cut into regions (head, torso, arms, hands, hips, legs, feet); gear hides what it covers.
   // Skin, hair and stubble textures are tint maps (average colour 0.5), so material colour x 2 is the real colour.
   const CK = { kit: null, clips: {}, tex: {}, urls: null, loading: null, regions: {}, gear: [] };
-  const CK_REGIONS = ['Head', 'Torso', 'Arms', 'Hands', 'Hips', 'Legs', 'Feet'];
+  // The neck is its own region so a helmet can hide the head without leaving a gap above the collar
+  const CK_REGIONS = ['Head', 'Neck', 'Torso', 'Arms', 'Hands', 'Hips', 'Legs', 'Feet'];
   // Options the builder offers (content/character/looks.json) and every piece of gear (content/character/gear.json)
   const CK_LOOKS = (window.MM_CONTENT && window.MM_CONTENT.character && window.MM_CONTENT.character.looks) || { hair: [], brows: [], skin: [], hairColors: [], eyes: [], presets: [] };
   const CK_GEAR = (window.MM_CONTENT && window.MM_CONTENT.character && window.MM_CONTENT.character.gear) || { slots: [], items: [] };
@@ -37,7 +38,18 @@
   const ckMesh = name => CK.kit && CK.kit.getObjectByName(name);
   // Outfits: skinned armour sets rigged onto the kit's bone names in Blender (assets/character/outfits/<id>.glb).
   // Loaded on first use; an avatar wearing one rebuilds when it arrives.
-  const CK_OUTFITS = {};
+  const CK_OUTFITS = {}, CK_CUTS = new Map();
+  // Keep the triangles whose three corners lie below y (the geometry's own space); cached per geometry and height
+  function ckCutBelow(geo, y) {
+    const key = geo.uuid + ':' + y; if (CK_CUTS.has(key)) return CK_CUTS.get(key);
+    const g = geo.clone(), p = g.attributes.position, ix = g.index ? g.index.array : null, out = [];
+    const n = ix ? ix.length : p.count;
+    for (let t = 0; t < n; t += 3) {
+      const a = ix ? ix[t] : t, b = ix ? ix[t + 1] : t + 1, c = ix ? ix[t + 2] : t + 2;
+      if (p.getY(a) < y && p.getY(b) < y && p.getY(c) < y) out.push(a, b, c);
+    }
+    g.setIndex(out); CK_CUTS.set(key, g); return g;
+  }
   function ckOutfit(id) {
     if (CK_OUTFITS[id]) return CK_OUTFITS[id];
     const o = CK_OUTFITS[id] = { scene: null };
@@ -179,7 +191,7 @@
 
   // ---------- The avatar ----------
   function ckAvatar(look, gear) {
-    const A = { root: new THREE.Group(), parts: [], bones: {}, sockets: {}, mixer: null, cur: null, curName: '', look: null, gear: null, cloth: [], mats: [] };
+    const A = { waiting: new Set(), disposed: false, root: new THREE.Group(), parts: [], bones: {}, sockets: {}, mixer: null, cur: null, curName: '', look: null, gear: null, cloth: [], mats: [] };
     A.root.name = 'hero-avatar';
     A.inner = new THREE.Group(); A.root.add(A.inner);
 
@@ -264,8 +276,17 @@
       clearParts();
       A.regions = regions(g);
       const items = Object.values(A.gear || {}).filter(Boolean);
+      // A coat that has its own skirt (look.ownSkirt) switches off cloth skirts from the rest of the gear
+      A.noClothSkirt = items.some(it => it.look && it.look.ownSkirt);
+      // How far the thickest worn piece stands off the body (look.bulk, metres): capes and colliders move out by it
+      A.bulk = items.reduce((m, it) => Math.max(m, (it.look && it.look.bulk) || 0), 0);
       const hides = new Set(), hideHair = items.some(it => it.look && it.look.hideHair), hideBeard = items.some(it => it.look && it.look.hideBeard);
-      items.forEach(it => ((it.look && it.look.hides) || []).forEach(h => hides.add(h)));
+      // A coat with its own sleeves (look.ownSleeves) overrules sleeved arm gear: those kit sleeves are not drawn
+      // and don't hide the arms or hands, so the coat's sleeves show with the hero's own hands
+      const sleeves = items.find(it => it.look && it.look.ownSleeves);
+      const sleeveMesh = ref => /_Arms/.test(typeof ref === 'object' ? ref.m || '' : ref);
+      const yields = it => sleeves && it !== sleeves && it.slot === 'hands' && ((it.look && it.look.meshes) || []).some(sleeveMesh);
+      items.forEach(it => { if (!yields(it)) ((it.look && it.look.hides) || []).forEach(h => hides.add(h)); });
       const skinTone = L.skin || '#c69c7b';
       const skinMat = ckMaterial('skin', { map: 'skin_' + g, color: skinTone, skinned: true });
       const regMat = ckMaterial('skin', { map: 'reg_' + g, color: skinTone, skinned: true });
@@ -275,7 +296,8 @@
       part(`${G}_Eyes`, eye);
       const hairCol = L.hairColor || '#3a2416';
       const brow = (CK_LOOKS.brows.find(b => b.id === L.brows) || {}).mesh;
-      if (brow) { const m = ckMaterial('hair', { map: 'hair_' + (g === 'f' ? 2 : 1), color: L.browColor || hairCol, skinned: true }); A.mats.push(m); part(brow, m); }
+      // A helmet that hides the hair hides the brows too (they'd poke through a close visor)
+      if (brow && !hideHair) { const m = ckMaterial('hair', { map: 'hair_' + (g === 'f' ? 2 : 1), color: L.browColor || hairCol, skinned: true }); A.mats.push(m); part(brow, m); }
       const hair = (CK_LOOKS.hair.find(h => h.id === L.hair) || {}).mesh;
       if (hair && !hideHair) { const m = ckMaterial('hair', { map: 'hair_' + (g === 'f' ? 2 : 1), color: hairCol, skinned: true }); A.mats.push(m); part(hair, m); }
       const beard = ckBeardGeometry(L.beard || 'none', g);
@@ -286,14 +308,22 @@
       items.forEach(it => {
         const lk = it.look || {};
         (lk.meshes || []).forEach(ref => {
+          if (yields(it) && sleeveMesh(ref)) return;
           const name = typeof ref === 'object' ? ref[g] : ref.replace('*', G);
           const m = ckMaterial('cloth', { map: lk.tex, color: lk.tint || 0xffffff, skinned: true }); A.mats.push(m);
           part(name, m, null, regMat);
         });
         if (lk.outfit) {
           const o = ckOutfit(lk.outfit);
-          if (o.scene) (lk.parts || []).forEach(n => { const src = o.scene.getObjectByName(n); if (src) part(n, 'own', null, null, src); });
-          else if (!o.waiting) { o.waiting = true; o.promise.then(() => { o.waiting = false; build(); if (A.onAsync) A.onAsync(); }, () => {}); }
+          // A part is a mesh name, or { name, below } to keep only what lies below a height (outfit units),
+          // e.g. a hood's shoulder cape without its face mask
+          if (o.scene) (lk.parts || []).forEach(ref => {
+            const n = typeof ref === 'string' ? ref : ref.name, src = o.scene.getObjectByName(n); if (!src) return;
+            const sm = src.isSkinnedMesh ? src : src.children.find(c => c.isSkinnedMesh);
+            part(n, 'own', ref.below !== undefined && sm ? ckCutBelow(sm.geometry, ref.below) : null, null, src);
+          });
+          // Every avatar waiting on the file rebuilds when it lands (the builder's preview and the hero both can be)
+          else if (!A.waiting.has(lk.outfit)) { A.waiting.add(lk.outfit); o.promise.then(() => { A.waiting.delete(lk.outfit); if (!A.disposed) { build(); if (A.onAsync) A.onAsync(); } }, () => {}); }
         }
         if (typeof forgeGear === 'function') forgeGear(A, it);
       });
@@ -348,7 +378,7 @@
     A.setGear = function (gear) { A.gear = Object.assign({}, gear); build(); };
     A.setShape = function (shape) { A.look.shape = Object.assign({}, shape); applyShape(); };
     A.handSocket = side => A.sockets[side === 'l' ? 'hand_l' : 'hand_r'];
-    A.dispose = function () { clearParts(); A.root.parent && A.root.parent.remove(A.root); };
+    A.dispose = function () { A.disposed = true; clearParts(); A.root.parent && A.root.parent.remove(A.root); };
     A.look = JSON.parse(JSON.stringify(look)); A.gear = Object.assign({}, gear || {});
     build();
     return A;

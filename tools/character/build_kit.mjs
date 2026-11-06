@@ -9,7 +9,7 @@
 //
 // Writes assets/character/:
 //   kit.glb     every body, hair, beard and outfit mesh, skinned to the shared 65-bone rig, with no textures.
-//               The bare bodies are cut into regions (head, torso, arms, hands, hips, legs, feet) so gear can hide
+//               The bare bodies are cut into regions (head, neck, torso, arms, hands, hips, legs, feet) so gear can hide
 //               whatever it covers instead of clipping through it.
 //   anims.glb   the animation clips the hero uses, with no mesh. Only the pelvis keeps its translation, so a clip
 //               fits any body; scale tracks are dropped.
@@ -55,7 +55,7 @@ async function readMesh(file) {
 
 // ---------- Meshes ----------
 // Region of the bare body each bone belongs to. A triangle goes to the region holding most of its weight.
-const REGION = b => /^Head$|^neck_01$/.test(b) ? 'head'
+const REGION = b => /^Head$/.test(b) ? 'head' : /^neck_01$/.test(b) ? 'neck'
   : /^(hand|thumb|index|middle|ring|pinky)_/.test(b) ? 'hands'
   : /^(upperarm|lowerarm)_/.test(b) ? 'arms'
   : /^(spine_0[23]|clavicle_)/.test(b) ? 'torso'

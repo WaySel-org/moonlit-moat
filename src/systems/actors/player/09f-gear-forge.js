@@ -562,15 +562,27 @@
   FG.piece = (A, o) => {
     const g = new THREE.Group(); g.name = 'piece:' + o.model;
     const size = o.size || 1, off = o.offset || [0, 0, 0];
+    let place = null;
     if (o.fit === 'shield') { g.scale.setScalar(size); fgOffHand(A, g, o); }
     else if (o.fit === 'chest') {
-      const T = fgTorso(A), w = T.w * size;
+      // Chest: as wide as the ribcage times size, its top at the collarbone (offset[1] metres up), centred on the torso
+      const T = fgTorso(A), w = T.w * size, at = fgV(T.c.x, A.rest.neck_01.y, T.c.z);
       g.scale.setScalar(w);
-      fgHang(A, 'spine_03', g, fgV(T.c.x + off[0] * w, (T.top + T.bot) / 2 + (T.top - T.bot) * 0.12 + off[1] * w, T.c.z + off[2] * w));
+      fgHang(A, 'spine_03', g, at);
+      place = c => {
+        const bb = new THREE.Box3().setFromObject(c), ctr = bb.getCenter(fgV());
+        c.position.set(-ctr.x, (off[1] || 0) / w - bb.max.y, (off[2] || 0) / w - ctr.z);
+      };
     } else {
-      const h = fgHead(A), w = h.r * 2 * size;
+      // Head: as wide as the head times size, sitting on the crown (offset[1] metres of clearance above it),
+      // centred front to back on the skull (offset[2] metres forward)
+      const hb = fgBox(A, 'head'), hs = hb.getSize(fgV()), w = hs.x * size, h = fgHead(A);
       g.scale.setScalar(w);
-      fgHang(A, 'Head', g, h.c.clone().add(fgV(off[0] * w, off[1] * w, off[2] * w)));
+      fgHang(A, 'Head', g, h.c);
+      place = c => {
+        const bb = new THREE.Box3().setFromObject(c), ctr = bb.getCenter(fgV());
+        c.position.set(-ctr.x, (hb.max.y + (off[1] || 0.012) - h.c.y) / w - bb.max.y, (off[2] || 0) / w - ctr.z);
+      };
     }
     fgPieceLoad(o.model).then(src => {
       const c = src.clone(true);
@@ -580,6 +592,7 @@
         if (CK.env) { n.material.envMap = CK.env; n.material.envMapIntensity = 1.2; }
         n.material.userData = { kind: 'metal', base: n.material.color.clone() }; A.mats.push(n.material);
       });
+      if (place) place(c);
       g.add(c);
       if (A.onAsync) A.onAsync();
     }).catch(e => console.warn('gear forge:', e.message));
@@ -594,5 +607,5 @@
       Object.values(M).forEach(m => A.mats.push(m));
       f(A, o, M);
     });
-    if (lk.cloth && typeof clothFor === 'function') [].concat(lk.cloth).forEach(c => A.cloth.push(clothFor(A, c)));
+    if (lk.cloth && typeof clothFor === 'function') [].concat(lk.cloth).forEach(c => { if (!(A.noClothSkirt && c.kind === 'skirt' && !lk.ownSkirt)) A.cloth.push(clothFor(A, c)); });
   }

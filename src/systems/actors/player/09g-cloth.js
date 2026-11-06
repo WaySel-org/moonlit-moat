@@ -25,11 +25,13 @@
   function clothFor(A, spec) {
     const kind = spec.kind || 'cape';
     const T = typeof fgTorso === 'function' ? fgTorso(A) : { w: 0.36, d: 0.22, top: 1.45, bot: 1.0, c: new THREE.Vector3(0, 1.2, 0) };
+    const BULK = A.bulk || 0;
     const cols = spec.cols || (kind === 'scarf' ? 3 : 11), rows = spec.rows || (kind === 'scarf' ? 12 : 15);
     // Where the top row hangs, in avatar space, and the bone it follows
     let bone = 'spine_03', top = [];
     if (kind === 'cape' || kind === 'shawl') {
-      const w = (spec.w || 1) * T.w * 1.05, y = T.top - 0.02, z = T.c.z - T.d * 0.5 - 0.035;
+      // Hung across the shoulder blades, below the neck, so the top edge doesn't stand up behind the head
+      const w = (spec.w || 1) * T.w * 1.05 + BULK * 2, y = T.top - 0.075 + BULK * 0.3, z = T.c.z - T.d * 0.5 - 0.03 - BULK;
       for (let i = 0; i < cols; i++) { const u = i / (cols - 1) - 0.5; top.push(new THREE.Vector3(u * w, y - Math.abs(u) * 0.05, z + Math.abs(u) * Math.abs(u) * T.d * 0.9)); }
     } else if (kind === 'scarf') {
       const n = A.rest.neck_01, y = n.y - 0.03;
@@ -111,11 +113,45 @@
       CL_COLLIDE.forEach(([f, t, r], i) => {
         const bf = A.bones[f], bt = A.bones[t]; if (!bf || !bt) { caps[i].r = 0; return; }
         caps[i].a.setFromMatrixPosition(bf.matrixWorld); caps[i].b.setFromMatrixPosition(bt.matrixWorld);
-        caps[i].r = (r < 0.3 ? r : r * T.d) * s * (A.look.shape && A.look.shape.build !== undefined ? 0.8 + A.look.shape.build * 0.4 : 1);
+        caps[i].r = ((r < 0.3 ? r : r * T.d) * (A.look.shape && A.look.shape.build !== undefined ? 0.8 + A.look.shape.build * 0.4 : 1) + (i < 2 ? BULK : i >= 6 ? BULK * 0.7 : BULK * 0.5)) * s;
       });
       // The torso capsule sits a little behind the bones (bones run along the spine, the chest is in front)
     }
+    // A skirt keeps a bell shape: each point stays at least as far from the hips' axis as its waistband anchor,
+    // flaring toward the hem. (Pushing it off each thigh separately twisted the front into a flat flap.)
+    const bell = new Float32Array(cols), hipC = new THREE.Vector3();
+    function bellNow() {
+      hipC.setFromMatrixPosition(A.bones.pelvis.matrixWorld);
+      for (let c = 0; c < cols; c++) bell[c] = Math.hypot(anchors[c].x - hipC.x, anchors[c].z - hipC.z);
+    }
+    function skirtOut(i) {
+      const r = Math.floor(i / cols), c = i % cols, k = i * 3;
+      const want = bell[c] * (1 + 0.45 * r / (rows - 1)) + 0.01;
+      const dx = pos[k] - hipC.x, dz = pos[k + 2] - hipC.z, d = Math.hypot(dx, dz);
+      // Keep each column on its own side of the hips, so columns can't cross over
+      const ax = anchors[c].x - hipC.x, az = anchors[c].z - hipC.z, al = Math.hypot(ax, az) || 1;
+      if (d < want || (dx * ax + dz * az) / (d * al || 1) < 0.5) {
+        const ux = d > 1e-4 && (dx * ax + dz * az) > 0 ? dx / d : ax / al, uz = d > 1e-4 && (dx * ax + dz * az) > 0 ? dz / d : az / al;
+        pos[k] = hipC.x + ux * Math.max(want, d); pos[k + 2] = hipC.z + uz * Math.max(want, d);
+      }
+      // Legs push the cloth outward only (straight away from the hips), so a stride lifts the skirt instead of
+      // poking through it or twisting columns across each other
+      const P = _v.fromArray(pos, k);
+      for (let j = 2; j <= 5; j++) {
+        const cp = caps[j]; if (!cp.r) continue;
+        const ab = _a.copy(cp.b).sub(cp.a), t = Math.max(0, Math.min(1, _b.copy(P).sub(cp.a).dot(ab) / (ab.lengthSq() || 1)));
+        const q = _a.copy(cp.a).addScaledVector(ab, t), rr = cp.r * 1.6 + 0.035;
+        if (P.distanceTo(q) < rr) {
+          const ox = P.x - hipC.x, oz = P.z - hipC.z, ol = Math.hypot(ox, oz) || 1;
+          const qx = q.x - hipC.x, qz = q.z - hipC.z, along = (qx * ox + qz * oz) / ol;
+          const need = Math.max(ol, along + rr);
+          P.x = hipC.x + ox / ol * need; P.z = hipC.z + oz / ol * need;
+        }
+      }
+      P.toArray(pos, k);
+    }
     function collide(i) {
+      if (kind === 'skirt') { skirtOut(i); return; }
       const p = _v.fromArray(pos, i * 3);
       for (const c of caps) {
         if (!c.r) continue;
@@ -135,7 +171,7 @@
       if (!backCloth) return;
       const sock = waist ? A.sockets.pelvis : (A.sockets.spine_02 || A.sockets[C.bone]);
       plane.n.set(0, 0, spec.side === 'front' ? -1 : 1).transformDirection(sock.matrixWorld);
-      const d = waist ? (hipsBox.max.z - hipsBox.min.z) * 0.45 : T.d * 0.42;
+      const d = (waist ? (hipsBox.max.z - hipsBox.min.z) * 0.45 : T.d * 0.42) + BULK;
       plane.q.setFromMatrixPosition(A.bones[waist ? 'pelvis' : 'spine_03'].matrixWorld).addScaledVector(plane.n, -d * WS());
       for (let c = 0; c < cols; c++) depth[c] = Math.max(0, _v.copy(anchors[c]).sub(plane.q).dot(plane.n));
     }
@@ -149,7 +185,7 @@
       if (!dt) { write(); return; }
       A.root.updateWorldMatrix(true, true);
       if (C.first) reset();
-      anchorsNow(); capsNow(); planeNow();
+      anchorsNow(); capsNow(); planeNow(); if (kind === 'skirt') bellNow();
       // A teleport (respawn, travel) resets the cloth instead of whipping it across the map
       if (_v.fromArray(pos, 0).distanceTo(anchors[0]) > 2 * WS()) reset();
       C.t += dt;

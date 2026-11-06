@@ -1,5 +1,5 @@
 {
-  "note": "Every piece of gear the hero can wear. look.meshes are kit meshes (* = M_ or F_ for the body worn), look.forge are shapes built in actors/player/09f-gear-forge.js, look.cloth is simulated cloth (09g). look.hides names body regions the piece covers. stats: armor (max armour), hp, st (stamina), mana, dmg and spell (% bonus), speed (% move speed, can be negative). Weapons: dmg is a fraction (0.12 = +12%), reach multiplies sword range, affix is burn | leech | swift | slayer. Sword models (forge shape \"model\") are assets/character/weapons/<model>.glb, built by tools/character/build_weapons.mjs. Modelled armour: forge shape \"piece\" (assets/character/armor/<model>.glb; fit head | chest | shield, size, offset) and \"outfit\" with \"parts\" (skinned sets in assets/character/outfits/<id>.glb). Credits in THIRD_PARTY.md.",
+  "note": "Every piece of gear the hero can wear. look.meshes are kit meshes (* = M_ or F_ for the body worn), look.forge are shapes built in actors/player/09f-gear-forge.js, look.cloth is simulated cloth (09g). look.hides names body regions the piece covers. stats: armor (max armour), hp, st (stamina), mana, dmg and spell (% bonus), speed (% move speed, can be negative). Weapons: dmg is a fraction (0.12 = +12%), reach multiplies sword range, affix is burn | leech | swift | slayer. Sword models (forge shape \"model\") are assets/character/weapons/<model>.glb, built by tools/character/build_weapons.mjs. Modelled armour: forge shape \"piece\" (assets/character/armor/<model>.glb; fit head | chest | shield, size, offset) and \"outfit\" with \"parts\" (skinned sets in assets/character/outfits/<id>.glb). Credits in THIRD_PARTY.md. ownSkirt: the piece has its own skirt, so cloth skirts from other gear are switched off. bulk: how far the piece stands off the body in metres, so capes hang outside it. ownSleeves: the piece has its own sleeves, so sleeved arm gear steps aside.",
   "testing": {
     "unlockAll": true,
     "why": "Every item is in the armoury from the first second, for play-testing. Set false to make gear drop-only."
@@ -60,65 +60,6 @@
       }
     },
     {
-      "id": "moon-circlet",
-      "name": "Moon Circlet",
-      "slot": "head",
-      "tier": 2,
-      "stats": {
-        "mana": 25,
-        "spell": 6
-      },
-      "look": {
-        "forge": [
-          {
-            "shape": "circlet",
-            "trim": "#d9d2c0",
-            "glow": "#bff0ff"
-          }
-        ]
-      }
-    },
-    {
-      "id": "thorn-crown",
-      "name": "Crown of the Thorn Court",
-      "slot": "head",
-      "tier": 4,
-      "stats": {
-        "armor": 8,
-        "spell": 10,
-        "dmg": 5
-      },
-      "look": {
-        "forge": [
-          {
-            "shape": "crown",
-            "trim": "#c9a456",
-            "glow": "#ff7aa8"
-          }
-        ]
-      }
-    },
-    {
-      "id": "witch-hat",
-      "name": "Hedge Witch's Hat",
-      "slot": "head",
-      "tier": 2,
-      "stats": {
-        "mana": 30,
-        "spell": 8
-      },
-      "look": {
-        "forge": [
-          {
-            "shape": "witchhat",
-            "cloth": "#2a2433",
-            "band": "#7a3a28",
-            "trim": "#c9a456"
-          }
-        ]
-      }
-    },
-    {
       "id": "crusader-helm",
       "name": "Crusader's Great Helm",
       "slot": "head",
@@ -134,11 +75,11 @@
             "shape": "piece",
             "model": "great-helm",
             "fit": "head",
-            "size": 1.22,
+            "size": 1.25,
             "offset": [
               0,
-              0.08,
-              0.02
+              0.012,
+              0
             ]
           }
         ],
@@ -165,11 +106,11 @@
             "shape": "piece",
             "model": "ornate-helm",
             "fit": "head",
-            "size": 1.22,
+            "size": 1.25,
             "offset": [
               0,
-              0.06,
-              0.02
+              0.012,
+              0
             ]
           }
         ],
@@ -195,11 +136,11 @@
             "shape": "piece",
             "model": "bascinet",
             "fit": "head",
-            "size": 1.9,
+            "size": 2.1,
             "offset": [
               0,
-              -0.08,
-              0.0
+              0.012,
+              0
             ]
           }
         ],
@@ -225,42 +166,11 @@
             "shape": "piece",
             "model": "gothic-bascinet",
             "fit": "head",
-            "size": 1.3,
+            "size": 1.35,
             "offset": [
               0,
-              0.02,
-              0.04
-            ]
-          }
-        ],
-        "hideHair": true,
-        "hideBeard": true,
-        "hides": [
-          "head"
-        ]
-      }
-    },
-    {
-      "id": "griffin-sallet",
-      "name": "Griffin Sallet",
-      "slot": "head",
-      "tier": 4,
-      "stats": {
-        "armor": 20,
-        "spell": 6,
-        "dmg": 3
-      },
-      "look": {
-        "forge": [
-          {
-            "shape": "piece",
-            "model": "griffin-sallet",
-            "fit": "head",
-            "size": 1.45,
-            "offset": [
-              0,
-              0.05,
-              0.0
+              0.012,
+              0
             ]
           }
         ],
@@ -286,34 +196,13 @@
             "shape": "piece",
             "model": "italian-sallet",
             "fit": "head",
-            "size": 1.3,
+            "size": 1.5,
             "offset": [
               0,
-              0.05,
-              0.0
+              0.012,
+              0
             ]
           }
-        ],
-        "hideHair": true,
-        "hideBeard": true,
-        "hides": [
-          "head"
-        ]
-      }
-    },
-    {
-      "id": "imperial-hood",
-      "name": "Imperial Mail Hood",
-      "slot": "head",
-      "tier": 3,
-      "stats": {
-        "armor": 14,
-        "mana": 12
-      },
-      "look": {
-        "outfit": "imperial",
-        "parts": [
-          "Imperial_Hood"
         ],
         "hideHair": true,
         "hideBeard": true,
@@ -341,7 +230,8 @@
         "hides": [
           "torso",
           "hips"
-        ]
+        ],
+        "bulk": 0.01
       }
     },
     {
@@ -363,7 +253,8 @@
         "hides": [
           "torso",
           "hips"
-        ]
+        ],
+        "bulk": 0.01
       }
     },
     {
@@ -423,7 +314,8 @@
         "tex": "peasant_b",
         "hides": [
           "torso",
-          "hips"
+          "hips",
+          "legs"
         ],
         "cloth": {
           "kind": "skirt",
@@ -433,7 +325,8 @@
           "color": "#1f3348",
           "trim": "#c9a456",
           "pattern": "stripes"
-        }
+        },
+        "ownSkirt": true
       }
     },
     {
@@ -475,7 +368,8 @@
           "color": "#2e3a2a",
           "trim": "#1a2014",
           "tatter": 2
-        }
+        },
+        "bulk": 0.02
       }
     },
     {
@@ -502,14 +396,15 @@
             "shape": "piece",
             "model": "cuirass",
             "fit": "chest",
-            "size": 1.2,
+            "size": 1.08,
             "offset": [
               0,
-              0,
-              0.02
+              -0.02,
+              0.015
             ]
           }
-        ]
+        ],
+        "bulk": 0.05
       }
     },
     {
@@ -525,13 +420,20 @@
       "look": {
         "outfit": "imperial",
         "parts": [
-          "Imperial_Tunic"
+          "Imperial_Tunic",
+          {
+            "name": "Imperial_Hood",
+            "below": 1.585
+          }
         ],
         "hides": [
           "torso",
           "hips",
           "arms"
-        ]
+        ],
+        "ownSkirt": true,
+        "bulk": 0.07,
+        "ownSleeves": true
       }
     },
     {
@@ -616,7 +518,8 @@
         ],
         "hides": [
           "hands"
-        ]
+        ],
+        "bulk": 0.02
       }
     },
     {
@@ -952,7 +855,7 @@
             "shape": "piece",
             "model": "viking-shield",
             "fit": "shield",
-            "size": 0.78
+            "size": 0.6
           }
         ]
       }
@@ -973,7 +876,7 @@
             "shape": "piece",
             "model": "wolf-shield",
             "fit": "shield",
-            "size": 0.72
+            "size": 0.52
           }
         ]
       }
