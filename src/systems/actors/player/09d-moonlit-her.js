@@ -19,7 +19,15 @@
     if (!A || !A.hero || !A.gltfLoader) return;
     const s = document.createElement('script');
     s.src = A.gltfLoader;
-    s.onload = () => new THREE.GLTFLoader().load(A.hero, setupMoonlitHer, undefined, e => console.warn('Moonlit Her did not load; keeping the block figure', e));
+    s.onload = () => {
+      // The loader's default image path fetch()es the textures' blob: URLs, which the CSP's
+      // connect-src 'self' blocks. Plain <img> loading falls under img-src, which allows blob:.
+      const loader = new THREE.GLTFLoader().register(parser => {
+        parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
+        return { name: 'mm_img_textures' };
+      });
+      loader.load(A.hero, setupMoonlitHer, undefined, e => console.warn('Moonlit Her did not load; keeping the block figure', e));
+    };
     document.head.appendChild(s);
   }
 
