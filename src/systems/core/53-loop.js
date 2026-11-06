@@ -12,6 +12,8 @@
     // Schedule the next frame first, so one bad frame can never stop the game
     requestAnimationFrame(frame);
     const real = Math.min(0.05, (now - last) / 1000); last = now;
+    // The character builder has the screen: the world stands still behind it
+    if (G.builder) { builderFrame(real); return; }
     let dt = real;
     if (!G.shop && !G.paused) worldTick(real);
     if (G.shop || G.paused) dt = 0;
@@ -133,6 +135,8 @@
     renderer.setRenderTarget(maskRT); renderer.render(scene, camera);
     renderer.autoClear = false; scene.overrideMaterial = maskFoe; camera.layers.set(2);
     renderer.render(scene, camera);
+    if (HERO.ready) { scene.overrideMaterial = maskFriendSkinned; camera.layers.set(3); renderer.render(scene, camera); }
+    if (WARDEN_AV.ready && boss.visible) { scene.overrideMaterial = maskFoeSkinned; camera.layers.set(4); renderer.render(scene, camera); }
     renderer.autoClear = true; scene.overrideMaterial = null; camera.layers.set(0);
     gfxBeforeScene();
     renderer.setRenderTarget(sceneRT); renderer.render(scene, camera);

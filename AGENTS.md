@@ -23,6 +23,8 @@ Humans and agents work side by side here. This file tells you how to find your w
 | `src/systems/manifest.json` | the order systems are assembled in | Gatewright |
 | `src/index.html`, `src/styles/` | markup and styles | Gatewright |
 | `content/characters/**` | one JSON file per character | Bestiary Keeper |
+| `content/character/` | character builder options (looks.json) and every piece of gear (gear.json) | Gatewright |
+| `assets/character/` | the CC0 character kit, built by `tools/character/build_kit.mjs` | Gatewright |
 | `content/worlds/<id>/world.json` | one map file per world | that world's Shardkeeper |
 | `content/environments.json` | environment cycle data | Shardkeeper of the Moat |
 | `lore/` | canon, chapters | Loremaster |

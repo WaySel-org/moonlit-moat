@@ -18,6 +18,7 @@
     else if (code === 'KeyE') interact();
     else if (code === 'KeyQ') toggleRealm();
     else if (code === 'KeyB') openInv();
+    else if (code === 'KeyC') openBuilder();
     else if (code === 'KeyN') upgradeSword();
     else if (code === 'KeyM') ui.minimap.classList.toggle('big');
     else if (code === 'KeyP') { ui.heroEl.open = !ui.heroEl.open; }
@@ -32,6 +33,8 @@
   // Bindings (50b-controls.js) turn a physical key into its action's default code, so everything below speaks default codes
   window.addEventListener('keydown', ev => {
     const c = keyAct(ev.code);
+    // The character builder takes the keyboard while it is open (Esc or C closes it, except on the first visit)
+    if (G.builder) { if ((ev.code === 'Escape' || c === 'KeyC') && !ev.target.closest('input')) { ev.preventDefault(); closeBuilder(); } return; }
     if (!ui.banner.hidden && !ui.bbtn.hidden && (ev.code === 'Enter' || c === 'KeyR')) { ev.preventDefault(); restart(); return; }
     if (G.shop && (c === 'KeyE' || ev.code === 'Escape' || (c === 'KeyB' && G.invUI))) { ev.preventDefault(); closeShop(); return; }
     if (ev.code === 'Escape') { ev.preventDefault(); togglePause(); return; }

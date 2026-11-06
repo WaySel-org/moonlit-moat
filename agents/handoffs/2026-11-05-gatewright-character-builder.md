@@ -1,0 +1,84 @@
+# Handoff: the character builder and visible gear
+
+- **Date:** 2026-11-05
+- **Role:** Gatewright (player, UI, tooling) with the Bestiary Keeper's content format
+- **Issue / PR:** see the PR from `feature/character-maker`
+- **Branch:** feature/character-maker
+
+## What I changed
+- `assets/character/` (13 MB, lazy-loaded): kit.glb (52 meshes on one 65-bone rig), anims.glb (50 clips), tint-map
+  textures. Built by `tools/character/build_kit.mjs` from the CC0 Quaternius packs (see THIRD_PARTY.md).
+- `content/character/looks.json`: bodies, skin tones, hair, brows, beards, eyes, shape sliders, four presets.
+  `content/character/gear.json`: 49 items in 8 slots with looks and stats. `testing.unlockAll` is **true** (every
+  item in the armoury from the start, as asked for play-testing); `#allgear` in the URL does the same.
+- `actors/player/09e-character-kit.js`: loads the kit, builds an avatar from look + gear on one shared skeleton,
+  hides body regions under gear, beard styles cut from one beard mesh, bone-scale body shapes, sockets on bones.
+- `09f-gear-forge.js`: helmets, cuirass, pauldrons, gorget, gauntlets, greaves, sabatons, shields, lantern,
+  grimoire, swords, axe, hammer, spear and staff, sized from the body's own region boxes.
+- `09g-cloth.js`: Verlet cloth (capes, shawl, scarf, skirts) pinned to bones, colliding with torso, leg and arm capsules.
+- `09h-hero-avatar.js`: swaps the avatar in for the block figure, maps every `P.act` to a clip stretched to the
+  game's own durations, armoury, `heroEquip`, gear stats, the look's own save (`moonlit-moat.hero.v1`).
+- `ui/28e-builder-stage.js` and `ui/57-character-builder.js` (+ markup and CSS): the builder. First visit opens it;
+  C, the pause screen and the bag open it later. `#nobuilder` in the URL skips it.
+- Edits: arsenal `applyGear` adds armour stats and armour drops (35% of drops, off while unlockAll), save keeps
+  `PR.inv.gear`/`armoury`, input gives the builder the keyboard, the loop hands the frame to the builder, the mask
+  draws the skinned hero on layer 3, controls list gains C.
+- `tools/build.py`: validates content/character against kit.json and emits the kit as lazy hashed assets.
+
+## How I tested it
+`python3 tools/build.py` passes (first load 340.6 KB of 400). Headless Chrome against `dist/`: first-visit builder,
+every tab, all four presets on both bodies, cloth from the back, poses, Done, C and Esc in game; in game W, J J K,
+L, Space, U, F all animate with the right timing; ASCII view keeps the hero bright. No console errors.
+Not tested: tablets/touch in the builder, Classic graphics, riding (the seated clip is a chair pose, not astride),
+Warden's Leap, spin, death, the spirit realm.
+
+## What is left
+- Riding needs an astride pose (legs apart); today it is `Sitting_Idle_Loop`.
+- Rigid plate rides one bone each: deep twists can open small gaps at the waist.
+- Cloth is per-hero only and ignores the beast when mounted.
+- Set `testing.unlockAll` to false before a release so gear drops matter.
+
+## Notes for the next agent
+- Shared scope: every system file is concatenated into one closure, so new top-level names need a unique prefix
+  (`ck`, `fg`, `cl`, `hero`, `b`).
+- The lab (`tools/character-lab/`, gitignored, local only) loads the kit without the game for fitting gear:
+  serve the repo root on 8790 and open /tools/character-lab/.
+
+## Update: modelled swords and the cape fix
+- The forged swords are gone. Five Sketchfab models (credits in THIRD_PARTY.md) replace them, built by
+  `tools/character/build_weapons.mjs` into `assets/character/weapons/` (12.5 MB of downloads became 1.7 MB): Moatwatch
+  Longsword (starter, +4%), Night Needle (swift, +12%), Tidecutter (leech, +14%; its model is CC-BY-NC, kept by the
+  owner's choice), Hollowfang (burn, +26%), and Wyrmbane, the Monster-Breaker, a Zweihänder (+45%, 1.2x reach, -5%
+  speed, and the new `slayer` affix: +40% against bosses, royals, mythics, godlings, elites and ancients). Only bosses
+  drop Wyrmbane (a quarter of their sword drops). Older saves map the old sword names onto the new blades.
+- New stat `reach` multiplies sword range in `playerStrike`.
+- Cloth: cape, shawl and scarf now stay behind a plane down the hero's back that turns with the spine, and particle
+  speed is capped, so fast animations no longer throw the cape over the shoulders onto the chest.
+
+## Update: the hooded Warden and better armour
+- The Gate Warden is built with the character kit (`actors/bosses/10b-warden-avatar.js`, data in
+  `content/characters/bosses/warden.json` "avatar"): a giant (3x) in the Hollow Cowl (a void with ember eyes that
+  flare red in phase two), the Gatewarden's Harness (hammered plate, big pauldrons, gorget, tassets, fur mantle, a red
+  tabard), the Shroud of the Gate and the Warden's Maul. The fight code is untouched; each attack plays a clip timed
+  so its blow lands as the wind-up ends. Skinned foes draw in a new mask pass on layer 4.
+- The three Warden pieces are trophies (`"trophy": "warden"`): they join the armoury when the Warden falls.
+- Gear quality: generated surface maps (brushed and hammered metal, leather grain, weave, quilting) on every forged
+  piece; rivets, straps and buckles merged into single meshes; layered gorget, riveted faulds, finger lames, knee
+  fans. New: Hounskull Bascinet, Barbute of the Still Lake, Pilgrim's Cowl, Studded Brigandine, Fenwalker Longcoat
+  (coat tails), Moat Knight's Tabard (front and back cloth), Wolfskin Mantle. New cloth kind `panel` (front/back,
+  chest/waist) and cloth that works at any scale.
+- Fixed: body-shape sliders compounded down the spine (a build of 0.85 made the chest twice as wide); each bone now
+  gets the size it should end at.
+
+## Update (2026-11-06): real armour models and a knightly Warden
+- The procedural helmets, plate, gauntlets, greaves, sabatons, fur mantle and shields are retired from gear.json
+  (their forge code remains for the circlet, crown and witch's hat). In their place, Sketchfab CC-BY models
+  (credits in THIRD_PARTY.md): six helmets and a cuirass (`assets/character/armor/`, forge shape `piece` fitted to the
+  head or chest), two shields, and the five-part Imperial Coronation set (`assets/character/outfits/imperial.glb`,
+  skinned to the kit's bone names, gear `look.outfit` + `parts`).
+- The Gate Warden is "Undead Grave-Knight (male)": its Character Creator rig mapped onto the kit's bone names and a
+  copy of the kit rig with its joints moved onto the knight's (bone directions kept), so the kit clips play on it;
+  hip height scaled. `assets/character/bosses/warden.glb`, loaded by `actors/bosses/10b-warden-avatar.js`.
+  The hooded design and its trophies are gone.
+- How the Blender work was done: models in a T-pose or A-pose rig cleanly; one-piece sculpts with the arms against
+  the body (tried "The Broken Vow") tear when the arms move, so they were dropped.

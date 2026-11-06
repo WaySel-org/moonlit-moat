@@ -67,6 +67,7 @@
   }
 
   function playerStrike(dmg, poiseDmg, range, arc, heavy) {
+    range *= heroReach();
     liveTargets().forEach(t => {
       if (Math.abs(t.pos.y - player.position.y) > 2.5) return;
       const d = flatDist(player.position, t.pos);

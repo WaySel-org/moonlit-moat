@@ -22,6 +22,8 @@
     const at = t.pos.clone().add(new THREE.Vector3(0, t.hitY + 1.1, 0));
     if (!opts.spell && t.isCreep && behindTarget(t)) { mult *= 1.35 + relicBonus('backstab'); words.push(['backstab', '#ffd36a']); }
     if (P.riposte > 0 && !opts.spell) { P.riposte = 0; mult *= 2; words.push(['RIPOSTE', '#ff9a4a']); }
+    // Wyrmbane, the Monster-Breaker: big game takes 40% more from its blade
+    if (!opts.spell && PR.inv && PR.inv.sword.affix === 'slayer' && (!t.isCreep || t.mythic || t.ancient || t.elite || t.ai === 'godling' || t.storyBoss)) mult *= 1.4;
     const crit = P.flow > 0 || Math.random() < critChance();
     if (crit) { mult *= 1.6; words.push(['CRIT', '#ffe03a']); }
     const out = dmg * mult;

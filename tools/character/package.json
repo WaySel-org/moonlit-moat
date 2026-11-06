@@ -1,0 +1,14 @@
+{
+  "name": "moonlit-moat-character-kit",
+  "private": true,
+  "description": "Turns the CC0 Quaternius character packs into assets/character/ for the character builder. Run only when the kit changes; the game build never needs node.",
+  "type": "module",
+  "scripts": {
+    "kit": "node build_kit.mjs"
+  },
+  "dependencies": {
+    "@gltf-transform/core": "^4.1.0",
+    "@gltf-transform/functions": "^4.1.0",
+    "sharp": "^0.33.5"
+  }
+}

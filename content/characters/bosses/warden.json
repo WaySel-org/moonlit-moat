@@ -6,7 +6,7 @@
   "world": "moat",
   "chapter": 1,
   "lore": "A stone-armoured giant bound to the castle gate. Its power, once taken, lets the bearer leap.",
-  "look": "Grey plate armour, horned helm with an ember visor slit, red cape, a two-handed hammer.",
+  "look": "A towering knight in rust-streaked plate under a flat-topped great helm, two embers burning in the eye slit; a long torn cape and a two-handed maul.",
   "stats": {
     "baseHealth": 1500
   },
@@ -19,5 +19,11 @@
     "Hunts the player every 3 minutes"
   ],
   "originality": "original",
-  "dataDriven": false
+  "dataDriven": false,
+  "avatar": {
+    "note": "assets/character/bosses/warden.glb, rigged onto the kit's bone names (actors/bosses/10b-warden-avatar.js). scale is the size in the world (the hero is about 1.8 m); weapon is a gear id from content/character/gear.json.",
+    "scale": 3.1,
+    "weapon": "war-hammer",
+    "model": "Undead Grave-Knight (male) by milakpro, CC-BY 4.0"
+  }
 }

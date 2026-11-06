@@ -1,0 +1,317 @@
+{
+  "note": "What the character builder offers. Meshes are names in assets/character/kit.json; build.py checks them.",
+  "bodies": [
+    {
+      "id": "m",
+      "name": "Masculine"
+    },
+    {
+      "id": "f",
+      "name": "Feminine"
+    }
+  ],
+  "skin": [
+    "#f3d2bd",
+    "#e8b896",
+    "#d9a07a",
+    "#c68a62",
+    "#a8704a",
+    "#8a5a3a",
+    "#6b432a",
+    "#4a2e1d",
+    "#9aa58f",
+    "#8d94b0"
+  ],
+  "hairColors": [
+    "#1b1410",
+    "#3a2416",
+    "#5e3a1f",
+    "#8a5a2b",
+    "#b8854a",
+    "#d9b86e",
+    "#a63a1f",
+    "#c9c3b8",
+    "#eae6dc",
+    "#2c3b5e",
+    "#5b2a6e",
+    "#2e5a3c"
+  ],
+  "eyes": [
+    {
+      "id": "brown",
+      "name": "Brown",
+      "swatch": "#5a3a22"
+    },
+    {
+      "id": "hazel",
+      "name": "Hazel",
+      "swatch": "#7a6232"
+    },
+    {
+      "id": "green",
+      "name": "Green",
+      "swatch": "#4c7a3c"
+    },
+    {
+      "id": "blue",
+      "name": "Blue",
+      "swatch": "#3c6aa8"
+    },
+    {
+      "id": "grey",
+      "name": "Grey",
+      "swatch": "#8c949a"
+    },
+    {
+      "id": "amber",
+      "name": "Amber",
+      "swatch": "#c08a2a"
+    },
+    {
+      "id": "violet",
+      "name": "Violet",
+      "swatch": "#7a4ab0"
+    }
+  ],
+  "hair": [
+    {
+      "id": "none",
+      "name": "Bald"
+    },
+    {
+      "id": "buzzed",
+      "name": "Buzzed",
+      "mesh": "Hair_Buzzed"
+    },
+    {
+      "id": "buzzed-soft",
+      "name": "Soft crop",
+      "mesh": "Hair_BuzzedFemale"
+    },
+    {
+      "id": "parted",
+      "name": "Side parted",
+      "mesh": "Hair_SimpleParted"
+    },
+    {
+      "id": "long",
+      "name": "Long",
+      "mesh": "Hair_Long"
+    },
+    {
+      "id": "buns",
+      "name": "Twin buns",
+      "mesh": "Hair_Buns"
+    }
+  ],
+  "brows": [
+    {
+      "id": "none",
+      "name": "None"
+    },
+    {
+      "id": "regular",
+      "name": "Heavy",
+      "mesh": "Eyebrows_Regular"
+    },
+    {
+      "id": "fine",
+      "name": "Fine",
+      "mesh": "Eyebrows_Female"
+    }
+  ],
+  "beards": [
+    {
+      "id": "none",
+      "name": "Clean"
+    },
+    {
+      "id": "stubble",
+      "name": "Stubble"
+    },
+    {
+      "id": "short",
+      "name": "Short"
+    },
+    {
+      "id": "full",
+      "name": "Full"
+    },
+    {
+      "id": "long",
+      "name": "Long"
+    },
+    {
+      "id": "forked",
+      "name": "Forked"
+    },
+    {
+      "id": "goatee",
+      "name": "Goatee"
+    },
+    {
+      "id": "moustache",
+      "name": "Moustache"
+    },
+    {
+      "id": "chops",
+      "name": "Mutton chops"
+    }
+  ],
+  "shape": [
+    {
+      "id": "height",
+      "name": "Height"
+    },
+    {
+      "id": "build",
+      "name": "Build"
+    },
+    {
+      "id": "shoulders",
+      "name": "Shoulders"
+    },
+    {
+      "id": "arms",
+      "name": "Arms"
+    },
+    {
+      "id": "legs",
+      "name": "Legs"
+    },
+    {
+      "id": "head",
+      "name": "Head size"
+    }
+  ],
+  "clips": {
+    "idle": "Idle_Loop",
+    "builder": "Idle_FoldArms_Loop"
+  },
+  "presets": [
+    {
+      "id": "wanderer",
+      "name": "The Wanderer",
+      "look": {
+        "body": "f",
+        "skin": "#d9a07a",
+        "hair": "long",
+        "hairColor": "#3a2416",
+        "brows": "fine",
+        "beard": "none",
+        "eyes": "hazel",
+        "shape": {
+          "height": 0.5,
+          "build": 0.45,
+          "shoulders": 0.45,
+          "arms": 0.45,
+          "legs": 0.5,
+          "head": 0.5
+        }
+      },
+      "gear": {
+        "head": null,
+        "chest": "ranger-tunic",
+        "hands": "ranger-bracers",
+        "legs": "ranger-breeches",
+        "feet": "ranger-boots",
+        "back": "wanderer-scarf",
+        "offhand": "moon-lantern",
+        "weapon": "moatwatch"
+      }
+    },
+    {
+      "id": "warden",
+      "name": "Grey Warden",
+      "look": {
+        "body": "m",
+        "skin": "#c68a62",
+        "hair": "buzzed",
+        "hairColor": "#c9c3b8",
+        "brows": "regular",
+        "beard": "full",
+        "eyes": "grey",
+        "shape": {
+          "height": 0.65,
+          "build": 0.7,
+          "shoulders": 0.75,
+          "arms": 0.7,
+          "legs": 0.6,
+          "head": 0.5
+        }
+      },
+      "gear": {
+        "head": "crusader-helm",
+        "chest": "engraved-cuirass",
+        "hands": "imperial-gauntlets",
+        "legs": "ranger-breeches",
+        "feet": "imperial-sabatons",
+        "back": "warden-cloak",
+        "offhand": "viking-shield",
+        "weapon": "bearded-axe"
+      }
+    },
+    {
+      "id": "hedge-witch",
+      "name": "Hedge Witch",
+      "look": {
+        "body": "f",
+        "skin": "#f3d2bd",
+        "hair": "buns",
+        "hairColor": "#a63a1f",
+        "brows": "fine",
+        "beard": "none",
+        "eyes": "green",
+        "shape": {
+          "height": 0.4,
+          "build": 0.4,
+          "shoulders": 0.4,
+          "arms": 0.4,
+          "legs": 0.45,
+          "head": 0.55
+        }
+      },
+      "gear": {
+        "head": "dusk-hood",
+        "chest": "peasant-blouse",
+        "hands": null,
+        "legs": "peasant-skirt",
+        "feet": "peasant-shoes",
+        "back": "moth-shawl",
+        "offhand": "grimoire",
+        "weapon": "thorn-staff"
+      }
+    },
+    {
+      "id": "moat-knight",
+      "name": "Moat Knight",
+      "look": {
+        "body": "m",
+        "skin": "#8a5a3a",
+        "hair": "parted",
+        "hairColor": "#1b1410",
+        "brows": "regular",
+        "beard": "short",
+        "eyes": "brown",
+        "shape": {
+          "height": 0.6,
+          "build": 0.6,
+          "shoulders": 0.65,
+          "arms": 0.6,
+          "legs": 0.55,
+          "head": 0.5
+        }
+      },
+      "gear": {
+        "head": "engraved-helm",
+        "chest": "imperial-coat",
+        "hands": "imperial-gauntlets",
+        "legs": "imperial-greaves",
+        "feet": "imperial-sabatons",
+        "back": "royal-cape",
+        "offhand": "wolf-shield",
+        "weapon": "wyrmbane"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1067 @@
+{
+  "note": "Every piece of gear the hero can wear. look.meshes are kit meshes (* = M_ or F_ for the body worn), look.forge are shapes built in actors/player/09f-gear-forge.js, look.cloth is simulated cloth (09g). look.hides names body regions the piece covers. stats: armor (max armour), hp, st (stamina), mana, dmg and spell (% bonus), speed (% move speed, can be negative). Weapons: dmg is a fraction (0.12 = +12%), reach multiplies sword range, affix is burn | leech | swift | slayer. Sword models (forge shape \"model\") are assets/character/weapons/<model>.glb, built by tools/character/build_weapons.mjs. Modelled armour: forge shape \"piece\" (assets/character/armor/<model>.glb; fit head | chest | shield, size, offset) and \"outfit\" with \"parts\" (skinned sets in assets/character/outfits/<id>.glb). Credits in THIRD_PARTY.md. ownSkirt: the piece has its own skirt, so cloth skirts from other gear are switched off. bulk: how far the piece stands off the body in metres, so capes hang outside it. ownSleeves: the piece has its own sleeves, so sleeved arm gear steps aside.",
+  "testing": {
+    "unlockAll": true,
+    "why": "Every item is in the armoury from the first second, for play-testing. Set false to make gear drop-only."
+  },
+  "slots": [
+    "head",
+    "chest",
+    "hands",
+    "legs",
+    "feet",
+    "back",
+    "offhand",
+    "weapon"
+  ],
+  "slotNames": {
+    "head": "Head",
+    "chest": "Chest",
+    "hands": "Arms & hands",
+    "legs": "Legs",
+    "feet": "Feet",
+    "back": "Back",
+    "offhand": "Off hand",
+    "weapon": "Weapon"
+  },
+  "items": [
+    {
+      "id": "ranger-hood",
+      "name": "Ranger's Hood",
+      "slot": "head",
+      "tier": 1,
+      "stats": {
+        "armor": 6,
+        "st": 6
+      },
+      "look": {
+        "meshes": [
+          "*_Ranger_Head_Hood"
+        ],
+        "tex": "ranger_a",
+        "hideHair": true
+      }
+    },
+    {
+      "id": "dusk-hood",
+      "name": "Duskwalker Hood",
+      "slot": "head",
+      "tier": 2,
+      "stats": {
+        "armor": 8,
+        "speed": 2
+      },
+      "look": {
+        "meshes": [
+          "*_Ranger_Head_Hood"
+        ],
+        "tex": "ranger_b",
+        "hideHair": true
+      }
+    },
+    {
+      "id": "crusader-helm",
+      "name": "Crusader's Great Helm",
+      "slot": "head",
+      "tier": 3,
+      "stats": {
+        "armor": 26,
+        "hp": 8,
+        "speed": -1
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "piece",
+            "model": "great-helm",
+            "fit": "head",
+            "size": 1.25,
+            "offset": [
+              0,
+              0.012,
+              0
+            ]
+          }
+        ],
+        "hideHair": true,
+        "hideBeard": true,
+        "hides": [
+          "head"
+        ]
+      }
+    },
+    {
+      "id": "engraved-helm",
+      "name": "Engraved Great Helm",
+      "slot": "head",
+      "tier": 4,
+      "stats": {
+        "armor": 30,
+        "dmg": 3,
+        "speed": -1
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "piece",
+            "model": "ornate-helm",
+            "fit": "head",
+            "size": 1.25,
+            "offset": [
+              0,
+              0.012,
+              0
+            ]
+          }
+        ],
+        "hideHair": true,
+        "hideBeard": true,
+        "hides": [
+          "head"
+        ]
+      }
+    },
+    {
+      "id": "visored-bascinet",
+      "name": "Visored Bascinet",
+      "slot": "head",
+      "tier": 3,
+      "stats": {
+        "armor": 24,
+        "hp": 12
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "piece",
+            "model": "bascinet",
+            "fit": "head",
+            "size": 2.1,
+            "offset": [
+              0,
+              0.012,
+              0
+            ]
+          }
+        ],
+        "hideHair": true,
+        "hideBeard": true,
+        "hides": [
+          "head"
+        ]
+      }
+    },
+    {
+      "id": "gothic-bascinet",
+      "name": "Gothic Bascinet",
+      "slot": "head",
+      "tier": 3,
+      "stats": {
+        "armor": 22,
+        "dmg": 4
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "piece",
+            "model": "gothic-bascinet",
+            "fit": "head",
+            "size": 1.35,
+            "offset": [
+              0,
+              0.012,
+              0
+            ]
+          }
+        ],
+        "hideHair": true,
+        "hideBeard": true,
+        "hides": [
+          "head"
+        ]
+      }
+    },
+    {
+      "id": "italian-sallet",
+      "name": "Sallet of the Lake Wardens",
+      "slot": "head",
+      "tier": 2,
+      "stats": {
+        "armor": 18,
+        "speed": 1
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "piece",
+            "model": "italian-sallet",
+            "fit": "head",
+            "size": 1.5,
+            "offset": [
+              0,
+              0.012,
+              0
+            ]
+          }
+        ],
+        "hideHair": true,
+        "hideBeard": true,
+        "hides": [
+          "head"
+        ]
+      }
+    },
+    {
+      "id": "ranger-tunic",
+      "name": "Ranger's Jerkin",
+      "slot": "chest",
+      "tier": 1,
+      "stats": {
+        "armor": 10,
+        "st": 10
+      },
+      "look": {
+        "meshes": [
+          "*_Ranger_Body",
+          "*_Ranger_Body_Belt_1",
+          "*_Ranger_Body_Belt_2"
+        ],
+        "tex": "ranger_a",
+        "hides": [
+          "torso",
+          "hips"
+        ],
+        "bulk": 0.01
+      }
+    },
+    {
+      "id": "dusk-jerkin",
+      "name": "Duskwalker Jerkin",
+      "slot": "chest",
+      "tier": 2,
+      "stats": {
+        "armor": 14,
+        "speed": 3
+      },
+      "look": {
+        "meshes": [
+          "*_Ranger_Body",
+          "*_Ranger_Body_Belt_1",
+          "*_Ranger_Body_Belt_2"
+        ],
+        "tex": "ranger_b",
+        "hides": [
+          "torso",
+          "hips"
+        ],
+        "bulk": 0.01
+      }
+    },
+    {
+      "id": "peasant-blouse",
+      "name": "Moatside Blouse",
+      "slot": "chest",
+      "tier": 1,
+      "stats": {
+        "armor": 4,
+        "mana": 10
+      },
+      "look": {
+        "meshes": [
+          "*_Peasant_Body"
+        ],
+        "tex": "peasant_a",
+        "hides": [
+          "torso",
+          "hips"
+        ]
+      }
+    },
+    {
+      "id": "peasant-smock",
+      "name": "Weaver's Smock",
+      "slot": "chest",
+      "tier": 1,
+      "stats": {
+        "armor": 5,
+        "hp": 8
+      },
+      "look": {
+        "meshes": [
+          "*_Peasant_Body"
+        ],
+        "tex": "peasant_b",
+        "hides": [
+          "torso",
+          "hips"
+        ]
+      }
+    },
+    {
+      "id": "mystic-robe",
+      "name": "Robe of Still Water",
+      "slot": "chest",
+      "tier": 3,
+      "stats": {
+        "armor": 8,
+        "mana": 40,
+        "spell": 12
+      },
+      "look": {
+        "meshes": [
+          "*_Peasant_Body"
+        ],
+        "tex": "peasant_b",
+        "hides": [
+          "torso",
+          "hips",
+          "legs"
+        ],
+        "cloth": {
+          "kind": "skirt",
+          "len": 0.8,
+          "cols": 16,
+          "rows": 12,
+          "color": "#1f3348",
+          "trim": "#c9a456",
+          "pattern": "stripes"
+        },
+        "ownSkirt": true
+      }
+    },
+    {
+      "id": "fenwalker-coat",
+      "name": "Fenwalker Longcoat",
+      "slot": "chest",
+      "tier": 2,
+      "stats": {
+        "armor": 14,
+        "speed": 3,
+        "st": 8
+      },
+      "look": {
+        "meshes": [
+          "*_Ranger_Body",
+          "*_Ranger_Body_Belt_1",
+          "*_Ranger_Body_Belt_2"
+        ],
+        "tex": "ranger_b",
+        "hides": [
+          "torso",
+          "hips"
+        ],
+        "forge": [
+          {
+            "shape": "belt",
+            "leather": "#2a1e14",
+            "trim": "#8d9399"
+          }
+        ],
+        "cloth": {
+          "kind": "panel",
+          "side": "back",
+          "at": "waist",
+          "w": 1.0,
+          "len": 0.62,
+          "cols": 9,
+          "rows": 10,
+          "color": "#2e3a2a",
+          "trim": "#1a2014",
+          "tatter": 2
+        },
+        "bulk": 0.02
+      }
+    },
+    {
+      "id": "engraved-cuirass",
+      "name": "Engraved Cuirass",
+      "slot": "chest",
+      "tier": 3,
+      "stats": {
+        "armor": 34,
+        "hp": 10,
+        "speed": -2
+      },
+      "look": {
+        "meshes": [
+          "*_Peasant_Body"
+        ],
+        "tex": "peasant_b",
+        "hides": [
+          "torso",
+          "hips"
+        ],
+        "forge": [
+          {
+            "shape": "piece",
+            "model": "cuirass",
+            "fit": "chest",
+            "size": 1.08,
+            "offset": [
+              0,
+              -0.02,
+              0.015
+            ]
+          }
+        ],
+        "bulk": 0.05
+      }
+    },
+    {
+      "id": "imperial-coat",
+      "name": "Imperial Coronation Coat",
+      "slot": "chest",
+      "tier": 4,
+      "stats": {
+        "armor": 32,
+        "hp": 14,
+        "st": 10
+      },
+      "look": {
+        "outfit": "imperial",
+        "parts": [
+          "Imperial_Tunic",
+          {
+            "name": "Imperial_Hood",
+            "below": 1.585
+          }
+        ],
+        "hides": [
+          "torso",
+          "hips",
+          "arms"
+        ],
+        "ownSkirt": true,
+        "bulk": 0.07,
+        "ownSleeves": true
+      }
+    },
+    {
+      "id": "ranger-bracers",
+      "name": "Ranger's Bracers",
+      "slot": "hands",
+      "tier": 1,
+      "stats": {
+        "armor": 6,
+        "dmg": 3
+      },
+      "look": {
+        "meshes": [
+          "*_Ranger_Arms",
+          "*_Ranger_Arms_Bracer"
+        ],
+        "tex": "ranger_a",
+        "hides": [
+          "arms",
+          "hands"
+        ]
+      }
+    },
+    {
+      "id": "dusk-bracers",
+      "name": "Duskwalker Bracers",
+      "slot": "hands",
+      "tier": 2,
+      "stats": {
+        "armor": 8,
+        "dmg": 4
+      },
+      "look": {
+        "meshes": [
+          "*_Ranger_Arms",
+          "*_Ranger_Arms_Bracer",
+          {
+            "m": "M_Ranger_Acc_Pauldron",
+            "f": "F_Ranger_Acc_Pauldrons"
+          }
+        ],
+        "tex": "ranger_b",
+        "hides": [
+          "arms",
+          "hands"
+        ]
+      }
+    },
+    {
+      "id": "peasant-sleeves",
+      "name": "Linen Sleeves",
+      "slot": "hands",
+      "tier": 1,
+      "stats": {
+        "armor": 3,
+        "mana": 8
+      },
+      "look": {
+        "meshes": [
+          "*_Peasant_Arms"
+        ],
+        "tex": "peasant_a",
+        "hides": [
+          "arms",
+          "hands"
+        ]
+      }
+    },
+    {
+      "id": "imperial-gauntlets",
+      "name": "Imperial Gauntlets",
+      "slot": "hands",
+      "tier": 3,
+      "stats": {
+        "armor": 12,
+        "dmg": 4
+      },
+      "look": {
+        "outfit": "imperial",
+        "parts": [
+          "Imperial_Hands"
+        ],
+        "hides": [
+          "hands"
+        ],
+        "bulk": 0.02
+      }
+    },
+    {
+      "id": "ranger-breeches",
+      "name": "Ranger's Breeches",
+      "slot": "legs",
+      "tier": 1,
+      "stats": {
+        "armor": 6,
+        "speed": 2
+      },
+      "look": {
+        "meshes": [
+          "*_Ranger_Legs"
+        ],
+        "tex": "ranger_a",
+        "hides": [
+          "legs",
+          "hips"
+        ]
+      }
+    },
+    {
+      "id": "dusk-breeches",
+      "name": "Duskwalker Breeches",
+      "slot": "legs",
+      "tier": 2,
+      "stats": {
+        "armor": 8,
+        "speed": 3
+      },
+      "look": {
+        "meshes": [
+          "*_Ranger_Legs"
+        ],
+        "tex": "ranger_b",
+        "hides": [
+          "legs",
+          "hips"
+        ]
+      }
+    },
+    {
+      "id": "peasant-trousers",
+      "name": "Moatside Trousers",
+      "slot": "legs",
+      "tier": 1,
+      "stats": {
+        "armor": 4,
+        "st": 8
+      },
+      "look": {
+        "meshes": [
+          "*_Peasant_Legs"
+        ],
+        "tex": "peasant_a",
+        "hides": [
+          "legs",
+          "hips"
+        ]
+      }
+    },
+    {
+      "id": "peasant-skirt",
+      "name": "Hedge Skirt",
+      "slot": "legs",
+      "tier": 1,
+      "stats": {
+        "armor": 3,
+        "mana": 12,
+        "speed": 2
+      },
+      "look": {
+        "meshes": [
+          "*_Peasant_Legs"
+        ],
+        "tex": "peasant_b",
+        "hides": [
+          "legs",
+          "hips"
+        ],
+        "cloth": {
+          "kind": "skirt",
+          "len": 0.5,
+          "cols": 16,
+          "rows": 9,
+          "color": "#5a3a2a",
+          "trim": "#2a1a12"
+        }
+      }
+    },
+    {
+      "id": "imperial-greaves",
+      "name": "Imperial Greaves",
+      "slot": "legs",
+      "tier": 3,
+      "stats": {
+        "armor": 18,
+        "speed": -1
+      },
+      "look": {
+        "outfit": "imperial",
+        "parts": [
+          "Imperial_Pants"
+        ],
+        "hides": [
+          "legs",
+          "hips"
+        ]
+      }
+    },
+    {
+      "id": "ranger-boots",
+      "name": "Ranger's Boots",
+      "slot": "feet",
+      "tier": 1,
+      "stats": {
+        "armor": 4,
+        "speed": 3
+      },
+      "look": {
+        "meshes": [
+          "*_Ranger_Feet"
+        ],
+        "tex": "ranger_a",
+        "hides": [
+          "feet"
+        ]
+      }
+    },
+    {
+      "id": "dusk-boots",
+      "name": "Duskwalker Boots",
+      "slot": "feet",
+      "tier": 2,
+      "stats": {
+        "armor": 5,
+        "speed": 5
+      },
+      "look": {
+        "meshes": [
+          "*_Ranger_Feet"
+        ],
+        "tex": "ranger_b",
+        "hides": [
+          "feet"
+        ]
+      }
+    },
+    {
+      "id": "peasant-shoes",
+      "name": "Moatside Shoes",
+      "slot": "feet",
+      "tier": 1,
+      "stats": {
+        "armor": 2,
+        "st": 6
+      },
+      "look": {
+        "meshes": [
+          "*_Peasant_Feet"
+        ],
+        "tex": "peasant_a",
+        "hides": [
+          "feet"
+        ]
+      }
+    },
+    {
+      "id": "imperial-sabatons",
+      "name": "Imperial Sabatons",
+      "slot": "feet",
+      "tier": 3,
+      "stats": {
+        "armor": 10
+      },
+      "look": {
+        "outfit": "imperial",
+        "parts": [
+          "Imperial_Boots"
+        ],
+        "hides": [
+          "feet"
+        ]
+      }
+    },
+    {
+      "id": "wanderer-scarf",
+      "name": "Wanderer's Scarf",
+      "slot": "back",
+      "tier": 1,
+      "stats": {
+        "st": 8
+      },
+      "look": {
+        "cloth": {
+          "kind": "scarf",
+          "len": 0.75,
+          "cols": 3,
+          "rows": 12,
+          "color": "#9a2f2f",
+          "trim": "#5a1414"
+        }
+      }
+    },
+    {
+      "id": "warden-cloak",
+      "name": "Grey Warden's Cloak",
+      "slot": "back",
+      "tier": 2,
+      "stats": {
+        "armor": 6,
+        "hp": 12
+      },
+      "look": {
+        "cloth": {
+          "kind": "cape",
+          "len": 1.1,
+          "w": 1.05,
+          "color": "#4a4f55",
+          "trim": "#2a2c30"
+        }
+      }
+    },
+    {
+      "id": "royal-cape",
+      "name": "Cape of the Moat Court",
+      "slot": "back",
+      "tier": 4,
+      "stats": {
+        "armor": 8,
+        "hp": 15,
+        "dmg": 4
+      },
+      "look": {
+        "cloth": {
+          "kind": "cape",
+          "len": 1.2,
+          "w": 1.15,
+          "color": "#1e2f63",
+          "trim": "#c9a456",
+          "pattern": "moon"
+        }
+      }
+    },
+    {
+      "id": "moth-shawl",
+      "name": "Veil Moth Shawl",
+      "slot": "back",
+      "tier": 3,
+      "stats": {
+        "mana": 25,
+        "spell": 6
+      },
+      "look": {
+        "cloth": {
+          "kind": "shawl",
+          "len": 0.55,
+          "w": 1.1,
+          "color": "#3a2a4a",
+          "trim": "#8a7ab0",
+          "pattern": "moths"
+        }
+      }
+    },
+    {
+      "id": "tattered-cloak",
+      "name": "Tattered Fen Cloak",
+      "slot": "back",
+      "tier": 2,
+      "stats": {
+        "speed": 4,
+        "st": 10
+      },
+      "look": {
+        "cloth": {
+          "kind": "cape",
+          "len": 1.05,
+          "color": "#2e3a2a",
+          "tatter": 4
+        }
+      }
+    },
+    {
+      "id": "moon-lantern",
+      "name": "Moon Lantern",
+      "slot": "offhand",
+      "tier": 1,
+      "stats": {
+        "mana": 10
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "lantern",
+            "dark": "#2a2622",
+            "flame": "#ffe0a0"
+          }
+        ]
+      }
+    },
+    {
+      "id": "grimoire",
+      "name": "Grimoire of Small Hours",
+      "slot": "offhand",
+      "tier": 2,
+      "stats": {
+        "mana": 30,
+        "spell": 10
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "grimoire",
+            "cloth": "#3a1e2e",
+            "trim": "#c9a456",
+            "glow": "#d0a8ff"
+          }
+        ]
+      }
+    },
+    {
+      "id": "viking-shield",
+      "name": "Iron-rimmed Round Shield",
+      "slot": "offhand",
+      "tier": 1,
+      "stats": {
+        "armor": 18
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "piece",
+            "model": "viking-shield",
+            "fit": "shield",
+            "size": 0.6
+          }
+        ]
+      }
+    },
+    {
+      "id": "wolf-shield",
+      "name": "Wolfcrest Shield",
+      "slot": "offhand",
+      "tier": 3,
+      "stats": {
+        "armor": 28,
+        "hp": 8,
+        "speed": -1
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "piece",
+            "model": "wolf-shield",
+            "fit": "shield",
+            "size": 0.52
+          }
+        ]
+      }
+    },
+    {
+      "id": "moatwatch",
+      "name": "Moatwatch Longsword",
+      "slot": "weapon",
+      "tier": 0,
+      "stats": {
+        "dmg": 0.04
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "model",
+            "model": "moatwatch"
+          }
+        ]
+      }
+    },
+    {
+      "id": "night-needle",
+      "name": "Night Needle",
+      "slot": "weapon",
+      "tier": 1,
+      "affix": "swift",
+      "note": "+8% move speed",
+      "stats": {
+        "dmg": 0.12,
+        "reach": 1.05
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "model",
+            "model": "nightneedle"
+          }
+        ]
+      }
+    },
+    {
+      "id": "tidecutter",
+      "name": "Tidecutter",
+      "slot": "weapon",
+      "tier": 2,
+      "affix": "leech",
+      "note": "heals 4% of damage dealt",
+      "stats": {
+        "dmg": 0.14
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "model",
+            "model": "tidecutter"
+          }
+        ]
+      }
+    },
+    {
+      "id": "hollowfang",
+      "name": "Hollowfang",
+      "slot": "weapon",
+      "tier": 3,
+      "affix": "burn",
+      "note": "+15% damage as fire",
+      "stats": {
+        "dmg": 0.26,
+        "reach": 1.1
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "model",
+            "model": "hollowfang"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wyrmbane",
+      "name": "Wyrmbane, the Monster-Breaker",
+      "slot": "weapon",
+      "tier": 4,
+      "affix": "slayer",
+      "note": "Zweihänder: +40% against bosses, royals, mythics, godlings, elites and ancients",
+      "stats": {
+        "dmg": 0.45,
+        "reach": 1.2,
+        "speed": -5
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "model",
+            "model": "wyrmbane"
+          }
+        ]
+      }
+    },
+    {
+      "id": "bearded-axe",
+      "name": "Bearded Axe",
+      "slot": "weapon",
+      "tier": 2,
+      "stats": {
+        "dmg": 0.18
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "axe",
+            "len": 0.8,
+            "metal": "#9aa2aa",
+            "wood": "#5a3d24",
+            "leather": "#2a1a10"
+          }
+        ]
+      }
+    },
+    {
+      "id": "war-hammer",
+      "name": "Warden's Maul",
+      "slot": "weapon",
+      "tier": 3,
+      "stats": {
+        "dmg": 0.28,
+        "speed": -4
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "hammer",
+            "len": 0.9,
+            "metal": "#6f747a",
+            "trim": "#a88a4a",
+            "wood": "#3a2818"
+          }
+        ]
+      }
+    },
+    {
+      "id": "moon-spear",
+      "name": "Moon Spear",
+      "slot": "weapon",
+      "tier": 3,
+      "stats": {
+        "dmg": 0.2,
+        "speed": 2
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "spear",
+            "len": 1.8,
+            "metal": "#d8e4ec",
+            "trim": "#c9a456",
+            "wood": "#4a3424",
+            "rune": true,
+            "glow": "#bff6ff"
+          }
+        ]
+      }
+    },
+    {
+      "id": "thorn-staff",
+      "name": "Thorn Staff",
+      "slot": "weapon",
+      "tier": 2,
+      "stats": {
+        "dmg": 0.04,
+        "spell": 18,
+        "mana": 20
+      },
+      "look": {
+        "forge": [
+          {
+            "shape": "staff",
+            "len": 1.6,
+            "wood": "#3a2a1c",
+            "glow": "#9fe0ff"
+          }
+        ]
+      }
+    }
+  ]
+}
