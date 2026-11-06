@@ -124,12 +124,14 @@ Side quests: two or three per region, built on what exists there (camps, chests,
 
 ## 4. Character models each phase needs
 
-Character work follows the `moonlit-character-design` skill and `~/Claude Docs/moonlit-characters/WORLD.md`. Moonlit Her took several days, so the plan needs **at most one new model per phase**, made in parallel with the code. Every new model loads lazily with its region, and every character keeps a block figure as a fallback.
+Character work follows the `moonlit-character-design` skill and `~/Claude Docs/moonlit-characters/WORLD.md`. Moonlit Her took several days, so the plan needs **at most one new model per phase**. Model work runs **in parallel with the code**, in the character folders: Vesthra's pipeline can start now, while Phases 1 to 3 are built, so she is ready when her chapter arrives. Every new model loads lazily with its region, and every character keeps a block figure as a fallback.
 
-| Phase | New model | Why then | Notes |
+The table says when each model is **needed in the game**, not when work on it starts.
+
+| Phase | Needed in the game | Why then | Notes |
 |---|---|---|---|
-| 1, 2 | None | Story and loading come first. | Moonlit Her is the only model. |
-| 3 | None required | Travel and the first new region. | Optional: start Vesthra's concept art now so she is ready for Phase 4. |
+| 1, 2 | None | Story and loading come first. | Moonlit Her is the only model in the game. Vesthra's style bible, concept and shape start now in `vesthra/`. |
+| 3 | None | Travel and the first new region. | Vesthra rigged and animated; Nyxara's style bible and concept start. |
 | 4 | **Vesthra the Gorgon** | Her chapter. | Draft style in `vesthra/STYLE.md`: biped rig for Mixamo, tail drawn by the game. Original gorgon from myth, nothing from any game's Medusa. |
 | 5 | **Nyxara the Thorn Empress** | Her chapter. | Draft in `nyxara/STYLE.md`: floats, thorn shards and staff. Nothing from Queen of Pain. |
 | 6 | **The guide** (first talking person) | People and side quests. | A simple biped: the easiest repeat of the pipeline. Needs a talk gesture and idles. |
