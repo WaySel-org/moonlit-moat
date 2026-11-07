@@ -24,7 +24,7 @@
     const pr = updatePlayer(dt);
     updateStatus(dt); updateRend(dt);
     const inMoat = G.world === 'moat';
-    if (inMoat) { updateBoss(dt); updatePods(dt); }
+    if (inMoat) { updateBoss(dt); wardenModelUpdate(dt); updatePods(dt); }
     updateBolts(dt);
     royals.forEach(r => updateRoyal(r, dt)); updateShots(dt);
     if (inMoat) updateDragon(dt);
