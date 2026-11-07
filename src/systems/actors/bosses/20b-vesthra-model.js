@@ -2,9 +2,9 @@
   // A serpent-bodied rig (no legs: Mixamo-named upper body + a 12-bone tail) made in the character-design pipeline.
   // Loaded after the game starts, like Moonlit Her; the sphere figure fights until she arrives. Her fight logic is
   // untouched (20-rooftop-royals.js, 46g-boss-kits.js): vesthraModelUpdate() only reads r.state / r.atk and picks a clip.
-  const VES = { ready: false, root: null, mixer: null, actions: {}, cur: null, curName: '', mats: [], kitSeen: 0 };
+  const VES = { ready: false, root: null, mixer: null, actions: {}, cur: null, curName: '', mats: [], kitSeen: 0, last: null, speed: 0 };
   const VES_SCALE = 1.2;     // her model is 2.0 m; inside the royal's 1.15 group she stands about 2.75 m, like the old figure
-  const VES_LOOPS = new Set(['idle']);
+  const VES_LOOPS = new Set(['idle', 'move']);
 
   function loadVesthra() {
     const A = window.MM_ASSETS;
@@ -26,33 +26,27 @@
     const wait = setInterval(() => { if (THREE.GLTFLoader) { clearInterval(wait); go(); } else if (++tries > 150) clearInterval(wait); }, 200);
   }
 
-  function makeSickle(mat) {
-    const g = new THREE.Group();
-    const grip = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.28, 5), leatherDark); grip.position.y = 0.08; g.add(grip);
-    const blade = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.025, 4, 12, Math.PI), mat);
-    blade.position.set(0, 0.22, 0.2); blade.rotation.y = Math.PI / 2; g.add(blade);
-    return g;
-  }
-
   function setupVesthra(gltf) {
     const r = royals.find(x => x.kind === 'gorgon');
     if (!r) return;
     const root = gltf.scene;
     root.scale.setScalar(VES_SCALE);
     root.position.y = 0.998 * VES_SCALE; // the model's origin is at its middle; this puts the tail on the roof
-    const blade = new THREE.MeshLambertMaterial({ color: 0x9fb39a });
     root.traverse(o => {
       if (o.isMesh) {
         o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false;
-        const map = o.material.map;
-        if (map) { map.encoding = THREE.LinearEncoding; map.needsUpdate = true; }
-        o.material = new THREE.MeshLambertMaterial({ map, skinning: true });
-        VES.mats.push(o.material);
-      }
-      if (o.isBone && /(Left|Right)Hand$/.test(o.name)) {
-        const s = makeSickle(blade);
-        if (/Left/.test(o.name)) s.scale.x = -1;
-        o.add(s);
+        // Lambert like the rest of the game. The body is textured and skinned; the two sickles (in the GLB,
+        // parented to her hand bones) are plain bronze/leather colours, so keep each material's colour.
+        const mats = Array.isArray(o.material) ? o.material : [o.material];
+        const lam = mats.map(m => {
+          const map = m.map;
+          if (map) { map.encoding = THREE.LinearEncoding; map.needsUpdate = true; }
+          const l = new THREE.MeshLambertMaterial({ map, skinning: !!o.isSkinnedMesh });
+          if (!map) l.color.copy(m.color); // glTF colours are already linear
+          VES.mats.push(l);
+          return l;
+        });
+        o.material = Array.isArray(o.material) ? lam : lam[0];
       }
     });
     VES.mixer = new THREE.AnimationMixer(root);
@@ -92,6 +86,7 @@
       return [vesSlash % 2 ? 'slash2' : 'slash1', total || 0.8];
     }
     if (vesRoarT > 0) return ['roar', 1.4];             // a kit (serpent rain, stone ring) was just cast
+    if (VES.speed > 0.4) return ['move', 0];             // gliding after the hero: the tail slithers
     return ['idle', 0];
   }
 
@@ -99,6 +94,12 @@
     if (!VES.ready || r !== royals.find(x => x.kind === 'gorgon')) return;
     if ((r.kitAt || 0) !== VES.kitSeen) { VES.kitSeen = r.kitAt || 0; vesRoarT = 1.4; }
     vesRoarT = Math.max(0, vesRoarT - dt);
+    // ground speed from her position, smoothed (royalStep and the field hunt move r.pos directly)
+    if (VES.last && dt > 0) {
+      const sp = Math.hypot(r.pos.x - VES.last.x, r.pos.z - VES.last.z) / dt;
+      VES.speed += (Math.min(sp, 20) - VES.speed) * Math.min(1, dt * 8);
+    }
+    VES.last = { x: r.pos.x, z: r.pos.z };
     const [name, dur] = vesthraClip(r);
     if (name !== VES.curName) { if (/^slash/.test(VES.curName)) vesSlash++; playVesthra(name, dur); }
     VES.mixer.update(dt);
