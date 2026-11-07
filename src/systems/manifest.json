@@ -24,7 +24,6 @@
   "actors/player/18b-combat-depth.js",
   "actors/bosses/19-warden-behaviour.js",
   "actors/bosses/20-rooftop-royals.js",
-  "actors/bosses/20b-vesthra-model.js",
   "actors/bosses/21-cinderwing.js",
   "render/22-fireworks.js",
   "actors/player/23-progression.js",
