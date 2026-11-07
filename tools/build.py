@@ -118,7 +118,8 @@ def build():
         parts.append(f'  // ===== src/systems/{rel} =====\n{code}')
     # Lazy assets: fetched after the game starts, so they sit outside the first-load budget
     lazy = {'gltfLoader': emit('gltf-loader.js', (ROOT / 'vendor' / 'three-r128-GLTFLoader.js').read_bytes()),
-            'hero': emit('moonlit-her.glb', (ROOT / 'assets' / 'hero' / 'moonlit-her.glb').read_bytes())}
+            'hero': emit('moonlit-her.glb', (ROOT / 'assets' / 'hero' / 'moonlit-her.glb').read_bytes()),
+            'vesthra': emit('vesthra.glb', (ROOT / 'assets' / 'bosses' / 'vesthra.glb').read_bytes())}
     game_js = ('window.MM_CONTENT = ' + json.dumps(content, separators=(',', ':')) + ';\n'
                'window.MM_ASSETS = ' + json.dumps(lazy) + ';\n'
                '(function () {\n' + '\n'.join(parts) + '})();\n')
