@@ -12,7 +12,8 @@
 - `tools/build.py`: emits it as the lazy asset `MM_ASSETS.warden` (outside the 400 KB first-load budget).
 - `src/systems/actors/bosses/19b-warden-glb.js`: loads the GLB after start (block figure stays if it fails), hides the
   block shapes, maps `B.state` / `B.atk` to clips and stretches one-shot clips to the behaviour's own timings, moves
-  the existing hammer meshes into the right hand and hangs the existing cape from the shoulders, copies the hit flash.
+  the existing hammer meshes into the right hand, rebuilds the cape as an 8-row strip that swings with forward speed,
+  falling and spinning (`swingCape`), and copies the hit flash.
 - `src/systems/core/53-loop.js`: calls `wardenModelUpdate(dt)` right after `updateBoss(dt)`.
 - `src/systems/manifest.json`: the new file after `19-warden-behaviour.js`.
 
@@ -26,7 +27,6 @@
 
 ## What is left
 - Phase 2 no longer turns the visor red (the model's ember visor is painted); a tint could come back via emissive.
-- The cape is a flat plane hung from the shoulders; it does not sway yet.
 
 ## Notes for the next agent
 - Character files and logs: `~/Claude Docs/moonlit-characters/warden/` (`models/README.md` has every step).
