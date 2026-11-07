@@ -2,9 +2,9 @@
   // A serpent-bodied rig (no legs: Mixamo-named upper body + a 12-bone tail) made in the character-design pipeline.
   // Loaded after the game starts, like Moonlit Her; the sphere figure fights until she arrives. Her fight logic is
   // untouched (20-rooftop-royals.js, 46g-boss-kits.js): vesthraModelUpdate() only reads r.state / r.atk and picks a clip.
-  const VES = { ready: false, root: null, mixer: null, actions: {}, cur: null, curName: '', mats: [], kitSeen: 0, last: null, speed: 0 };
+  const VES = { ready: false, root: null, mixer: null, actions: {}, cur: null, curName: '', mats: [], kitSeen: 0, last: null, speed: 0, vx: 0, vz: 0 };
   const VES_SCALE = 1.2;     // her model is 2.0 m; inside the royal's 1.15 group she stands about 2.75 m, like the old figure
-  const VES_LOOPS = new Set(['idle', 'move']);
+  const VES_LOOPS = new Set(['idle', 'move_f', 'move_b', 'move_l', 'move_r']);
 
   function loadVesthra() {
     const A = window.MM_ASSETS;
@@ -86,7 +86,11 @@
       return [vesSlash % 2 ? 'slash2' : 'slash1', total || 0.8];
     }
     if (vesRoarT > 0) return ['roar', 1.4];             // a kit (serpent rain, stone ring) was just cast
-    if (VES.speed > 0.4) return ['move', 0];             // gliding after the hero: the tail slithers
+    if (VES.speed > 0.4) {                                // gliding: pick the slither that matches her direction
+      const f = fwdOf(r.facing), fwd = VES.vx * f.x + VES.vz * f.z, left = VES.vx * f.z - VES.vz * f.x;
+      if (Math.abs(fwd) >= Math.abs(left)) return [fwd >= 0 ? 'move_f' : 'move_b', 0];
+      return [left > 0 ? 'move_l' : 'move_r', 0];
+    }
     return ['idle', 0];
   }
 
@@ -96,8 +100,9 @@
     vesRoarT = Math.max(0, vesRoarT - dt);
     // ground speed from her position, smoothed (royalStep and the field hunt move r.pos directly)
     if (VES.last && dt > 0) {
-      const sp = Math.hypot(r.pos.x - VES.last.x, r.pos.z - VES.last.z) / dt;
-      VES.speed += (Math.min(sp, 20) - VES.speed) * Math.min(1, dt * 8);
+      const k = Math.min(1, dt * 8), vx = (r.pos.x - VES.last.x) / dt, vz = (r.pos.z - VES.last.z) / dt;
+      VES.vx += (vx - VES.vx) * k; VES.vz += (vz - VES.vz) * k;
+      VES.speed = Math.min(20, Math.hypot(VES.vx, VES.vz));
     }
     VES.last = { x: r.pos.x, z: r.pos.z };
     const [name, dur] = vesthraClip(r);
