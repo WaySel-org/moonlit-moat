@@ -5,6 +5,7 @@
   - Story switches on chapter completion, World Gates to revisit, rare rift storms (35% every 5 min, 75 s).
 
 ## Next
+- **Open world with storylines**: plan for approval in [open-world-plan.md](open-world-plan.md); nothing built yet.
 - **Plug and play**: click the link, land in a live world with no menus, panels or loading screen; offline-first delivery; phone and tablet controls. Plan in [plug-and-play.md](plug-and-play.md) (Gatewright, Veilwarden).
 - Move world layouts and bosses from code into `content/` (Gatewright).
 - Smoke test in CI: headless load with no console errors (Veilwarden). `#debug` now exposes `window.MM_DEBUG` for it.
