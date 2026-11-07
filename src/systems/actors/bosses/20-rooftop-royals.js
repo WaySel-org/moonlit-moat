@@ -224,7 +224,6 @@
   }
 
   function updateRoyal(r, dt) {
-    if (r.kind === 'gorgon') vesthraModelUpdate(r, dt);
     r.flash = Math.max(0, r.flash - dt * 5);
     r.robe.emissive.setRGB(r.flash * 0.9, r.flash * 0.8, r.flash * 0.6);
     const tt = uTime.value;
@@ -234,7 +233,7 @@
       const a = tt * (r.enraged ? 2.6 : 1.4) + i / r.shards.length * TAU;
       s.position.set(Math.cos(a) * 1.1, 1.6 + Math.sin(tt * 2 + i) * 0.3, Math.sin(a) * 1.1); s.rotation.set(0, -a, Math.PI / 2);
     });
-    if (r.state === 'dead') { r.t += dt; if (!r.model) { r.body.rotation.x = -Math.min(1.5, r.t * 1.4); r.body.position.y = Math.max(0, r.body.position.y - dt); } return; }
+    if (r.state === 'dead') { r.t += dt; r.body.rotation.x = -Math.min(1.5, r.t * 1.4); r.body.position.y = Math.max(0, r.body.position.y - dt); return; }
     if (r.field) { updateFieldRoyal(r, dt); r.g.rotation.y = r.facing; return; }
     r.g.visible = G.world === 'moat';
     if (!r.active) {
