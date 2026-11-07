@@ -23,6 +23,7 @@
   "actors/player/18-targeting-and-combat.js",
   "actors/player/18b-combat-depth.js",
   "actors/bosses/19-warden-behaviour.js",
+  "actors/bosses/19b-warden-glb.js",
   "actors/bosses/20-rooftop-royals.js",
   "actors/bosses/20b-vesthra-model.js",
   "actors/bosses/21-cinderwing.js",
