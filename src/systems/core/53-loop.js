@@ -38,7 +38,7 @@
     if (inMoat) updateTraps(dt);
     if (inMoat) updatePuzzles(dt);
     updateSwooshes(dt);
-    if (inMoat) { updateBeasts(dt); if (!G.storm) updateHunt(dt); }
+    if (inMoat) { updateBeasts(dt); mountModelUpdate(dt); if (!G.storm) updateHunt(dt); }
     if (inMoat && !G.storm && G.state === 'interlude' && !(G.royalLull > 0) && player.position.y > ROOF.y - 0.5 && Math.abs(player.position.z) > 20) startRoyal();
     if (!G.shop && !G.paused) { updateWorlds(dt, real); updateAscension(dt, real); updateMythics(dt, real); }
     if (G.wardenDown) wards.forEach(w => { if (w.visible) { w.material.opacity -= real * 0.6; if (w.material.opacity <= 0) w.visible = false; } });
