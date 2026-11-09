@@ -120,7 +120,8 @@ def build():
     lazy = {'gltfLoader': emit('gltf-loader.js', (ROOT / 'vendor' / 'three-r128-GLTFLoader.js').read_bytes()),
             'hero': emit('moonlit-her.glb', (ROOT / 'assets' / 'hero' / 'moonlit-her.glb').read_bytes()),
             'warden': emit('warden.glb', (ROOT / 'assets' / 'bosses' / 'warden.glb').read_bytes()),
-            'moonstag': emit('moonstag.glb', (ROOT / 'assets' / 'mounts' / 'moonstag.glb').read_bytes())}
+            'moonstag': emit('moonstag.glb', (ROOT / 'assets' / 'mounts' / 'moonstag.glb').read_bytes()),
+            'crawler': emit('crawler.glb', (ROOT / 'assets' / 'creeps' / 'crawler.glb').read_bytes())}
     game_js = ('window.MM_CONTENT = ' + json.dumps(content, separators=(',', ':')) + ';\n'
                'window.MM_ASSETS = ' + json.dumps(lazy) + ';\n'
                '(function () {\n' + '\n'.join(parts) + '})();\n')
