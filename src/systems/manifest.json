@@ -44,6 +44,7 @@
   "world/32-environments.js",
   "actors/player/33-sword-swooshes.js",
   "actors/mounts/34-beasts-and-mounts.js",
+  "actors/mounts/34b-moonstag-glb.js",
   "actors/bosses/35-warden-hunts.js",
   "render/36-gameplay-mask.js",
   "world/spirit/37-spirit-realm.js",
