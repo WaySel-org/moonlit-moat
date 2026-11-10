@@ -11,7 +11,7 @@
   const HER_GRIP_ROT = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, -Math.PI / 2));
   // Clips where the blade follows her wrist. Everything else (running, idling, throwing, riding) carries it
   // trailing low behind her and out to her right, so her swinging arm never drives it through her legs.
-  const HER_SWINGS = new Set(['light1', 'light2', 'light3', 'heavy', 'rollslash', 'rollcleave', 'spin', 'airslash', 'plunge', 'block', 'parry', 'ride_light', 'ride_light2', 'ride_heavy']);
+  const HER_SWINGS = new Set(['light1', 'light2', 'light3', 'heavy', 'rollslash', 'rollcleave', 'slideslash', 'slidecut', 'hookflurry1', 'hookflurry2', 'hookflurry3', 'spin', 'airslash', 'plunge', 'block', 'parry', 'ride_light', 'ride_light2', 'ride_heavy']);
   const HER_CARRY = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(-0.45, -0.35, -0.8).normalize());
 
   function loadMoonlitHer() {
@@ -66,6 +66,9 @@
     }
     if (P.act === 'light') return ['light' + Math.min(3, P.combo + 1), P.actDur];
     if (P.act === 'tame') return ['cast', 0];
+    // Moves without a clip of their own borrow one (46o-her-moves.js) until Mixamo clips with their names are added
+    if (P.act === 'hookflurry') { const n = 'hookflurry' + P.flurryN; return [HER.actions[n] ? n : 'light' + P.flurryN, P.actDur]; }
+    if (P.act && !HER.actions[P.act] && HER_STAND_IN[P.act]) return [HER_STAND_IN[P.act], P.actDur];
     if (P.act && HER.actions[P.act]) return [P.act, HER_LOOPS.has(P.act) ? 0 : P.actDur];
     if (HER.parryT > 0) return ['parry', 0.35];
     if (P.block) return ['block', 0];

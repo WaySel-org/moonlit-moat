@@ -37,6 +37,7 @@
       sk('sk_v', PR.level < 3, P.cd.v / volleyCd(), P.mana < 50);
       sk('sk_x', !PR.warden, P.cd.x / 6, P.mana < 25);
     }
+    sk('sk_g', PR.level < HOOK_LV || !!P.mount, P.cd.g / HOOK_CD, P.mana < HOOK_MANA);
     sk('sk_h', PR.level < SPIN_LV || !!P.mount, P.cd.h / SPIN_CD, P.mana < SPIN_MANA);
     creeps.forEach(c => {
       if (!c.alive || c.realm !== realmKey() || flatDist(c.pos, player.position) > (c.ancient || c.mythic || c.ai === 'godling' ? 34 : 22)) { c.bar.hidden = true; return; }
