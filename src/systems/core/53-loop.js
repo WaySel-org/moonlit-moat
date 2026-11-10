@@ -30,7 +30,7 @@
     if (inMoat) updateDragon(dt);
     updateFireworks(dt);
     updatePatches(dt);
-    creeps.forEach(c => updateCreep(c, dt)); crawlerModelUpdate(dt);
+    creeps.forEach(c => updateCreep(c, dt)); crawlerModelUpdate(dt); wispCageUpdate(dt);
     updateCreepShots(dt);
     if (inMoat) updateChests(dt);
     updateLoot(dt); updateRelics(dt, real);
