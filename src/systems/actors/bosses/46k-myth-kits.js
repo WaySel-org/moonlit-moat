@@ -67,7 +67,7 @@
   // A pounce: the landing spot is marked on the hero, then it leaps and lands there as the mark fills
   function mkPounce(c) {
     const to = player.position.clone(); if (groundAt(to.x, to.z) > 0.5) return false;
-    mkWord(c, 'Pounce', '#ffb04a'); sfx('roar');
+    mkWord(c, 'Pounce', '#ffb04a'); sfx('boss', c.type);
     groundStrike({ at: to, r: 2.6, wind: 1.1, dmg: 26, kb: 11, src: c });
     const from = c.pos.clone(), f = yawTo(from, to);
     c.kact = { t: 0, step(c, A) {
@@ -168,7 +168,7 @@
       const a = Math.random() * TAU, r = 8 + Math.random() * 4, x = pp.x + Math.sin(a) * r, z = pp.z + Math.cos(a) * r;
       if (groundAt(x, z) > 0.4) continue;
       foxPuff(c.pos); c.pos.x = x; c.pos.z = z; c.home.set(x, 0, z); c.wander.copy(c.home); foxPuff(c.pos);
-      c.facing = yawTo(c.pos, pp); c.blinkCd = 3; c.atk = null; sfx('swoosh');
+      c.facing = yawTo(c.pos, pp); c.blinkCd = 3; c.atk = null; sfx('blink');
       if (!quiet) mkWord(c, FOX_TAUNTS[Math.floor(Math.random() * FOX_TAUNTS.length)], '#bfe8ff');
       return true;
     }
@@ -292,7 +292,7 @@
         if (Math.random() < 0.4) { const a = Math.random() * TAU; fwColor.setHSL(0.07, 1, 0.55); fwParticle(c.pos.x + Math.sin(a) * 14, c.pos.y + 0.2, c.pos.z + Math.cos(a) * 14, 0, 1.5, 0, fwColor, 0.6, false); }
         c.cryT -= dt;
         if (c.cryT <= 0 && d < 40 && G.state !== 'dead') {
-          c.cryT = 9; mkWord(c, 'ATTACK!', '#ff8a3a'); sfx('roar'); G.shake = Math.max(G.shake, 0.35); mkRing(c.pos, 32, 0xff8a3a);
+          c.cryT = 9; mkWord(c, 'ATTACK!', '#ff8a3a'); sfx('boss', c.type); G.shake = Math.max(G.shake, 0.35); mkRing(c.pos, 32, 0xff8a3a);
           creeps.forEach(o => { if (o !== c && o.alive && o.realm === c.realm && flatDist(o.pos, c.pos) < 32) o.commandT = 10; });
         }
       },
@@ -357,7 +357,7 @@
     minotaur: {
       cd: 6.5,
       abil: [
-        c => { mkWord(c, 'Labyrinth Charge', '#ff8a5a'); sfx('roar'); mkCharge(c, { wind: 0.9, len: 22, w: 2.6, sp: 24, dmg: 30, kb: 16 }); },
+        c => { mkWord(c, 'Labyrinth Charge', '#ff8a5a'); sfx('boss', c.type); mkCharge(c, { wind: 0.9, len: 22, w: 2.6, sp: 24, dmg: 30, kb: 16 }); },
         c => {
           mkWord(c, 'Horn Toss', '#ff8a5a');
           const f = yawTo(c.pos, player.position);
@@ -368,7 +368,7 @@
     },
     oni: {
       cd: 6.5,
-      rage(c) { c.haste = 1.4; mkWord(c, 'Oni Fury', '#ff4a3a'); sfx('roar'); },
+      rage(c) { c.haste = 1.4; mkWord(c, 'Oni Fury', '#ff4a3a'); },
       tick(c) {
         if (!c.enraged) return;
         c.mat.emissive.r = Math.min(1, c.mat.emissive.r + 0.25 + 0.1 * Math.sin(uTime.value * 10));
@@ -440,7 +440,7 @@
   function mythKit(c, dt, d) {
     const K = MYTH_KITS[c.type]; if (!K) return false;
     if (!c.enraged && c.hp < c.max / 2) {
-      c.enraged = true; mkWord(c, 'ENRAGED', '#ff6a4a'); sfx('roar'); G.shake = Math.max(G.shake, 0.4);
+      c.enraged = true; mkWord(c, 'ENRAGED', '#ff6a4a'); sfx('bossrage', c.type); G.shake = Math.max(G.shake, 0.4);
       if (K.rage) K.rage(c);
     }
     if (K.tick) K.tick(c, dt, d);

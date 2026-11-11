@@ -95,7 +95,7 @@
     if (G.royalLull > 0) return;
     G.royalLull = 0;
     royals.forEach(r => { r.lv += 2; }); royalsToField(false);
-    showBanner('The queens rise again', `Vesthra and Nyxara walk the land again, two levels stronger. Climb the roof to call them to the throne for Ascension ${G.ascension + 1}.`, 'title'); bannerTimer = 4; sfx('roar');
+    showBanner('The queens rise again', `Vesthra and Nyxara walk the land again, two levels stronger. Climb the roof to call them to the throne for Ascension ${G.ascension + 1}.`, 'title'); bannerTimer = 4; sfx('horn');
   }
 
   function ascensionText() {

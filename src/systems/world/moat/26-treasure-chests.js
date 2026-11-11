@@ -47,7 +47,7 @@
   }
   function openChest(c) {
     const tier = c.tier, wt = 1 + 0.2 * (worldTier() - 1);
-    c.open = true; c.refill = 90; chestLook(c); sfx('pickup');
+    c.open = true; c.refill = 90; chestLook(c); sfx('chest');
     burst(c.x, 1, c.z, 30 + tier * 10, 5);
     reward(30 * Math.pow(tier, 1.5) * wt, 20 * Math.pow(tier, 1.7) * wt * (0.8 + Math.random() * 0.4), c.g.position.clone().add(new THREE.Vector3(0, 2.2, 0)));
     const at = c.g.position.clone().add(new THREE.Vector3(0, 2.8, 0));

@@ -92,7 +92,7 @@
   function updateGorger(c, dt, d, groundY, aggro) {
     const tt = uTime.value, pp = player.position, h = hasteOf(c);
     c.pos.y = groundY;
-    if (!gmMet && d < 35 && G.state !== 'dead') { gmMet = true; showBanner(CREEP_NAME.gorger, 'Dodge the hook. Never stand still beside it.', 'title'); bannerTimer = 3.5; sfx('roar'); }
+    if (!gmMet && d < 35 && G.state !== 'dead') { gmMet = true; showBanner(CREEP_NAME.gorger, 'Dodge the hook. Never stand still beside it.', 'title'); bannerTimer = 3.5; sfx('boss', 'gorger'); }
     // Grave Stench
     if (d < 4 && P.hp > 0 && G.state !== 'dead') poisonHero(1.2 * c.mult * G.env.creepDmg, 1.2);
     if (Math.random() < 0.35) { fwColor.setHSL(0.22, 0.6, 0.4); fwParticle(c.pos.x + (Math.random() - 0.5) * 6, c.pos.y + 0.4 + Math.random() * 2, c.pos.z + (Math.random() - 0.5) * 6, 0, 0.6, 0, fwColor, 1.1, false); }

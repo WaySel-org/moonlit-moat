@@ -12,7 +12,7 @@
   const pzKey = c => typeof keyLabel === 'function' ? keyLabel(c) : c.replace(/^Key|^Digit/, '');
   const pzSaved = () => { const p = G.story.prog; if (!Array.isArray(p.puzzles)) p.puzzles = PUZZLE_SITES.map(() => 0); return p.puzzles; };
   const pzSeen = () => { const p = G.story.prog; if (!Array.isArray(p.puzzleSeen)) p.puzzleSeen = PUZZLE_SITES.map(() => 0); return p.puzzleSeen; };
-  const pzNote = (f, dur) => { const a = audio(); if (a) tone(a, dur || 0.5, f, f * 0.995, 0.1, 'triangle'); };
+  const pzNote = (f, dur) => { const a = audio(); if (a) tone(a, { f, f1: f * 0.995, d: dur || 0.5, g: 0.1, type: 'triangle', wet: 0.3 }); };
   const pzStoneM = new THREE.MeshLambertMaterial({ color: 0x7c828a, flatShading: true });
   const pzDarkM = new THREE.MeshLambertMaterial({ color: 0x34373c, flatShading: true });
   const pzBronzeM = new THREE.MeshLambertMaterial({ color: 0x9a7438, flatShading: true });
@@ -105,7 +105,7 @@
     if (Z.site.solved) return;
     const s = Z.site, at = new THREE.Vector3(s.x, 2.6, s.z);
     s.solved = true; pzSaved()[s.id] = 1; Z.solvedLook();
-    sfx('parry'); pzNote(523, 0.9); pzNote(784, 1.2); G.shake = Math.max(G.shake, 0.35);
+    sfx('solve'); pzNote(523, 0.9); pzNote(784, 1.2); G.shake = Math.max(G.shake, 0.35);
     burst(s.x, 1.5, s.z, 70, 8); kitRingFx(s.x, 0, s.z, 0xbff6ff, 1);
     for (let i = 0; i < 120; i++) { fwColor.setHSL(0.5 + Math.random() * 0.25, 0.8, 0.75); const a = Math.random() * TAU, sp = Math.random() * 3; fwParticle(s.x + Math.cos(a) * 1.5, 0.5, s.z + Math.sin(a) * 1.5, Math.cos(a) * sp, 6 + Math.random() * 6, Math.sin(a) * sp, fwColor, 1.6, true); }
     reward(Math.round(xpNext() * 0.45 + 40), Math.round(60 * worldTier()), at);
@@ -161,7 +161,7 @@
         Z.k++; st.lvl = 1.6; pzNote(NOTE[i]); burst(w.x, 1.6, w.z, 12, 4);
         if (Z.k >= 5) pzSolve(Z);
       } else {
-        Z.mode = 'fail'; Z.t = 0; Z.k = 0; sfx('clang'); G.shake = Math.max(G.shake, 0.2);
+        Z.mode = 'fail'; Z.t = 0; Z.k = 0; sfx('fail'); G.shake = Math.max(G.shake, 0.2);
         floatText('The stones fall silent', w.clone().setY(3.2), 'word', '#ff8a8a');
       }
     }
@@ -239,7 +239,7 @@
       });
       Z.beamEnd = r.pts[r.pts.length - 1];
     }
-    function turn(i) { const m = Z.mirrors[i]; m.o = (m.o + 1) % 4; sfx('clang'); draw(); }
+    function turn(i) { const m = Z.mirrors[i]; m.o = (m.o + 1) % 4; sfx('click'); draw(); }
     Z.trace = trace; Z.turn = turn;
     Z.reset = () => { Z.mirrors.forEach(m => { m.o = m.start; }); Z.hold = 0; draw(); };
     Z.reset();
@@ -277,12 +277,12 @@
     const arm = new THREE.Group(); arm.position.y = 0.9; lever.add(arm); box(0.14, 1.3, 0.14, 0, 0.65, 0, pzBronzeM, arm);
     const knob = new THREE.Mesh(new THREE.SphereGeometry(0.2, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffd36a })); knob.position.y = 1.35; arm.add(knob); tag(lever, 1);
     Z.solids.push({ x: -9.5, z: -2, r: 0.6 });
-    Z.hits.push({ x: -9.5, z: -2, r: 0.7, hit: () => { Z.leverT = 1; sfx('clang'); Z.reset(true); } });
+    Z.hits.push({ x: -9.5, z: -2, r: 0.7, hit: () => { Z.leverT = 1; sfx('click'); Z.reset(true); } });
     const occupied = (i, j, skip) => PILLARS.some(p => p[0] === i && p[1] === j) || Z.blocks.some(b => b !== skip && b.i === i && b.j === j);
     function push(b, di, dj) {
       const ni = b.i + di, nj = b.j + dj;
       if (ni < 0 || nj < 0 || ni > 4 || nj > 4 || occupied(ni, nj, b)) return false;
-      b.fx = b.x; b.fz = b.z; b.i = ni; b.j = nj; b.mt = 0; sfx('roll'); return true;
+      b.fx = b.x; b.fz = b.z; b.i = ni; b.j = nj; b.mt = 0; sfx('click'); return true;
     }
     Z.push = push;
     Z.reset = anim => {
@@ -371,7 +371,7 @@
         if (Z.k >= 3) pzSolve(Z);
       } else {
         Z.braziers.forEach((q, k) => { if (q.lit) pzPuff(Z, q.x, q.z); q.set(false); }); pzPuff(Z, b.x, b.z);
-        Z.k = 0; sfx('clang'); floatText('The flames gutter out', w.clone().setY(3), 'word', '#ff8a8a');
+        Z.k = 0; sfx('fail'); floatText('The flames gutter out', w.clone().setY(3), 'word', '#ff8a8a');
       }
     }
     Z.light = light;
@@ -434,7 +434,7 @@
         Z.run -= dt; const sec = Math.ceil(Z.run);
         if (sec !== Z.lastSec && (sec <= 5 || sec === 10) && sec > 0) { Z.lastSec = sec; floatText(String(sec), player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'big', '#ffd36a'); pzNote(880, 0.12); }
         if (Z.run <= 0) {
-          Z.run = 0; Z.braziers.forEach(b => { if (b.lit) pzPuff(Z, b.x, b.z); b.set(false); }); sfx('clang');
+          Z.run = 0; Z.braziers.forEach(b => { if (b.lit) pzPuff(Z, b.x, b.z); b.set(false); }); sfx('fail');
           floatText('The embers die. Ring the bell again', player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', '#ff8a8a');
         }
       }

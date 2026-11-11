@@ -44,7 +44,7 @@
     const r = groundRelics[i]; scene.remove(r.g); r.g.traverse(o => { if (o.material) o.material.dispose(); }); r.label.remove(); groundRelics.splice(i, 1);
   }
   function takeRelic(id) {
-    PR.relics.push(id); recalc(); renderHero(); sfx('parry');
+    PR.relics.push(id); recalc(); renderHero(); sfx('relic');
     burst(player.position.x, player.position.y + 1.2, player.position.z, 30, 5);
     floatText(RELICS[id].name, player.position.clone().add(new THREE.Vector3(0, 3.0, 0)), 'word', RELICS[id].col);
     floatText(RELICS[id].desc, player.position.clone().add(new THREE.Vector3(0, 2.5, 0)), 'word', '#efe6c2');

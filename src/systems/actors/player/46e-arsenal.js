@@ -58,7 +58,7 @@
     const s = PR.inv.sword;
     if (s.kills < edgeNeed(s)) { floatText(`Edge ${s.kills}/${edgeNeed(s)}: keep fighting`, player.position.clone().add(new THREE.Vector3(0, 2.8, 0)), 'word', '#9fe8ff'); return; }
     s.kills -= edgeNeed(s); s.rank++;
-    recalc(); sfx('parry'); burst(player.position.x, player.position.y + 1.4, player.position.z, 40, 6);
+    recalc(); sfx('reforge'); burst(player.position.x, player.position.y + 1.4, player.position.z, 40, 6);
     floatText(`${s.name} +${s.rank}`, player.position.clone().add(new THREE.Vector3(0, 3.4, 0)), 'word', '#bff6ff');
     renderGear();
   }
@@ -116,7 +116,7 @@
   function jump() {
     const need = P.mount ? 12 : 14;
     if (P.jh > 0 || P.act || P.stone > 0 || G.state === 'dead' || G.state === 'won' || P.st < need) return;
-    P.jv = P.mount ? 10 : 11.5; P.jh = 0.01; P.airHits = 0; P.plunge = false; P.airFrom = P.airPeak = P.y; P.st -= stCost(need); P.stDelay = 0.5; sfx(P.mount ? 'roar' : 'roll');
+    P.jv = P.mount ? 10 : 11.5; P.jh = 0.01; P.airHits = 0; P.plunge = false; P.airFrom = P.airPeak = P.y; P.st -= stCost(need); P.stDelay = 0.5; sfx(P.mount ? 'pounce' : 'jump');
     const mv = moveInput();
     if (P.mount) P.jdir = (mv.lengthSq() > 0 ? mv.normalize() : fwdOf(P.facing)).multiplyScalar(7);
     else P.jdir = mv.lengthSq() > 0 ? mv.normalize().multiplyScalar(6.8 * PR.speed) : new THREE.Vector3();
@@ -125,11 +125,11 @@
     if (name === 'light') {
       if (P.airHits >= 2 || P.st < 10) return false;
       P.act = 'airslash'; P.actT = 0; P.actDur = 0.26; P.hitDone = false; P.airHits++; P.st -= stCost(10); P.stDelay = 0.5;
-      P.jv = Math.max(P.jv, 6); sfx('swing'); return true;
+      P.jv = Math.max(P.jv, 6); sfx(P.mount ? 'claw' : 'airslash'); return true;
     }
     if (P.st < 12) return false;
     P.st -= stCost(!P.mount && P.airHits >= 2 ? 30 : 24); P.stDelay = 1.0;
-    P.act = 'plunge'; P.actT = 0; P.actDur = 2; P.hitDone = false; P.jv = -26; P.plunge = true; sfx('swoosh'); return true;
+    P.act = 'plunge'; P.actT = 0; P.actDur = 2; P.hitDone = false; P.jv = -26; P.plunge = true; sfx(P.mount ? 'dive' : 'plunge'); return true;
   }
   function airTick(dt) {
     if (P.jh <= 0 && P.jv === 0) return;
@@ -151,14 +151,15 @@
     // costs a short landing recovery
     const drop = Math.max(0, P.airPeak - P.y);
     if (!P.plunge) {
-      if (drop >= 5 && !P.mount && !P.act) { P.act = 'land'; P.actT = 0; P.actDur = 0.4; P.hitDone = true; G.shake = Math.max(G.shake, 0.3); sfx('boom'); }
+      if (drop >= 5 && !P.mount && !P.act) { P.act = 'land'; P.actT = 0; P.actDur = 0.4; P.hitDone = true; G.shake = Math.max(G.shake, 0.3); sfx('land'); }
+      else sfx(bt ? 'paws' : 'step');
       return;
     }
     // Landing slam, then a moment of recovery with no acting or moving. Bosses are never stunned by it, and a creep
     // at most once every three seconds.
     const sky = !bt && P.airHits >= 2, r = bt ? 5 : sky ? 4.6 : 3.4;
     P.plunge = false; P.act = 'land'; P.actT = 0; P.actDur = 0.4; P.hitDone = true;
-    G.shake = Math.max(G.shake, sky || bt ? 0.7 : 0.45); sfx('boom'); spawnSwoosh(true);
+    G.shake = Math.max(G.shake, sky || bt ? 0.7 : 0.45); sfx(bt ? 'pounceslam' : sky ? 'skyfall' : 'slam'); spawnSwoosh(true);
     burst(player.position.x, P.y + 0.3, player.position.z, sky || bt ? 60 : 34, sky || bt ? 9 : 6);
     kitRingFx(player.position.x, P.y, player.position.z, sky ? 0xbff6ff : bt ? 0xffd36a : 0xfff0c8);
     const high = Math.min(1.5, Math.max(0, drop - 3.5) / 6), hr = r + high * 1.6;

@@ -12,7 +12,7 @@
   function openWorlds() {
     const why = travelBlock();
     if (why) { floatText(why, player.position.clone().add(new THREE.Vector3(0, 2.6, 0)), 'word', '#ffd36a'); return; }
-    G.shop = true; G.gateUI = true; worldsEl.hidden = false; keys.clear(); sfx('cast');
+    G.shop = true; G.gateUI = true; worldsEl.hidden = false; keys.clear(); sfx('portal');
     renderWorlds();
   }
   worldList.addEventListener('click', ev => {

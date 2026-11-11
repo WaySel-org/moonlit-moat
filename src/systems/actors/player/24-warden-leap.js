@@ -12,7 +12,7 @@
   }
   const fxRings = [];
   function landLeap() {
-    G.shake = Math.max(G.shake, 0.6); sfx('boom');
+    G.shake = Math.max(G.shake, 0.6); sfx(P.mount ? 'pounceslam' : 'slam');
     burst(player.position.x, P.y + 0.3, player.position.z, 40, 9);
     const m = new THREE.Mesh(waveGeo, new THREE.MeshBasicMaterial({ color: 0xffd36a, transparent: true, opacity: 0.9, depthWrite: false }));
     m.position.set(player.position.x, P.y + 0.06, player.position.z); scene.add(m); fxRings.push({ m, r: 0.4 });

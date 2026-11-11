@@ -67,14 +67,14 @@
     P.combo = 0;
     if (name === 'slide') { P.actDur = 0.32; P.slideWin = 0; sfx('roll'); }
     else if (name === 'slideslash') { P.actDur = 0.4; P.slideWin = 0; sfx('swing'); }
-    else if (name === 'slidecut') { P.actDur = 0.5; P.slideWin = 0; sfx('swoosh'); }
+    else if (name === 'slidecut') { P.actDur = 0.5; P.slideWin = 0; sfx('cleave'); }
     else if (name === 'hookthrow') {
       const t = hookTarget(), f = fwdOf(P.facing);
       if (t) P.facing = yawTo(player.position, t.pos);
       const end = t ? new THREE.Vector3(t.pos.x, t.pos.y + 1, t.pos.z) : new THREE.Vector3(player.position.x + f.x * HOOK_RANGE, P.y + 1.3, player.position.z + f.z * HOOK_RANGE);
       P.hook = { t, end }; P.actDur = Math.max(0.14, flatDist(player.position, end) / 60);
-      P.mana -= HOOK_MANA; P.cd.g = HOOK_CD; sfx('swoosh');
-    } else if (name === 'hookzip') { P.actDur = 0.7; P.iframe = Math.max(P.iframe, 0.7); sfx('parry'); }
+      P.mana -= HOOK_MANA; P.cd.g = HOOK_CD; sfx('hook');
+    } else if (name === 'hookzip') { P.actDur = 0.7; P.iframe = Math.max(P.iframe, 0.7); sfx('zip'); }
     else if (name === 'hookback') { P.actDur = 0.18; }
     else if (name === 'hookflurry') { P.actDur = P.flurryN < 3 ? 0.22 : 0.34; sfx('swing'); }
   }

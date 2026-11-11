@@ -25,7 +25,7 @@
       W.objLook(o, false);
     });
     const s = ST.stage[w];
-    showBanner(`${W.name} · Stage ${s}`, `The shard's echo stirs the world again. ${cap(W.task)}. ${W.bossName} will return, ${s - 1} tier${s > 2 ? 's' : ''} stronger.`, 'title'); bannerTimer = 4.5; sfx('roar');
+    showBanner(`${W.name} · Stage ${s}`, `The shard's echo stirs the world again. ${cap(W.task)}. ${W.bossName} will return, ${s - 1} tier${s > 2 ? 's' : ''} stronger.`, 'title'); bannerTimer = 4.5; sfx('horn');
   }
   // The guardian of a stage after the first falls: reward the stage and queue the next one
   function stageClear(w) {
@@ -124,7 +124,7 @@
       E.t = 30; E.p = p; E.to = opts[Math.floor(Math.random() * opts.length)]; riftMesh.position.copy(p); riftMesh.visible = true;
       showBanner('A wandering rift', `A tear to ${WNAME[E.to]} hangs nearby for thirty seconds. Step in to cross, or let it close.`, 'title');
     }
-    bannerTimer = 3.5; sfx('cast');
+    bannerTimer = 3.5; sfx('horn');
     G.event = E; return true;
   }
   // quiet: leaving the world or resetting, no banner
@@ -197,7 +197,7 @@
         if (Math.random() < 0.6) { fwColor.setHSL(0.07, 1, 0.6); fwParticle(R.m.position.x, R.m.position.y, R.m.position.z, 0, 1, 0, fwColor, 0.6, false); }
         if (R.k >= 1) {
           scene.remove(R.m); R.tele.hide(); E.rocks.splice(i, 1);
-          burst(R.p.x, R.y + 0.4, R.p.z, 30, 7); sfx('clang'); G.shake = Math.max(G.shake, 0.35);
+          burst(R.p.x, R.y + 0.4, R.p.z, 30, 7); sfx('reforge'); G.shake = Math.max(G.shake, 0.35);
           if (flatDist(here(), R.p) < 2.4 && Math.abs(here().y - R.y) < 2) hitPlayer(16 * E.m, R.p, 7, false, null);
           if (Math.random() < 0.3) spawnLoot(R.p.x, R.p.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
         }

@@ -214,7 +214,7 @@
             const dd = flatDist(v, player.position); if (dd > bd) { bd = dd; best = v; }
           }
           if (best) r.pos.copy(best); burst(best.x, RY + 1, best.z, 20, 5);
-          A.stage = 'appear'; A.t = 0; r.blinkCd = 5; sfx('parry');
+          A.stage = 'appear'; A.t = 0; r.blinkCd = 5; sfx('blink');
         }
       } else {
         r.g.scale.setScalar(1.15 * Math.max(0.1, ease(A.t / 0.25)));
@@ -288,7 +288,7 @@
   function killRoyal(r) {
     if (r.field) { fieldRoyalDown(r); return; }
     r.alive = false; r.state = 'dead'; r.t = 0; r.atk = null; r.tele.hide(); r.g.scale.setScalar(1.15);
-    sfx('roar'); G.slow = 0.6;
+    sfx('bossdown', r.kind === 'gorgon' ? 'gorgon' : 'empress'); G.slow = 0.6;
     burst(r.pos.x, ROOF.y + 1.5, r.pos.z, 40, 7);
     reward(250 * tierMult(G.bossTier || 1), 140 * tierMult(G.bossTier || 1), r.pos.clone().add(new THREE.Vector3(0, 3, 0)));
     const other = royals.find(o => o.alive);
@@ -308,5 +308,5 @@
     G.state = 'royal'; G.lock = true; G.target = null;
     royals.forEach(r => { r.active = true; r.state = 'chase'; r.cool = 1.2 + Math.random(); });
     showBanner('The Gorgon and the Empress', '', 'title'); bannerTimer = 2.2;
-    ui.hud.hidden = true; ui.royalbars.hidden = false; sfx('roar');
+    ui.hud.hidden = true; ui.royalbars.hidden = false; sfx('boss', 'royals');
   }

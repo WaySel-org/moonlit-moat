@@ -10,7 +10,7 @@
     B.from.copy(boss.position); if (echo) B.from.y = 18;
     B.to.copy(player.position).addScaledVector(fwdOf(Math.random() * TAU), 6); B.to.y = 0; clampArena(B.to, -78);
     G.state = 'intro'; B.state = 'leap'; B.t = 0; B.dur = 1.6;
-    sfx('roar');
+    sfx('boss', 'warden');
     showBanner(rv ? 'The Warden rises again' : 'The Warden hunts you', rv ? `Defeated ${rv} time${rv > 1 ? 's' : ''}, it has come back stronger. Survive 45 seconds, outrun it, or bring it down.` : 'Survive 45 seconds, outrun it, or bring it down.', 'title');
     bannerTimer = 3; ui.hud.hidden = true;
   }
@@ -20,7 +20,7 @@
     B.atk = null; hideTele(); B.spin = 0; B.state = 'retreat'; B.t = 0; B.dur = 1.8; B.echoGone = echo;
     B.from.copy(boss.position); B.to.copy(echo ? boss.position.clone().setY(30) : PERCH);
     waves.forEach(w => { scene.remove(w.m); w.m.material.dispose(); }); waves.length = 0;
-    ui.bossbar.hidden = true; ui.hud.hidden = false; sfx('roar');
+    ui.bossbar.hidden = true; ui.hud.hidden = false; sfx('boss', 'warden');
     floatText(echo ? 'The Warden sinks back into the earth' : 'The Warden withdraws to its gate', player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', '#ffd36a');
   }
   function updateHunt(dt) {
