@@ -12,9 +12,9 @@
   function beastAttack(name) {
     const now = uTime.value, chain = now - P.clawAt < 0.75;
     P.act = 'gore'; P.combo = 0; P.stDelay = 0.5;
-    if (name === 'heavy') { P.gore = 'rampage'; P.actDur = 0.5; P.claw = 0; P.st -= stCost(14); sfx('roar'); }
-    else if (chain && P.claw >= 2) { P.gore = 'stomp'; P.actDur = 0.5; P.claw = 0; P.st -= stCost(10); sfx('roar'); }
-    else { P.gore = 'claw'; P.actDur = 0.3; P.claw = chain ? P.claw + 1 : 1; P.st -= stCost(6); sfx('swoosh'); }
+    if (name === 'heavy') { P.gore = 'rampage'; P.actDur = 0.5; P.claw = 0; P.st -= stCost(14); sfx('rampage'); }
+    else if (chain && P.claw >= 2) { P.gore = 'stomp'; P.actDur = 0.5; P.claw = 0; P.st -= stCost(10); sfx('rear'); }
+    else { P.gore = 'claw'; P.actDur = 0.3; P.claw = chain ? P.claw + 1 : 1; P.st -= stCost(6); sfx('claw'); }
     P.clawAt = now;
     return true;
   }
@@ -27,7 +27,7 @@
     if (g === 'claw') { spawnSwoosh(false); heroZoneHit(at, 3.6, 2.6, d * 0.8, 18, false); }
     else if (g === 'rampage') { spawnSwoosh(true); G.shake = Math.max(G.shake, 0.3); heroZoneHit(at, 4.2, 4.0, d * 1.6, 40, true, t => heroShove(t, 1.5)); }
     else {
-      G.shake = Math.max(G.shake, 0.4); sfx('boom'); kitRingFx(at.x, P.y, at.z, 0xfff0c8); burst(at.x, P.y + 0.3, at.z, 24, 6);
+      G.shake = Math.max(G.shake, 0.4); sfx('stomp'); kitRingFx(at.x, P.y, at.z, 0xfff0c8); burst(at.x, P.y + 0.3, at.z, 24, 6);
       heroZoneHit(at, 4.2, TAU, d * 1.5, 40, true, t => heroDaze(t, 0.7));
     }
   }
@@ -36,7 +36,7 @@
     if (P.hitDone || k < 0.2) return;
     P.hitDone = true;
     const at = player.position, d = BEAST_TYPES[P.mount ? P.mount.type : 'stag'].dmg * 1.3 * PR.dmg;
-    G.shake = Math.max(G.shake, 0.45); sfx('boom'); kitRingFx(at.x, P.y, at.z, 0xffd36a); burst(at.x, P.y + 0.3, at.z, 30, 7);
+    G.shake = Math.max(G.shake, 0.45); sfx('stomp'); kitRingFx(at.x, P.y, at.z, 0xffd36a); burst(at.x, P.y + 0.3, at.z, 30, 7);
     heroZoneHit(at, 4.5, TAU, d, 35, true, t => heroShove(t, 1.5));
   }
   // The beast rears for a stomp or a trample, dips its head for a slam and whirls for a tail lash
@@ -61,7 +61,7 @@
       }
     } else if (kind === 'rake') {
       P.actDur = 0.3;
-      [0, 0.1, 0.2].forEach(t => after(t, () => { if (!P.mount) return; spawnSwoosh(false, P.facing + (Math.random() - 0.5)); sfx('swing'); heroZoneHit(player.position, 3.8, 1.8, 16 * PR.dmg * s, 8, false); }));
+      [0, 0.1, 0.2].forEach(t => after(t, () => { if (!P.mount) return; spawnSwoosh(false, P.facing + (Math.random() - 0.5)); sfx('claw'); heroZoneHit(player.position, 3.8, 1.8, 16 * PR.dmg * s, 8, false); }));
     } else if (kind === 'feathers') {
       P.actDur = 0.4;
       for (let i = 0; i < 9; i++) spawnBolt({ angle: P.facing + (i - 4) * 0.2, dmg: 18 * PR.spell * s, speed: 20, home: 3, life: 1.5, poise: 6, color: 0xffe8b0, geo: featherBoltGeo, heavy: false });
@@ -75,7 +75,7 @@
         const x = at.x + Math.sin(a) * d, z = at.z + Math.cos(a) * d, gh = groundAt(x, z), y = gh < 50 ? gh : P.y;
         after(i * 0.1, () => { fwColor.setHSL(0.05, 1, 0.55); for (let j = 0; j < 4; j++) fwParticle(x, y + 6 + j * 1.2, z, 0, -22, 0, fwColor, 0.35, false); });
         after(0.35 + i * 0.1, () => {
-          sfx('boom'); kitRingFx(x, y, z, 0xff8a3a, 0.3); burst(x, y + 0.4, z, 18, 6); addPatch(x, y, z, 1.4, true);
+          sfx('ember'); kitRingFx(x, y, z, 0xff8a3a, 0.3); burst(x, y + 0.4, z, 18, 6); addPatch(x, y, z, 1.4, true);
           heroZoneHit(new THREE.Vector3(x, y, z), 2.4, TAU, 34 * PR.spell * s, 15, false, null, true);
         });
       }

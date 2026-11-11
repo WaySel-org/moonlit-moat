@@ -48,10 +48,10 @@
     P.combo = 0;
     if (name === 'spin') {
       P.actDur = Math.min(4.5, 3 + 0.05 * (PR.level - SPIN_LV)); P.mana -= SPIN_MANA; P.cd.h = SPIN_CD; P.spinOn = true; P.spinTick = 0.08;
-      sfx('roar'); heroWord('BLADE SPIN', '#ffd36a', 3);
+      sfx('spin'); heroWord('BLADE SPIN', '#ffd36a', 3);
     } else if (name === 'rollslash') { P.actDur = 0.38; sfx('swing'); }
-    else if (name === 'rollcleave') { P.actDur = 0.56; sfx('swoosh'); }
-    else if (name === 'trample') { P.actDur = 0.45; sfx('roar'); }
+    else if (name === 'rollcleave') { P.actDur = 0.56; sfx('roll'); }
+    else if (name === 'trample') { P.actDur = 0.45; sfx('rear'); }
   }
   // Per-frame ticks for the kit's acts; k is the act's progress from 0 to 1
   function kitTick(dt, k) {
@@ -63,7 +63,7 @@
     } else if (a === 'rollcleave') {
       pBody.rotation.y = ease((k - 0.15) / 0.55) * TAU;
       if (!P.hitDone && k > 0.4) {
-        P.hitDone = true; sfx('swoosh'); spawnSwoosh(true); spawnSwoosh(true, P.facing + Math.PI); G.shake = Math.max(G.shake, 0.3);
+        P.hitDone = true; sfx('cleave'); spawnSwoosh(true); spawnSwoosh(true, P.facing + Math.PI); G.shake = Math.max(G.shake, 0.3);
         playerStrike(62, 45, 3.4, TAU, true);
         liveTargets().forEach(t => { if (flatDist(player.position, t.pos) < 3.4 + t.radius) heroShove(t, 2.4); });
       }

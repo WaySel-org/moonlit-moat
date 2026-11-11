@@ -141,7 +141,7 @@
       G.raid = { r, t: 75 };
       showBanner(r.name, RAIDER[pick].line, 'title');
     }
-    bannerTimer = 3.5; sfx('roar'); G.shake = Math.max(G.shake, 0.5);
+    bannerTimer = 3.5; sfx('boss', pick === 'pack' ? 'raptors' : pick); G.shake = Math.max(G.shake, 0.5);
   }
   function endRaid(msg) {
     const R = G.raid; if (!R) return;
@@ -158,7 +158,7 @@
     sfx(heavy ? 'heavyhit' : 'hit');
     if (r.hp > 0) return;
     const m = 1 + 0.3 * (r.lv - 1);
-    burst(r.pos.x, r.pos.y + 1, r.pos.z, 60, 8); sfx('roar'); G.slow = 0.6;
+    burst(r.pos.x, r.pos.y + 1, r.pos.z, 60, 8); sfx('bossdown', r.type); G.slow = 0.6;
     reward(240 * m, 200 * m, at.clone().setY(at.y + 1));
     dropGear(r.pos, 2); if (G.target === r) G.target = null;
     endRaid(`${r.name} is slain. It dropped something.`);
@@ -234,7 +234,7 @@
         if (r.t > 1.9) { r.state = 'rest'; r.t = 0; r.hitDone = false; }
       } else if (r.state === 'roar') {
         r.head.rotation.x = -0.4;
-        if (!r.hitDone && r.t > 0.6) { r.hitDone = true; spawnWave(r.pos.x, r.pos.z); sfx('roar'); G.shake = Math.max(G.shake, 0.6); floatText('ROAR', r.pos.clone().add(new THREE.Vector3(0, 6, 0)), 'word'); }
+        if (!r.hitDone && r.t > 0.6) { r.hitDone = true; spawnWave(r.pos.x, r.pos.z); sfx('boss', r.type); G.shake = Math.max(G.shake, 0.6); floatText('ROAR', r.pos.clone().add(new THREE.Vector3(0, 6, 0)), 'word'); }
         if (r.t > 1.4) { r.head.rotation.x = 0; r.state = 'chase'; r.cool = 1.6; r.hitDone = false; }
       } else if (r.state === 'rest') {
         // Winded after a charge: a window to punish
@@ -260,7 +260,7 @@
     }
     G.waveClock = 0; if (!mobs.length) return;
     G.waveN[w] = n; G.wave = { w, n, mobs, t: 120, size: mobs.length };
-    showBanner(horde ? `Horde ${n}` : `Wave ${n}`, horde ? `${mobs.length} of the dead claw out of the ash and come for you.` : `${mobs.length} creatures close in from every side.`, 'title'); bannerTimer = 3; sfx('roar');
+    showBanner(horde ? `Horde ${n}` : `Wave ${n}`, horde ? `${mobs.length} of the dead claw out of the ash and come for you.` : `${mobs.length} creatures close in from every side.`, 'title'); bannerTimer = 3; sfx('horn');
   }
   function endWave(cleared) {
     const V = G.wave; if (!V) return;

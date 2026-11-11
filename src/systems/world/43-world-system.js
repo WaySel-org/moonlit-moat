@@ -52,14 +52,14 @@
   }
   function objectiveDone(W, i) {
     const ST = G.story, o = W.objs[i], m = tierMult(worldTier());
-    W.objLook(o, true); sfx('pickup'); burst(o.p.x, 1.2, o.p.z, 30, 5);
+    W.objLook(o, true); sfx('relic'); burst(o.p.x, 1.2, o.p.z, 30, 5);
     reward(60 * m, 40 * m, o.p.clone().add(new THREE.Vector3(0, 2.6, 0)));
     const n = ST.prog[W.id].filter(v => v >= 1).length;
     floatText(`${W.objWord} ${n}/3`, player.position.clone().add(new THREE.Vector3(0, 3.2, 0)), 'word', W.objCol);
     if (n >= 3 && ST.step[W.id] === 0) {
       ST.step[W.id] = 1;
       const b = storyBossOf(W.id); if (b && !b.alive) b.respawn = 1.5;
-      showBanner(`${W.bossName} stirs`, W.bossLine, 'title'); bannerTimer = 4.5; sfx('roar');
+      showBanner(`${W.bossName} stirs`, W.bossLine, 'title'); bannerTimer = 4.5; sfx('boss', { veyra: 'matron', neon: 'halvane', ash: 'rot' }[W.id]);
     }
   }
   // A shard is taken: open the next world and, after a banner, carry the hero there
@@ -131,9 +131,9 @@
     const W = WORLDS[to], n = CHAPTERS.indexOf(to) + 1;
     if (mode === 'gate') showBanner(WNAME[to], W ? (G.story.shards[to] ? `${cap(SHARD[to])} is already yours.` : W.intro) : 'Back under the moon.', 'title');
     else if (mode === 'story') showBanner(WNAME[to], `Chapter ${n}. ${W ? W.intro : ''}`, 'title');
-    else if (mode === 'stormIn') { showBanner('Rift storm', `Reality tears open and drags you into ${WNAME[to]}${G.story.unlocked[to] ? '' : ', a world still sealed to you'}. Hold out for 75 seconds.`, 'title'); sfx('roar'); G.shake = Math.max(G.shake, 0.6); }
+    else if (mode === 'stormIn') { showBanner('Rift storm', `Reality tears open and drags you into ${WNAME[to]}${G.story.unlocked[to] ? '' : ', a world still sealed to you'}. Hold out for 75 seconds.`, 'title'); sfx('portal'); G.shake = Math.max(G.shake, 0.6); }
     else if (mode === 'stormEnd') showBanner('The storm passes', `The rift lets go and you fall back into ${WNAME[to]}.`, 'title');
-    if (mode !== 'respawn') { bannerTimer = 4; sfx('parry'); }
+    if (mode !== 'respawn') { bannerTimer = 4; sfx('portal'); }
     if (mode !== 'respawn') saveGame();
     for (let i = 0; i < 60; i++) { fwColor.setHSL(0.12 + Math.random() * 0.05, 0.8, 0.75); const a = Math.random() * TAU, sp = 2 + Math.random() * 5; fwParticle(x, P.y + 1, z, Math.cos(a) * sp, 1 + Math.random() * 4, Math.sin(a) * sp, fwColor, 1.1, true); }
   }

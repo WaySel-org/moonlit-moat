@@ -77,7 +77,7 @@
         if (!P.hitDone && k > 0.3) { P.hitDone = true; spawnSwoosh(P.combo === 2); playerStrike(P.combo === 2 ? 30 : 17, P.combo === 2 ? 22 : 11, 2.7, 2.0, false); }
       } else if (P.act === 'heavy') {
         if (k > 0.45 && k < 0.62) { const fv = fwdOf(P.facing); movePlayer(fv.x * 6 * dt, fv.z * 6 * dt); }
-        if (!P.hitDone && k > 0.58) { P.hitDone = true; sfx('swoosh'); spawnSwoosh(true); playerStrike(52, 38, 3.0, 1.6, true); }
+        if (!P.hitDone && k > 0.58) { P.hitDone = true; sfx('cleave'); spawnSwoosh(true); playerStrike(52, 38, 3.0, 1.6, true); }
       } else if (P.act === 'roll') {
         const sp = 13.5 * (1 - k * 0.7) * (agi ? 1.25 : 1) * (wading ? 0.7 : 1) * (P.chargeDmg ? 1.7 : 1);
         if (P.chargeDmg) {

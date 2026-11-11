@@ -107,7 +107,7 @@
       // A perfect dodge: the hit would have landed mid-roll. Flow follows.
       if (P.act === 'roll' && !P.flowed) {
         P.flowed = true; P.flow = FLOW_TIME + relicBonus('flow'); P.st = Math.min(P.stMax, P.st + 15);
-        sfx('swoosh'); burst(player.position.x, player.position.y + 1, player.position.z, 16, 4);
+        sfx('flow'); burst(player.position.x, player.position.y + 1, player.position.z, 16, 4);
         floatText('FLOW', player.position.clone().add(new THREE.Vector3(0, 2.6, 0)), 'word', '#bff6ff');
       } else floatText('dodged', player.position.clone().add(new THREE.Vector3(0, 2.2, 0)), 'word');
       return false;

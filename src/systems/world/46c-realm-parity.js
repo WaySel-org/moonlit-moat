@@ -18,6 +18,6 @@
   });
   function guardianRage(c) {
     if (!c.storyBoss || c.enraged || c.hp > c.max / 2 || c.hp <= 0) return;
-    c.enraged = true; c.cool = Math.min(c.cool, 0.6); G.shake = Math.max(G.shake, 0.4); sfx('roar');
+    c.enraged = true; c.cool = Math.min(c.cool, 0.6); G.shake = Math.max(G.shake, 0.4); sfx('bossrage', c.type);
     floatText('ENRAGED', c.pos.clone().add(new THREE.Vector3(0, 5.6, 0)), 'word');
   }

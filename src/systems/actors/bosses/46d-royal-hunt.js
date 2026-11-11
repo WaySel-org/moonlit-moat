@@ -99,7 +99,7 @@
       else if (d > 10) fieldStep(r, away.negate(), (G.royalHunt ? 5 : 3.4) * sp * dt);
     }
     // Left far behind in a hunt, a royal tears space and lands near the hero again
-    if (G.royalHunt && d > 30 && r.cool <= 0) { const p = ringSpot(10, 14); if (p) { burst(r.pos.x, r.pos.y + 1, r.pos.z, 20, 5); r.pos.set(p.x, Math.max(0, groundAt(p.x, p.z)), p.z); burst(p.x, r.pos.y + 1, p.z, 30, 6); sfx('parry'); r.cool = 1.2; } }
+    if (G.royalHunt && d > 30 && r.cool <= 0) { const p = ringSpot(10, 14); if (p) { burst(r.pos.x, r.pos.y + 1, r.pos.z, 20, 5); r.pos.set(p.x, Math.max(0, groundAt(p.x, p.z)), p.z); burst(p.x, r.pos.y + 1, p.z, 30, 6); sfx('blink'); r.cool = 1.2; } }
     if (r.cool <= 0 && d < 12 && Math.abs(player.position.y - r.pos.y) < 2) beginRoyalAttack(r, d);
     if (Math.abs(player.position.y - r.pos.y) < 1.5) {
       const dx = player.position.x - r.pos.x, dz = player.position.z - r.pos.z, dd = Math.hypot(dx, dz);
@@ -108,7 +108,7 @@
   }
   function fieldRoyalDown(r) {
     r.alive = false; r.state = 'dead'; r.t = 0; r.atk = null; r.tele.hide(); r.g.scale.setScalar(1.15); r.revive = 120;
-    sfx('roar'); G.slow = 0.5; burst(r.pos.x, r.pos.y + 1.5, r.pos.z, 40, 7);
+    sfx('bossdown', r.kind === 'gorgon' ? 'gorgon' : 'empress'); G.slow = 0.5; burst(r.pos.x, r.pos.y + 1.5, r.pos.z, 40, 7);
     const m = 1 + 0.35 * (r.lv - 1);
     reward(260 * m, 160 * m, r.pos.clone().add(new THREE.Vector3(0, 3, 0)));
     dropGear(r.pos, 2); swordFeed(10);
@@ -136,7 +136,7 @@
       if (r.where !== realmKey() || flatDist(r.pos, player.position) > 30) r.cross = 2.5 + i * 2.5;
     });
     showBanner('The Royal Hunt', 'Vesthra and Nyxara are coming for you, and every creep here comes with them. They follow you through gates, rifts and the Veil. Survive 60 seconds, or bring them down.', 'title');
-    bannerTimer = 4.5; sfx('roar'); G.shake = Math.max(G.shake, 0.5);
+    bannerTimer = 4.5; sfx('boss', 'royals'); G.shake = Math.max(G.shake, 0.5);
   }
   function endRoyalHunt(quiet, msg) {
     if (!G.royalHunt) return;
@@ -165,7 +165,7 @@
             const p = ringSpot(12, 17); if (!p) { r.cross = 0.5; return; }
             const from = r.where; r.where = realmKey();
             r.pos.set(p.x, Math.max(0, groundAt(p.x, p.z)), p.z); r.cool = 1.5; r.state = 'chase';
-            burst(p.x, r.pos.y + 1, p.z, 40, 7); sfx('roar'); G.shake = Math.max(G.shake, 0.35);
+            burst(p.x, r.pos.y + 1, p.z, 40, 7); sfx('boss', r.kind === 'gorgon' ? 'gorgon' : 'empress'); G.shake = Math.max(G.shake, 0.35);
             floatText(from === r.where ? `${r.name} has found you` : `${r.name} follows you into ${placeName(r.where)}`, player.position.clone().add(new THREE.Vector3(0, 3.4 + i * 0.5, 0)), 'word', '#ff7ad8');
           }
         }

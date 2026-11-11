@@ -20,9 +20,9 @@
     else if (name === 'drink') { P.actDur = 0.95; P.healed = false; P.combo = 0; }
     else if (name === 'cast') { P.actDur = 0.45; P.mana -= boltCost(); P.combo = 0; sfx('cast'); }
     else if (isMp(name)) { if (!startMountPower(name)) { P.act = null; return false; } return true; }
-    else if (name === 'throw') { P.actDur = 0.28; P.st -= stCost(10); P.stDelay = 0.5; P.cd.z = 0.45; P.combo = 0; sfx('swing'); }
-    else if (name === 'volley') { P.actDur = 0.5; P.mana -= 50; P.cd.v = volleyCd(); P.combo = 0; sfx('cast'); }
-    else if (name === 'leap') { if (!planLeap()) { P.act = null; return false; } P.actDur = 0.75; P.mana -= 25; P.cd.x = 6; P.iframe = 0.8; P.combo = 0; P.kb.set(0, 0, 0); sfx('roar'); }
+    else if (name === 'throw') { P.actDur = 0.28; P.st -= stCost(10); P.stDelay = 0.5; P.cd.z = 0.45; P.combo = 0; sfx('throw'); }
+    else if (name === 'volley') { P.actDur = 0.5; P.mana -= 50; P.cd.v = volleyCd(); P.combo = 0; sfx('volley'); }
+    else if (name === 'leap') { if (!planLeap()) { P.act = null; return false; } P.actDur = 0.75; P.mana -= 25; P.cd.x = 6; P.iframe = 0.8; P.combo = 0; P.kb.set(0, 0, 0); sfx('leap'); }
     else if (name === 'spin' || name === 'rollslash' || name === 'rollcleave' || name === 'trample') startKit(name);
     if (COST[name]) { const cost = name === 'roll' && relicHas('step') ? COST.roll - 10 : COST[name]; P.st -= stCost(cost) * (name === 'roll' && P.buffAgi > 0 ? 0.5 : 1); P.stDelay = 0.5; }
     return true;

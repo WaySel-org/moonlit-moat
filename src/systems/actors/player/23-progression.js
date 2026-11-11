@@ -22,7 +22,7 @@
     while (PR.xp >= xpNext()) { PR.xp -= xpNext(); PR.level++; PR.points += 2; up = true; }
     if (up) {
       recalc(); P.hp = P.max; P.mana = P.manaMax; P.st = P.stMax; saveGame(); P.flasks = PR.flaskMax;
-      sfx('parry'); burst(player.position.x, player.position.y + 1.5, player.position.z, 40, 6);
+      sfx('levelup'); burst(player.position.x, player.position.y + 1.5, player.position.z, 40, 6);
       floatText(`LEVEL ${PR.level}  +2 points (${tipKey('KeyP', 'Hero')})`, player.position.clone().add(new THREE.Vector3(0, 3.2, 0)), 'word', '#ffd36a');
       heroNews(was);
     }

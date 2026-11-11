@@ -48,7 +48,7 @@
   function dragonFlee(word) {
     const D = dragon; if (D.state !== 'fly') return;
     D.state = 'flee'; D.t = 0; if (D.atk && D.atk.m) scene.remove(D.atk.m); D.atk = null; D.tele.hide(); D.light.intensity = 0;
-    sfx('roar'); G.shake = 0.6;
+    sfx('boss', 'cinderwing'); G.shake = 0.6;
     floatText(word, player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', '#ff9a4a');
   }
   function damageDragon(dmg) {
@@ -56,7 +56,7 @@
     const out = Math.round(dmg * (0.9 + Math.random() * 0.2) * (P.buffDmg > 0 ? 1.5 : 1));
     if (D.angry <= 0) {
       if (D.hp >= D.max) { D.max = Math.round(400 * tierMult(worldTier())); D.hp = D.max; }
-      floatText('Cinderwing is angry!', player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', '#ff9a4a'); sfx('roar');
+      floatText('Cinderwing is angry!', player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', '#ff9a4a'); sfx('boss', 'cinderwing');
       D.cool = Math.min(D.cool, 1.2);
     }
     D.angry = 14;

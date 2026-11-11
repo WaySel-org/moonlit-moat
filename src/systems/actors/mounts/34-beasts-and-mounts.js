@@ -83,6 +83,8 @@
     drake: { mp1: { name: 'Fire Breath', short: 'Breath', kind: 'breath', cd: 6, mana: 30 }, mp2: { name: 'Inferno Dive', short: 'Dive', kind: 'dive', cd: 8, mana: 20 },
       mp3: { name: 'Tail Lash', short: 'Lash', kind: 'lash', cd: 3.5, mana: 0 }, mp4: { name: 'Ember Rain', short: 'Embers', kind: 'embers', cd: 9, mana: 35 } }
   };
+  // Each beast skill's own sound (14-sound.js); the beast's voice comes from the ridden type
+  const MOUNT_SFX = { nova: 'nova', charge: 'rampage', toss: 'toss', stampede: 'stampede', gust: 'gust', pounce: 'skypounce', rake: 'snarl', feathers: 'feathers', breath: 'breath', dive: 'dive', lash: 'lash', embers: 'embers' };
   function hitArea(range, arc, dmg, poise, knock) {
     liveTargets().forEach(t => {
       if (Math.abs(t.pos.y - player.position.y) > 2.5) return;
@@ -120,7 +122,7 @@
       G.shake = Math.max(G.shake, 0.3);
     } else beastSkill(pw);
     P.mana -= pw.mana; P.cd[slot] = pw.cd; P.combo = 0;
-    sfx(pw.kind === 'breath' || pw.kind === 'dive' ? 'boom' : pw.kind === 'nova' ? 'parry' : 'swoosh');
+    sfx(MOUNT_SFX[pw.kind] || 'swoosh');
     floatText(pw.name, player.position.clone().add(new THREE.Vector3(0, 3.1, 0)), 'word', '#bff6ff');
     return true;
   }
@@ -140,7 +142,7 @@
     P.mount = b; b.state = 'ridden';
     if (b.rideLeft == null) { b.rideLeft = RIDE_SECS; b.warned = 0; }
     player.position.x = b.g.position.x; player.position.z = b.g.position.z;
-    sfx('parry'); burst(b.g.position.x, 1.5, b.g.position.z, 30, 5);
+    sfx('tame', b.type); burst(b.g.position.x, 1.5, b.g.position.z, 30, 5);
     P.claw = 0;
     mountTip(b);
   }
@@ -155,7 +157,7 @@
     const name = BEAST_TYPES[b.type].name;
     dismount(true);
     b.state = 'leaving'; b.leaveT = 0; b.returnAt = uTime.value + AWAY_SECS; b.rideLeft = null;
-    sfx('parry'); burst(b.g.position.x, 1.5, b.g.position.z, 40, 6);
+    sfx('farewell', b.type); burst(b.g.position.x, 1.5, b.g.position.z, 40, 6);
     showTip(`The ${name} flew away`, ['It left for the spirit realm.', `Back at its sanctuary in ${fmtTime(AWAY_SECS)}.`]);
   }
   function updateRide(dt, moving) {

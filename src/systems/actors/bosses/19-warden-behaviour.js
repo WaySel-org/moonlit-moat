@@ -8,7 +8,7 @@
     const dir = new THREE.Vector3(0 - player.position.x, 0, -18 - player.position.z).normalize();
     B.to.copy(player.position).addScaledVector(dir, 5.5); B.to.y = 0;
     clampArena(B.to, -17.4);
-    sfx('roar');
+    sfx('boss', 'warden');
     showBanner('The Gate Warden', '', 'title');
     bannerTimer = 2.2;
     ui.hud.hidden = true;
@@ -102,7 +102,7 @@
         teleLane.position.set(c.x, 0.04, c.z); teleLane.scale.set(A.w, 1, A.len);
         const fl = A.len * A.t / A.wind, fc = boss.position.clone().addScaledVector(fwdOf(B.facing), fl / 2);
         fillLane.position.set(fc.x, 0.044, fc.z); fillLane.scale.set(A.w, 1, Math.max(0.01, fl));
-        if (A.t >= A.wind) { A.stage = 'act'; A.t = 0; hideTele(); bBody.position.y = 0; sfx('roar'); }
+        if (A.t >= A.wind) { A.stage = 'act'; A.t = 0; hideTele(); bBody.position.y = 0; sfx('boss', 'warden'); }
       } else if (A.stage === 'act') {
         const step = f.clone().multiplyScalar(19 * dt);
         boss.position.add(step);
@@ -168,7 +168,7 @@
       B.t += dt;
       bBody.rotation.x = -0.25 * Math.sin(Math.min(1, B.t / 0.3) * Math.PI / 2);
       if (B.t > 0.25 && !B.roared) {
-        B.roared = true; sfx('roar'); G.shake = 0.8; spawnWave(boss.position.x, boss.position.z);
+        B.roared = true; sfx('boss', 'warden'); G.shake = 0.8; spawnWave(boss.position.x, boss.position.z);
         burst(boss.position.x, 3.5, boss.position.z, 40, 8);
       }
       if (B.t > 1.5) { bBody.rotation.x = 0; B.state = 'chase'; B.cool = 0.4; }
@@ -226,7 +226,7 @@
       G.wardenRevives = (G.wardenRevives || 0) + 1;
       B.state = 'dead'; B.t = 0; B.atk = null; hideTele(); B.spin = 0;
       const m = tierMult(G.bossTier || 1);
-      G.state = G.hunt.prev; G.hunt = null; G.slow = 1.0; G.lock = false; G.target = null; G.dmgMult = 1; sfx('roar');
+      G.state = G.hunt.prev; G.hunt = null; G.slow = 1.0; G.lock = false; G.target = null; G.dmgMult = 1; sfx('bossdown', 'warden');
       waves.forEach(w => { scene.remove(w.m); w.m.material.dispose(); }); waves.length = 0;
       reward(260 * m, 200 * m, boss.position.clone().add(new THREE.Vector3(0, 4, 0)));
       ui.bossbar.hidden = true; ui.hud.hidden = false;
@@ -235,7 +235,7 @@
     }
     G.hunt = null; G.wardenRevives = (G.wardenRevives || 0) + 1;
     B.state = 'dead'; B.t = 0; B.atk = null; hideTele(); B.spin = 0;
-    G.state = 'interlude'; G.wardenDown = true; G.slow = 1.4; G.lock = false; G.target = null; sfx('roar');
+    G.state = 'interlude'; G.wardenDown = true; G.slow = 1.4; G.lock = false; G.target = null; sfx('bossdown', 'warden');
     waves.forEach(w => { scene.remove(w.m); w.m.material.dispose(); }); waves.length = 0;
     const m = tierMult(G.bossTier || 1);
     PR.warden = true; recalc(); P.armor = P.armorMax; P.mana = P.manaMax;
