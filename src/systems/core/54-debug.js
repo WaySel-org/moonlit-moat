@@ -3,7 +3,7 @@
   if (location.hash === '#debug') {
     window.MM_DEBUG = { G, P, PR, B, creeps, groundRelics, RELICS, dropRelic, takeRelic, spawnCreep, worldTier, player, recalc, renderHero, strike, poisonHero, applyRend, WARDEN,
       royals, startRoyalHunt, startHunt, enterWorld, WORLDS, raiders, startRaid, startWave, wavePool, KITS, dropGear, swordFeed, upgradeSword, openInv, jump, startEvent, startStage, NEUTRAL_CAMPS, damageRaider, damageRoyal,
-      ascend, wakeMythic, saveGame, loadGame, deathPenalty, killPlayer, respawn, takeRelic, WORLDS, mythics, killCreep, killRoyal, startRoyal, groundAt, chests, RINGS, beasts, beginTame, frame,
+      ascend, wakeMythic, saveGame, loadGame, deathPenalty, killPlayer, respawn, takeRelic, WORLDS, mythics, killCreep, killRoyal, startRoyal, groundAt, chests, RINGS, beasts, beginTame, camera, frame,
       sfx, SFX, sfxMeter };
   }
   // Renders one sound effect offline and reports its length, peak and loudness, for tuning levels without listening

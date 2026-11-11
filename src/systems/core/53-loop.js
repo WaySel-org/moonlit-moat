@@ -1,5 +1,6 @@
   // ---------- Loop ----------
   const camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
+  let camBase = 0, camPull = 1; // camera height track and pull-in fraction (1 = full distance)
   const label = $('#label'), proj = new THREE.Vector3();
   let last = performance.now(), nextFish = 1.5, lastSplash = 0, walk = 0, first = true;
 
@@ -92,15 +93,34 @@
     }
     const cf = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw));
     const inFight = G.state !== 'explore';
-    const baseY = Math.max(0, P.y) + (P.mount ? 1 : 0);
-    const wantPos = player.position.clone().addScaledVector(cf, inFight ? -9.5 : -8).setY(baseY + (inFight ? 8.2 : 7.2));
-    const wantLook = player.position.clone().addScaledVector(cf, 3.5).setY(baseY + 1.2);
+    // Height follows her body on its own, slower track: it holds level through a jump, eases up onto what she
+    // climbs and down after her when she drops below it, instead of snapping to the ground under her
+    const body = (P.act === 'leap' ? P.leapY : P.y + Math.max(0, P.jh)) + (P.mount ? 1 : 0);
+    const levelY = P.jh > 0 && P.act !== 'leap' ? Math.min(camBase, body) : body;
+    camBase = first ? levelY : camBase + (levelY - camBase) * (1 - Math.pow(levelY < camBase ? 0.004 : 0.03, real));
+    const back = inFight ? 9.5 : 8, up = inFight ? 8.2 : 7.2;
+    // Pull-in: walk the line from her head to where the camera wants to be; the first spot where a solid stands
+    // taller than the line is where the camera must stay in front of. Snaps in fast, eases back out slowly.
+    const head = player.position.clone().setY(body + 1.5), ideal = player.position.clone().addScaledVector(cf, -back).setY(camBase + up);
+    let clear = 1;
+    for (let i = 1; i <= 16; i++) {
+      const t = i / 16, x = head.x + (ideal.x - head.x) * t, z = head.z + (ideal.z - head.z) * t, y = head.y + (ideal.y - head.y) * t;
+      const g = groundAt(x, z), top = g < 50 ? g : G.world === 'moat' ? solidTop(x, z) : null;
+      if (top === null || top > y - 0.4) { clear = Math.max(0.22, (i - 1.5) / 16); break; }
+    }
+    camPull = first ? clear : camPull + (clear - camPull) * (1 - Math.pow(clear < camPull ? 1e-7 : 0.25, real));
+    const wantPos = head.clone().lerp(ideal, camPull).add(new THREE.Vector3(0, (1 - camPull) * 1.5, 0));
+    const wantLook = player.position.clone().addScaledVector(cf, 3.5 * camPull).setY(camBase + 1.2 + (body - camBase) * 0.5);
     const k = first ? 1 : 1 - Math.pow(0.0004, real);
     camPos.lerp(wantPos, k); camLook.lerp(wantLook, k); first = false;
+    // Shake: G.shake is trauma (0..1) that decays; the camera moves trauma squared times smooth noise (a few
+    // incommensurate sines per axis) plus a small roll, instead of a fresh random jolt every frame
     G.shake = Math.max(0, G.shake - real * 1.8);
-    const sh = reduce ? 0 : G.shake * G.shake * 0.6;
-    camera.position.copy(camPos).add(new THREE.Vector3((Math.random() - 0.5) * sh, (Math.random() - 0.5) * sh, (Math.random() - 0.5) * sh));
+    const sh = reduce ? 0 : G.shake * G.shake, ns = performance.now() / 1000;
+    const wob = (a, b, c) => (Math.sin(ns * a) + Math.sin(ns * b + 1.7) * 0.6 + Math.sin(ns * c + 4.1) * 0.3) / 1.9;
+    camera.position.copy(camPos).add(new THREE.Vector3(wob(31, 47, 71), wob(37, 53, 67), wob(29, 43, 79)).multiplyScalar(sh * 0.45));
     camera.lookAt(camLook);
+    if (sh) camera.rotateZ(wob(23, 41, 61) * sh * 0.05);
     // Fade any tree standing between the camera and the hero
     {
       const ax = camera.position.x, az = camera.position.z, bx = player.position.x, bz = player.position.z;
