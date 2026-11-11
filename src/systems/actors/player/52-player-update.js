@@ -18,6 +18,8 @@
     else if (P.act === 'cast' || P.act === 'volley') { x = -0.9 + 0.8 * ease(k / 0.5); y = 0; bright = true; }
     else if (P.act === 'throw') { x = -0.2; y = -1.2 + 2.4 * ease(k / 0.5); }
     else if (P.act === 'leap') { x = -2.0 + 3.0 * ease((k - 0.6) / 0.4); y = 0; bright = k > 0.6; }
+    else if (P.act === 'slideslash' || P.act === 'slidecut' || P.act === 'hookflurry') { x = 0.15; y = P.flurryN === 2 && P.act === 'hookflurry' ? 1.4 - 2.9 * ease(k / 0.5) : -1.5 + 2.9 * ease(k / 0.5); bright = k < 0.7; }
+    else if (P.act === 'hookthrow' || P.act === 'hookback') { x = -0.2; y = -1.2 + 2.4 * ease(k / 0.5); }
     else if (P.act === 'rollslash') { x = 0.15; y = -1.5 + 2.9 * ease(k / 0.5); bright = k < 0.6; }
     else if (P.act === 'rollcleave' || P.act === 'spin') { x = 0.1; y = -1.45; bright = true; }
     else if (P.act === 'trample') { x = -1.6 + 2.6 * ease((k - 0.1) / 0.2); y = 0; bright = k > 0.1 && k < 0.5; }

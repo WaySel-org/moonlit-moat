@@ -86,7 +86,7 @@
   function resetVitals() {
     Object.assign(P, { hp: P.max, st: P.stMax, stDelay: 0, flasks: PR.flaskMax, act: null, actT: 0, combo: 0, buffer: null, iframe: 0, block: false, facing: Math.PI,
       mana: Math.max(50, P.manaMax * 0.5), armor: 0, buffDmg: 0, buffAgi: 0, y: 0, stone: 0, flow: 0, riposte: 0, poison: 0, calm: 0 });
-    Object.assign(P.cd, { z: 0, v: 0, x: 0, h: 0, mp1: 0, mp2: 0, mp3: 0, mp4: 0 });
+    Object.assign(P.cd, { z: 0, v: 0, x: 0, h: 0, g: 0, mp1: 0, mp2: 0, mp3: 0, mp4: 0 });
     clearStatus();
     if (P.mount) dismount(true);
     P.kb.set(0, 0, 0);

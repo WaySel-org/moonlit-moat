@@ -144,6 +144,11 @@
     plunge: a => { whoosh(a, 0.4, 2800, 700, 0.2, 0, 3); tone(a, { f: 900, f1: 320, d: 0.35, g: 0.04 }); },
     slam: a => { thump(a, 62, 0.45, 0.8, 0, 0.3); noise(a, { f: 500, f1: 120, type: 'lowpass', d: 0.55, g: 0.45, wet: 0.2 }); noise(a, { f: 2600, q: 0.8, d: 0.22, g: 0.12, at: 0.03 }); },
     skyfall: a => { SFX.slam(a); thump(a, 45, 0.6, 0.5, 0.02); chime(a, [1568, 2093], 0.05, 0.04, 0.6); },
+    land: a => { thump(a, 80, 0.22, 0.55); noise(a, { f: 600, f1: 200, type: 'lowpass', d: 0.25, g: 0.25 }); },
+    step: a => { thump(a, 120, 0.06, 0.18); noise(a, { f: 700, type: 'lowpass', d: 0.06, g: 0.1 }); },
+    // Moonlit Her's grappling hook: a chain whirring out, and the zip as it reels her in
+    hook: a => { whoosh(a, 0.22, 1500, 4200, 0.14, 0, 3); for (let i = 0; i < 6; i++) metal(a, 1700 + i * 60, 0.08, 0.014, 0.03 + i * 0.035); },
+    zip: a => { whoosh(a, 0.5, 600, 3600, 0.22, 0, 2); tone(a, { f: 500, f1: 1600, d: 0.45, g: 0.03, type: 'sawtooth', lp: 3000 }); metal(a, 700, 0.3, 0.06, 0.42); },
     leap: a => { whoosh(a, 0.5, 300, 2400, 0.3, 0, 1.1); tone(a, { f: 220, f1: 880, d: 0.45, g: 0.07, type: 'triangle', wet: 0.4 }); },
     hurt: a => { thump(a, 115, 0.16, 0.45); noise(a, { f: 900, q: 1, d: 0.1, g: 0.25 }); tone(a, { f: 300, f1: 150, d: 0.18, g: 0.08, type: 'triangle' }); },
     // Magic

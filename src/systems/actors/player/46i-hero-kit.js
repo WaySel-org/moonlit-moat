@@ -33,7 +33,7 @@
 
   // Runs first in updatePlayer: tidies a spin that something else ended (death, a world change, the spirit realm)
   function heroKitFrame(dt) {
-    P.rollWin = Math.max(0, P.rollWin - dt);
+    P.rollWin = Math.max(0, P.rollWin - dt); herFrame(dt);
     if (P.spinOn && P.act !== 'spin') { P.spinOn = false; pBody.rotation.y = 0; }
   }
   // J or K late in a roll or just after it; Starbound Charge reuses the roll act and never combos
@@ -69,6 +69,7 @@
       }
     } else if (a === 'trample') trampleTick(k);
     else if (a === 'gore') goreTick(dt, k);
+    else if (HER_MOVES.has(a)) herTick(dt, k);
   }
   function spinTick(dt) {
     if (P.mount) { P.act = null; return; }
@@ -120,6 +121,7 @@
     const lines = [];
     if (was < 3 && PR.level >= 3) lines.push(`Arc Volley learned (${tipKey('KeyI', 'Volley')})`);
     RANK_NEWS.forEach(([lv, ...l]) => { if (was < lv && PR.level >= lv) lines.push(...l); });
+    if (was < HOOK_LV && PR.level >= HOOK_LV) lines.push(`Moonhook learned (${tipKey('KeyG', 'Hook')}): tether to a foe and strike three times`);
     if (was < SPIN_LV && PR.level >= SPIN_LV) lines.push(`Blade Spin learned (${tipKey('KeyH', 'Spin')})`);
     if (lines.length) showTip(`Level ${PR.level}: new powers`, lines, 7);
   }
