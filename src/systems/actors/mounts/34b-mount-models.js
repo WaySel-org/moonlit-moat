@@ -1,4 +1,4 @@
-  // ---------- Modelled, animated mounts (assets/mounts/<name>.glb): the Moonstag and the Gryphon ----------
+  // ---------- Modelled, animated mounts (assets/mounts/<name>.glb): the Moonstag, the Gryphon and the Ember Drake ----------
   // Loaded after the game starts, like Moonlit Her and the Warden. Each beast at a sanctuary gets its own copy; the
   // block figure stays until the model arrives, and stays for good if it fails to load. mountModelUpdate(), called right
   // after updateBeasts, maps the beast's state (and the rider's action while ridden) to a clip, stretching one-shot
@@ -9,7 +9,10 @@
     // The stag's back is 1.65 m in the model; 1.09 puts it at the block stag's 1.8 m, under the rider's seat
     stag: { asset: 'moonstag', name: 'Moonstag', scale: 1.09, loops: new Set(['idle', 'graze', 'walk', 'run', 'charge']), clip: stagClip },
     // The gryphon's back is 1.30 m in the model; 1.45 puts it at the block gryphon's 1.9 m (rideHeight 1.45)
-    gryphon: { asset: 'gryphon', name: 'Gryphon', scale: 1.45, loops: new Set(['idle', 'walk', 'run']), clip: gryphonClip }
+    gryphon: { asset: 'gryphon', name: 'Gryphon', scale: 1.45, loops: new Set(['idle', 'walk', 'run']), clip: gryphonClip },
+    // The drake's back is 1.47 m in the model; 1.19 puts it at the block drake's 1.75 m (rideHeight 1.5).
+    // spin: Tail Lash whirls the block body (beastPose); the model hangs on the outer group, so it copies that turn.
+    drake: { asset: 'drake', name: 'Ember Drake', scale: 1.19, loops: new Set(['idle', 'walk', 'run']), clip: drakeClip, spin: true }
   };
 
   function loadMountModels() {
@@ -100,6 +103,25 @@
     return M.speed > 2 ? ['run', 0] : M.speed > 0.3 ? ['walk', 0] : ['idle', 0];
   }
 
+  // J claws; the stomp, trample and slam rear up and slam down (embers); Space and Inferno Dive leap (dive);
+  // Fire Breath, Tail Lash and Ember Rain play their own clips; it roars as it leaves
+  function drakeClip(b, M) {
+    if (b.state === 'leaving') return b.leaveT < 0.9 ? ['roar', 0.9] : ['run', 0];
+    if (b.state === 'ridden') {
+      const a = P.act, d = P.actDur || 0.4;
+      if (a === 'dead') return ['dead', 0];
+      if (a === 'hurt') return ['hurt', d];
+      if (a === 'leap') return ['dive', d];
+      if (a === 'roll') return ['run', 0];
+      if (a === 'gore') return P.gore === 'rampage' ? ['run', 0] : P.gore === 'stomp' ? ['embers', d] : ['claw', d];
+      if (a === 'trample' || a === 'plunge') return ['embers', d];
+      if (a === 'airslash') return ['claw', d];
+      if (isMp(a)) return P.mpKind === 'breath' ? ['breath', d] : P.mpKind === 'lash' ? ['lash', d] : ['embers', d];
+      return M.speed > 0.5 ? ['run', 0] : ['idle', 0];
+    }
+    return M.speed > 2 ? ['run', 0] : M.speed > 0.3 ? ['walk', 0] : ['idle', 0];
+  }
+
   function mountModelUpdate(dt) {
     beasts.forEach(b => {
       const M = b.model;
@@ -114,6 +136,7 @@
       const restart = !M.T.loops.has(name) && (act !== M.act || actT < M.actT || b.state !== M.state);
       M.act = act; M.actT = actT; M.state = b.state;
       mountPlay(M, name, dur, restart);
+      if (M.T.spin) M.root.rotation.y = b.body.rotation.y;
       M.mixer.update(dt);
     });
   }
