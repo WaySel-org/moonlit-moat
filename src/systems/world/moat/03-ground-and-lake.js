@@ -32,6 +32,19 @@
     }
     return h;
   }
+  // The top of the tallest wildland solid at (x, z), for the hero's jumps (her own collision, see heroGround);
+  // null when nothing solid is there. Solids registered without a top count as walls (Infinity).
+  function wildTop(x, z) {
+    if (Math.abs(x) < WILD.inner && Math.abs(z) < WILD.inner) return null;
+    const list = WILD.grid.get(wildKey(Math.floor(x / 8), Math.floor(z / 8))); if (!list) return null;
+    let t = null;
+    for (const o of list) {
+      if (o.h < 99) continue;
+      const inside = o.r !== undefined ? (x - o.x) * (x - o.x) + (z - o.z) * (z - o.z) < o.r * o.r : x >= o.x0 && x <= o.x1 && z >= o.z0 && z <= o.z1;
+      if (inside) t = Math.max(t === null ? -1 : t, o.top === undefined ? Infinity : o.top);
+    }
+    return t;
+  }
   // Merges already-placed geometries into one, so a whole region of stone costs a single draw call
   function mergeGeos(list) {
     const parts = list.map(g => g.index ? g.toNonIndexed() : g);

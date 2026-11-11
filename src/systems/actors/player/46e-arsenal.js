@@ -112,11 +112,11 @@
   // Two slashes then a plunge is Skyfall: a bigger landing blast. A plunge costs stamina and leaves a short landing
   // recovery ('land'), so jump-and-slam is a commitment. On a beast, Space is a pounce: it leaps forward on top of
   // steering, J swipes in the air and K is Pounce Slam.
-  P.jh = 0; P.jv = 0; P.airHits = 0;
+  P.jh = 0; P.jv = 0; P.airHits = 0; P.airFrom = 0; P.airPeak = 0;
   function jump() {
     const need = P.mount ? 12 : 14;
     if (P.jh > 0 || P.act || P.stone > 0 || G.state === 'dead' || G.state === 'won' || P.st < need) return;
-    P.jv = P.mount ? 10 : 11.5; P.jh = 0.01; P.airHits = 0; P.plunge = false; P.st -= stCost(need); P.stDelay = 0.5; sfx(P.mount ? 'roar' : 'roll');
+    P.jv = P.mount ? 10 : 11.5; P.jh = 0.01; P.airHits = 0; P.plunge = false; P.airFrom = P.airPeak = P.y; P.st -= stCost(need); P.stDelay = 0.5; sfx(P.mount ? 'roar' : 'roll');
     const mv = moveInput();
     if (P.mount) P.jdir = (mv.lengthSq() > 0 ? mv.normalize() : fwdOf(P.facing)).multiplyScalar(7);
     else P.jdir = mv.lengthSq() > 0 ? mv.normalize().multiplyScalar(6.8 * PR.speed) : new THREE.Vector3();
@@ -144,9 +144,16 @@
     } else pBody.rotation.y = 0;
     if (P.act === 'plunge' && !bt) pBody.rotation.x = -0.6;
     P.jv -= (P.plunge ? 40 : 22) * dt; P.jh += P.jv * dt;
+    P.airPeak = Math.max(P.airPeak, P.y + P.jh);
     if (P.jh > 0) return;
     P.jh = 0; P.jv = 0; pBody.rotation.set(0, 0, 0);
-    if (!P.plunge) return;
+    // How far she fell: a plunge hits harder the higher it starts (Death From Above); a long fall without one
+    // costs a short landing recovery
+    const drop = Math.max(0, P.airPeak - P.y);
+    if (!P.plunge) {
+      if (drop >= 5 && !P.mount && !P.act) { P.act = 'land'; P.actT = 0; P.actDur = 0.4; P.hitDone = true; G.shake = Math.max(G.shake, 0.3); sfx('boom'); }
+      return;
+    }
     // Landing slam, then a moment of recovery with no acting or moving. Bosses are never stunned by it, and a creep
     // at most once every three seconds.
     const sky = !bt && P.airHits >= 2, r = bt ? 5 : sky ? 4.6 : 3.4;
@@ -154,10 +161,12 @@
     G.shake = Math.max(G.shake, sky || bt ? 0.7 : 0.45); sfx('boom'); spawnSwoosh(true);
     burst(player.position.x, P.y + 0.3, player.position.z, sky || bt ? 60 : 34, sky || bt ? 9 : 6);
     kitRingFx(player.position.x, P.y, player.position.z, sky ? 0xbff6ff : bt ? 0xffd36a : 0xfff0c8);
-    if (sky || bt) floatText(bt ? 'POUNCE' : 'SKYFALL', player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', bt ? '#ffd36a' : '#bff6ff');
+    const high = Math.min(1.5, Math.max(0, drop - 3.5) / 6), hr = r + high * 1.6;
+    if (high > 0.2) floatText('DEATH FROM ABOVE', player.position.clone().add(new THREE.Vector3(0, 3.4, 0)), 'word', '#ffd36a');
+    else if (sky || bt) floatText(bt ? 'POUNCE' : 'SKYFALL', player.position.clone().add(new THREE.Vector3(0, 3, 0)), 'word', bt ? '#ffd36a' : '#bff6ff');
     liveTargets().forEach(t => {
-      if (Math.abs(t.pos.y - P.y) > 3 || flatDist(player.position, t.pos) > r + t.radius) return;
-      damageEnemy(t, bt ? bt.dmg * 1.6 * PR.dmg : (sky ? 90 : 55) * PR.dmg, sky || bt ? 60 : 35, true);
+      if (Math.abs(t.pos.y - P.y) > 3 || flatDist(player.position, t.pos) > hr + t.radius) return;
+      damageEnemy(t, (bt ? bt.dmg * 1.6 * PR.dmg : (sky ? 90 : 55) * PR.dmg) * (1 + high) * sneakMult(t), sky || bt || high > 0.2 ? 60 : 35, true);
       if (heroMinorFoe(t) && !(t.slamGuard > uTime.value)) { t.stun = Math.max(t.stun, sky ? 1.4 : 0.8); t.slamGuard = uTime.value + 3; }
     });
   }

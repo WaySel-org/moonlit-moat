@@ -306,7 +306,8 @@
     if (c.wave || c.commandT > 0 || G.royalHunt && !c.storyBoss && !c.mythic) c.leash = false;
     else if (flatDist(c.pos, c.home) > (c.ancient ? 12 : c.mythic ? 30 : 26)) c.leash = true;
     if (c.leash && flatDist(c.pos, c.home) < 3) c.leash = false;
-    const aggro = (c.wave || c.commandT > 0 || G.royalHunt && !c.storyBoss && !c.mythic ? true : c.neutral ? (c.provoked || d < 3.5) : d < (c.mythic ? 16 : 11)) && P.y < 2 && !c.leash && G.state !== 'dead' && G.state !== 'won';
+    const aggro = (c.wave || c.commandT > 0 || G.royalHunt && !c.storyBoss && !c.mythic ? true : c.neutral ? (c.provoked || d < 3.5) : d < (c.mythic ? 16 : 11)) && !heroAloft() && !c.leash && G.state !== 'dead' && G.state !== 'won';
+    c.aware = aggro || c.provoked > 0; // read by sneakMult: a creep that hasn't noticed her takes a sneak attack
     c.stun = Math.max(0, c.stun - dt);
     // A mythic's kit can take over its body (a charge, a pounce, a hook throw) and then the usual brain waits
     const busy = c.mythic && mythKit(c, dt, d);

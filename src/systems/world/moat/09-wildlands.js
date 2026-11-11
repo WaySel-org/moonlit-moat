@@ -25,8 +25,9 @@
     const k = region + ':' + mat; if (!wildBuckets.has(k)) wildBuckets.set(k, { mat, list: [] }); wildBuckets.get(k).list.push(geo);
   }
   const wbox = (region, mat, w, h, d, x, y, z, ry, rx, rz) => wpiece(region, mat, new THREE.BoxGeometry(w, h, d), x, y, z, ry, rx, rz);
-  const solidC = (x, z, r) => wildAdd({ x, z, r, h: 99 });
-  const solidB = (x0, x1, z0, z1) => wildAdd({ x0, x1, z0, z1, h: 99 });
+  // top: how tall the solid is, so the hero can jump onto or over it; left out, it is a wall
+  const solidC = (x, z, r, top) => wildAdd({ x, z, r, h: 99, top });
+  const solidB = (x0, x1, z0, z1, top) => wildAdd({ x0, x1, z0, z1, h: 99, top });
   const clearOf = (x, z, d) => !nearPuzzleSite(x, z, 3) && wildGround(x, z) === null && !WILD_CAMPS.some(([cx, cz]) => Math.hypot(cx - x, cz - z) < 6.5)
     && !WILD_CHESTS.some(([cx, cz]) => Math.hypot(cx - x, cz - z) < 2.5) && forestFree(x, z, d || 4);
   // Scatter n trees of a kind in a disc around a region, avoiding its stone, water, camp and chest
@@ -47,7 +48,7 @@
       const t = s / len; if (t > 0.42 && t < 0.58) continue;   // the pass
       const off = (sr() - 0.5) * 2, x = A[0] + dx * s - dz * off, z = A[1] + dz * s + dx * off, r = 1.3 + sr() * 1.1 + Math.sin(t * Math.PI) * 0.6;
       wpiece('ridge', 'stone', new THREE.DodecahedronGeometry(r, 0), x, r * 0.55, z, sr() * 3, sr() * 3, sr() * 3);
-      solidC(x, z, r * 0.8);
+      solidC(x, z, r * 0.8, r * 1.55);
     }
     WILD_MAP.push({ line: [A, Bp], col: 'rgba(170,175,165,0.8)' });
     // The watchtower: a stout base, a broken crown of wall blocks, a doorway, and the beacon
@@ -64,8 +65,8 @@
     wpiece('ridge', 'ember', new THREE.ConeGeometry(0.5, 1.2, 6), T.x, 7.2, T.z);
     solidC(T.x, T.z, 3.9);
     // Wall stubs running off the tower
-    wbox('ridge', 'stone', 2, 2.6, 6, 111, 1.3, 64); solidB(110, 112, 61, 67);
-    wbox('ridge', 'stone', 6, 1.8, 2, 99, 0.9, 77); solidB(96, 102, 76, 78);
+    wbox('ridge', 'stone', 2, 2.6, 6, 111, 1.3, 64); solidB(110, 112, 61, 67, 2.6);
+    wbox('ridge', 'stone', 6, 1.8, 2, 99, 0.9, 77); solidB(96, 102, 76, 78, 1.8);
     WILD_MAP.push({ x: T.x, z: T.z, r: 3.9, col: 'rgba(200,200,190,0.75)' });
     grove(R, 14, 'pine', 12, 30, 6);
   }
@@ -81,9 +82,9 @@
       WILD_MAP.push({ x, z, r, col: 'rgba(80,120,150,0.6)' });
     });
     // The drowned shrine: two pillars, one snapped, and a fallen lintel
-    wbox('fen', 'dark', 0.9, 4, 0.9, 89, 2, -69); solidC(89, -69, 0.75);
-    wbox('fen', 'dark', 0.9, 2.2, 0.9, 93, 1.1, -69, 0, 0, 0.12); solidC(93, -69, 0.75);
-    wbox('fen', 'dark', 0.6, 0.7, 4.8, 91.2, 0.3, -66.6, 0.5, 0, 0.2); solidC(91.2, -66.6, 1.2);
+    wbox('fen', 'dark', 0.9, 4, 0.9, 89, 2, -69); solidC(89, -69, 0.75, 4);
+    wbox('fen', 'dark', 0.9, 2.2, 0.9, 93, 1.1, -69, 0, 0, 0.12); solidC(93, -69, 0.75, 2.2);
+    wbox('fen', 'dark', 0.6, 0.7, 4.8, 91.2, 0.3, -66.6, 0.5, 0, 0.2); solidC(91.2, -66.6, 1.2, 0.7);
     grove(R, 16, 'dead', 4, 26, 4.5);
     grove(R, 12, 'dark', 18, 32, 6);
     // Reeds round the pool rims, one instanced mesh
@@ -128,7 +129,7 @@
       const a = i / 9 * TAU + 0.2, x = R.x + Math.cos(a) * 9, z = R.z + Math.sin(a) * 9;
       const h = (i === 0 || i === 1 || i === 4 || i === 5) ? 4.2 : 3.2 + sr() * 1.6, lean = (i === 7) ? 0.32 : (sr() - 0.5) * 0.1;
       wbox('barrow', 'stone', 1.4, h, 0.8, x, h / 2, z, Math.PI / 2 - a, lean, 0);
-      solidC(x, z, 0.95);
+      solidC(x, z, 0.95, h);
     }
     [[0, 1], [4, 5]].forEach(([i, j]) => {
       const a = (i + j) / 2 / 9 * TAU + 0.2, x = R.x + Math.cos(a) * 8.9, z = R.z + Math.sin(a) * 8.9;
@@ -144,7 +145,7 @@
       wbox('barrow', 'stone', 0.5, 1.8, 0.5, x + dx * d - px * 0.9, 0.9, z + dz * d - pz * 0.9, f);
       wbox('barrow', 'stone', 2.4, 0.45, 0.6, x + dx * d, 2.0, z + dz * d, f);
       wbox('barrow', 'void', 1.3, 1.6, 0.2, x + dx * (d - 0.15), 0.8, z + dz * (d - 0.15), f);
-      solidC(x, z, r * 0.95);
+      solidC(x, z, r * 0.95, r * 0.45); // a low dome: she can hop up and stand on it
       WILD_MAP.push({ x, z, r, col: 'rgba(80,110,70,0.75)' });
     });
     WILD_MAP.push({ x: R.x, z: R.z, r: 9, ring: true, col: 'rgba(200,184,255,0.8)' });
@@ -158,7 +159,7 @@
     for (let k = 0; k <= N; k++) {
       const z = Z0 + k * STEP, h = pierH(k);
       wbox('aqueduct', 'sand', 3, h, 1.6, AX, h / 2, z, 0, 0, broken(k) ? 0.08 : 0);
-      solidB(AX - 1.6, AX + 1.6, z - 0.9, z + 0.9);
+      solidB(AX - 1.6, AX + 1.6, z - 0.9, z + 0.9, h);
       if (k === N) break;
       const z1 = z + STEP, zm = (z + z1) / 2, whole = !broken(k) && !broken(k + 1) && pierH(k) === H && pierH(k + 1) === H;
       if (!whole) continue;
@@ -175,7 +176,7 @@
     // Fallen blocks from the broken span (the bigger ones block the way)
     [[-118, 0, 1.6, 1.1, 2.4, 0.5], [-117.5, 7.5, 2.2, 1.2, 1.4, 1.1], [-111.5, 6, 1.4, 0.9, 2.8, 0.3], [-119.5, 3.5, 1.2, 0.8, 1.2, 2.2], [-112, -1.5, 1.0, 0.7, 1.4, 0.9]].forEach(([x, z, w, h, d, ry]) => {
       wbox('aqueduct', 'sand', w, h, d, x, h / 2 - 0.05, z, ry, (sr() - 0.5) * 0.3, (sr() - 0.5) * 0.3);
-      if (w * d > 2) solidC(x, z, Math.max(w, d) * 0.5);
+      if (w * d > 2) solidC(x, z, Math.max(w, d) * 0.5, h);
     });
     WILD_MAP.push({ x0: AX - 1.5, x1: AX + 1.5, z0: Z0, z1: Z0 + N * STEP, col: 'rgba(200,190,160,0.7)' });
     grove(R, 12, 'pine', 10, 30, 6);

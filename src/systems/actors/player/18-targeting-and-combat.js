@@ -26,14 +26,42 @@
   function damageEnemy(t, dmg, poiseDmg, heavy) { if (t.isWarden) damageBoss(dmg, poiseDmg, heavy); else if (t.isCreep) damageCreep(t, dmg, poiseDmg, heavy); else if (t.isRaider) damageRaider(t, dmg, poiseDmg, heavy); else damageRoyal(t, dmg, poiseDmg, heavy); }
 
   // Moves the player, sliding along walls and refusing ledges taller than a step
-  function movePlayer(dx, dz) {
-    const p = player.position;
-    const ok = (x, z) => { const h = groundAt(x, z); return Math.abs(h - P.y) <= 0.6 ? h : null; };
-    let h = ok(p.x + dx, p.z + dz);
-    if (h !== null) { p.x += dx; p.z += dz; P.y = h; return; }
-    h = ok(p.x + dx, p.z); if (h !== null) { p.x += dx; P.y = h; return; }
-    h = ok(p.x, p.z + dz); if (h !== null) { p.z += dz; P.y = h; }
+  // What the hero stands on at (x, z): the walkable height, the top of a solid she can get onto, or null for a wall.
+  // Only the moat's solids have heights (solidTop); other worlds' solids stay walls.
+  function heroGround(x, z) {
+    const h = groundAt(x, z);
+    if (h < 50) return h;
+    return G.world === 'moat' ? solidTop(x, z) : null;
   }
+  // Obstacles only block up to their height: she steps up 0.6 m, gets onto anything her feet clear in a jump, and
+  // steps off any edge, which starts a fall (P.jh is her height above P.y, the ground under her)
+  function movePlayer(dx, dz) {
+    const p = player.position, feet = P.y + Math.max(0, P.jh);
+    const ok = (x, z) => { const h = heroGround(x, z); return h !== null && h <= feet + 0.6 ? h : null; };
+    const go = h => {
+      if (P.jh <= 0 && h >= P.y - 0.6) { P.y = h; return; }
+      if (P.jh <= 0) {
+        const mv = moveInput(); P.airFrom = P.airPeak = P.y; P.airHits = 0; P.plunge = false;
+        P.jdir = mv.lengthSq() > 0 ? mv.normalize().multiplyScalar(6.8 * PR.speed) : new THREE.Vector3();
+      }
+      P.jh = Math.max(0, feet - h); P.y = h;
+      if (P.jh > 0 && P.jv === 0) P.jv = -0.01;
+    };
+    let h = ok(p.x + dx, p.z + dz);
+    if (h !== null) { p.x += dx; p.z += dz; go(h); return; }
+    h = ok(p.x + dx, p.z); if (h !== null) { p.x += dx; go(h); return; }
+    h = ok(p.x, p.z + dz); if (h !== null) { p.z += dz; go(h); }
+  }
+  // A melee hit or a plunge on a creep that hasn't noticed her: double damage, 1.5x on a mythic or godling.
+  // The hit wakes it, and each creep can be caught off guard once every 30 s (a creep walking home is unaware too).
+  function sneakMult(t) {
+    if (!t.isCreep || t.aware || !t.alive || t.sneakGuard > uTime.value) return 1;
+    t.aware = true; t.sneakGuard = uTime.value + 30;
+    floatText('SNEAK ATTACK', t.pos.clone().add(new THREE.Vector3(0, 2.6, 0)), 'word', '#c8a9ff');
+    return t.mythic || t.ai === 'godling' ? 1.5 : 2;
+  }
+  // Seen from below? Creeps don't notice her up high, or while she drops from a height
+  const heroAloft = () => (P.jh > 0 ? P.airFrom : P.y) >= 2;
   // On a beast the four skill keys use its powers: Y mp3, U mp1, I mp4, O mp2
   const MOUNT_SLOT_OF = { throw: 'mp3', cast: 'mp1', volley: 'mp4', leap: 'mp2' };
   function tryBuffered() {
@@ -74,7 +102,7 @@
       const d = flatDist(player.position, t.pos);
       const ang = Math.abs(angDiff(P.facing, yawTo(player.position, t.pos)));
       if (d > range + t.radius || ang > arc / 2) return;
-      strike(t, dmg * PR.dmg * (G.env.dmg || 1), poiseDmg, heavy); gearOnHit(dmg * PR.dmg);
+      strike(t, dmg * PR.dmg * (G.env.dmg || 1) * sneakMult(t), poiseDmg, heavy); gearOnHit(dmg * PR.dmg);
     });
   }
   function damageBoss(dmg, poiseDmg, heavy) {
