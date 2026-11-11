@@ -3,7 +3,7 @@
   // keyAct() turns a pressed key back into the id, so press(), the keys set, touch buttons and moveInput never see rebinding.
   const ACTIONS = [
     ['Move', [['KeyW', 'Forward'], ['KeyS', 'Back'], ['KeyA', 'Left'], ['KeyD', 'Right'], ['Space', 'Jump'], ['KeyL', 'Roll']]],
-    ['Combat', [['KeyJ', 'Attack'], ['KeyK', 'Heavy attack'], ['ShiftLeft', 'Block / parry'], ['KeyH', 'Blade Spin'], ['KeyR', 'Lock camera'], ['KeyT', 'Next target']]],
+    ['Combat', [['KeyJ', 'Attack'], ['KeyK', 'Heavy attack'], ['ShiftLeft', 'Block / parry'], ['KeyH', 'Blade Spin'], ['KeyG', 'Moonhook'], ['KeyR', 'Lock camera'], ['KeyT', 'Next target']]],
     ['Skills', [['KeyY', 'Dagger'], ['KeyU', 'Moon bolt'], ['KeyI', 'Arc Volley'], ['KeyO', "Warden's Leap"], ['KeyF', 'Drink flask']]],
     ['World', [['KeyE', 'Use / ride'], ['KeyQ', 'Spirit realm'], ['KeyB', 'Bag'], ['KeyN', 'Upgrade sword'], ['KeyP', 'Hero sheet'], ['KeyM', 'Map']]]
   ];
@@ -74,6 +74,7 @@
       out.push(kbd('KeyY') + ' dagger', kbd('KeyU') + ' bolt'); // the skill bar never locks these two
       if (PR.level >= 3) out.push(kbd('KeyI') + ' volley');
       if (PR.warden) out.push(kbd('KeyO') + ' leap');
+      if (PR.level >= HOOK_LV) out.push(kbd('KeyG') + ' hook');
       if (PR.level >= SPIN_LV) out.push(kbd('KeyH') + ' spin');
     }
     out.push(kbd('Space') + ' jump', kbd('KeyL') + ' roll', kbd('ShiftLeft') + ' block');
@@ -106,6 +107,7 @@
     ctlBox.innerHTML = '<h3>Controls</h3><p class="cnote" aria-live="polite">' + esc(ctlNote || (capAct ? 'Press a key for this action. Esc cancels.' : 'Click a key to change it.')) + '</p>' +
       ACTIONS.map(([g, list]) => `<div class="cgrp"><h4>${g}</h4>` + list.map(([id, name]) =>
         `<div class="crow"><span>${esc(name)}</span><button type="button" data-act="${id}" class="ckey${capAct === id ? ' cap' : ''}"${capAct === id ? ' aria-pressed="true"' : ''} aria-label="${esc(name)}: ${esc(keyLabel(id))}. Change key">${capAct === id ? '…' : esc(keyLabel(id))}</button></div>`).join('') + '</div>').join('') +
+      '<label class="chk"><input type="checkbox" id="cktap"' + (slideTap ? ' checked' : '') + '> Double-tap a direction to slide</label>' +
       '<p class="cnote">Arrow keys always move. X also rolls. Esc pauses.</p><button type="button" id="ckreset">Reset to defaults</button>';
     if (capAct) { const b = ctlBox.querySelector('.cap'); if (b) b.focus(); }
   }
@@ -123,6 +125,7 @@
       renderControls();
     });
   }
+  if (ctlBox) ctlBox.addEventListener('change', ev => { if (ev.target.id === 'cktap') { setSlideTap(ev.target.checked); ev.target.blur(); } });
   // Capture runs before the game's keydown (capture phase), so Esc cancels the rebind instead of unpausing
   let eatUp = null;
   window.addEventListener('keydown', ev => {

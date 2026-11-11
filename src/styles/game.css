@@ -235,7 +235,7 @@ body.touch #tacts { display: block; position: fixed; right: calc(8px + env(safe-
 #tacts .t-s1 { right: 210px; bottom: 36px; } #tacts .t-s2 { right: 187px; bottom: 124px; }
 #tacts .t-s3 { right: 124px; bottom: 187px; } #tacts .t-s4 { right: 36px; bottom: 210px; }
 /* Blade Spin sits in the top-left corner of the action square, clear of the skill arc */
-#tacts .t-s5 { right: 210px; bottom: 210px; }
+#tacts .t-s5 { right: 210px; bottom: 210px; } #tacts .t-s6 { right: 124px; bottom: 270px; }
 body.touch #tmisc { display: flex; position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); gap: 6px; flex-wrap: wrap; justify-content: center; max-width: calc(100vw - 600px); min-width: 180px; z-index: 3; }
 #tmisc button, #tops button { border-radius: 6px; font-size: 11px; padding: 0 12px; height: 40px; min-width: 56px; }
 body.touch #tops { display: flex; gap: 6px; position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); right: calc(146px + env(safe-area-inset-right, 0px)); z-index: 3; }

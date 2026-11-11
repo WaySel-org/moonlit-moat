@@ -10,6 +10,7 @@
     else if (code === 'Space') jump();
     else if (code === 'KeyL' || code === 'KeyX') request('roll');
     else if (code === 'KeyH') request('spin');
+    else if (code === 'KeyG') request('hook');
     else if (code === 'KeyF') request('drink');
     else if (code === 'KeyY') request('throw');
     else if (code === 'KeyU') request('cast');
@@ -40,6 +41,7 @@
     if (!c) return;
     ev.preventDefault();
     if (ev.repeat) return;
+    dirTap(c);
     press(c);
   });
   window.addEventListener('keyup', ev => { const c = keyAct(ev.code); if (c) keys.delete(c); });

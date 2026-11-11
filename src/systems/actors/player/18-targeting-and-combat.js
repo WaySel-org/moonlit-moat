@@ -39,7 +39,7 @@
   function tryBuffered() {
     if (!P.buffer) return;
     if (P.mount && MOUNT_SLOT_OF[P.buffer]) P.buffer = MOUNT_SLOT_OF[P.buffer];
-    const name = P.buffer, follow = rollFollow(name);
+    const name = P.buffer, follow = rollFollow(name) || slideFollow(name);
     if (follow) {
       if (P.act) { P.act = null; pBody.rotation.x = 0; pBody.position.y = 0; }
       P.rollWin = 0; if (startAct(follow)) P.buffer = null;
@@ -53,6 +53,8 @@
       if (name === 'volley') { if (PR.level < 3) return say('Arc Volley unlocks at level 3', '#ffd36a'); if (P.cd.v > 0) { P.buffer = null; return; } if (P.mana < 50) return say('not enough mana'); }
       if (isMp(name)) { if (!P.mount) { P.buffer = null; return; } const pw = MOUNT_POWERS[P.mount.type][name]; if (P.cd[name] > 0) { P.buffer = null; return; } if (P.mana < pw.mana) return say('not enough mana'); }
       if (name === 'spin') { if (PR.level < SPIN_LV) return say(`Blade Spin unlocks at level ${SPIN_LV}`, '#ffd36a'); if (P.mount) return say('Not while riding', '#ffd36a'); if (P.cd.h > 0) { P.buffer = null; return; } if (P.mana < SPIN_MANA) return say('not enough mana'); }
+      if (name === 'slide' && (P.mount || P.st < 4)) { P.buffer = null; return; }
+      if (name === 'hook') { if (PR.level < HOOK_LV) return say(`Moonhook unlocks at level ${HOOK_LV}`, '#ffd36a'); if (P.mount) return say('Not while riding', '#ffd36a'); if (P.cd.g > 0) { P.buffer = null; return; } if (P.mana < HOOK_MANA) return say('not enough mana'); }
       if (name === 'leap') { if (!PR.warden) return say("Beat the Warden to learn this", '#ffd36a'); if (P.cd.x > 0) { P.buffer = null; return; } if (P.mana < 25) return say('not enough mana'); }
       if (name === 'drink') { P.flasks--; }
       if (name !== 'light') P.combo = 0;
