@@ -17,6 +17,9 @@
       if (G.world === 'moat' && P.y < 1 && groundAt(player.position.x, player.position.z) >= 99) {
         const c = MAZE.cell; player.position.x = MAZE.x0 + (Math.floor((player.position.x - MAZE.x0) / c) + 0.5) * c; player.position.z = MAZE.z0 + (Math.floor((player.position.z - MAZE.z0) / c) + 0.5) * c;
       }
+      // Standing on a hedge that just moved away: she drops
+      const hg = G.world === 'moat' && P.jh <= 0 ? heroGround(player.position.x, player.position.z) : null;
+      if (hg !== null && hg < P.y - 0.05) { P.jh = P.y - hg; P.y = hg; P.jv = -0.01; P.airFrom = P.airPeak = P.y + P.jh; }
       if (ui.banner.hidden || ui.banner.className === 'title') { showBanner(G.env.name, `World tier ${tier}. ${G.env.note}${G.world === 'moat' ? ' The hedge maze has shifted.' : ''}`, 'title'); bannerTimer = 4; }
     }
     // Ease the sky, fog and moon toward the current environment

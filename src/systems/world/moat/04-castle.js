@@ -82,6 +82,23 @@
     return 0;
   }
 
+  // How tall the solid at (x, z) is, where groundAt says 99, so the hero can jump onto or over low things and drop
+  // off high ones. null is a wall she can never clear: the edge, the rear keep, the corner towers, the warded stairs.
+  const HEDGE_TOP = 1.7, PARAPET_TOP = ROOF.y + 0.9;
+  function solidTop(x, z) {
+    const LIM = G.realm === 'spirit' ? Math.max(116, G.edge + 20) : G.edge;
+    if (Math.abs(x) > LIM || z > LIM - 8 || z < -LIM) return null;
+    if (G.realm !== 'spirit' && mazeSolid(x, z)) return HEDGE_TOP;
+    for (const tx of [-17, 17]) if (Math.hypot(x - tx, z + 21) < 3.2) return null;
+    for (const px of [-2.9, 2.9]) if (Math.abs(x - px) < 0.45 && Math.abs(z + 18.4) < 0.45) return 5.4;
+    if (z >= -20 && z <= STAIR_Z1) for (const s of STAIRS) { const t = (x - s.x0) / (s.x1 - s.x0); if (t >= 0 && t <= 1) return null; }
+    if (z < -20 && z > -36 && Math.abs(x) <= 15.5) {
+      if (z < -30) return Math.abs(x) <= 6.2 ? null : 0;   // the rear keep; beside it, open ground behind the hall
+      return PARAPET_TOP;                                   // the hall's side parapets
+    }
+    return wildTop(x, z);
+  }
+
   const torches = [];
   [-3.4, 3.4].forEach(x => {
     box(0.3, 0.5, 0.6, x, 3.9, -19.8, dark);
