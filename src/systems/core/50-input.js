@@ -47,12 +47,18 @@
   window.addEventListener('keyup', ev => { const c = keyAct(ev.code); if (c) keys.delete(c); });
   window.addEventListener('blur', () => keys.clear());
 
-  let yaw = 0, drag = null;
+  // Drag sideways to turn the camera; drag up to look up at the sky (pitch 0..1), down to come back.
+  // The look-up eases back down once she moves or a fight starts (see the camera in core/53-loop).
+  let yaw = 0, pitch = 0, drag = null;
   const cv = renderer.domElement;
-  cv.addEventListener('pointerdown', ev => { drag = { x: ev.clientX, x0: ev.clientX, t: performance.now() }; cv.setPointerCapture(ev.pointerId); audio(); });
-  cv.addEventListener('pointermove', ev => { if (drag) { if (!G.lock) yaw -= (ev.clientX - drag.x) * 0.006; drag.x = ev.clientX; } });
+  cv.addEventListener('pointerdown', ev => { drag = { x: ev.clientX, y: ev.clientY, x0: ev.clientX, y0: ev.clientY, t: performance.now() }; cv.setPointerCapture(ev.pointerId); audio(); });
+  cv.addEventListener('pointermove', ev => {
+    if (!drag) return;
+    if (!G.lock) { yaw -= (ev.clientX - drag.x) * 0.006; if (G.state === 'explore' || G.state === 'interlude') pitch = clamp(pitch + (drag.y - ev.clientY) * 0.004, 0, 1); }
+    drag.x = ev.clientX; drag.y = ev.clientY;
+  });
   cv.addEventListener('pointerup', ev => {
-    if (drag && Math.abs(ev.clientX - drag.x0) < 6 && performance.now() - drag.t < 300 && ev.pointerType === 'mouse') press('KeyJ');
+    if (drag && Math.abs(ev.clientX - drag.x0) < 6 && Math.abs(ev.clientY - drag.y0) < 6 && performance.now() - drag.t < 300 && ev.pointerType === 'mouse') press('KeyJ');
     drag = null;
   });
   cv.addEventListener('pointercancel', () => { drag = null; });

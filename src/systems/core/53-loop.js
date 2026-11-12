@@ -112,6 +112,12 @@
     const wantPos = head.clone().lerp(ideal, camPull).add(new THREE.Vector3(0, (1 - camPull) * 1.5, 0));
     const wantLook = player.position.clone().addScaledVector(cf, 3.5 * camPull).setY(camBase + 1.2 + (body - camBase) * 0.5);
     // Story glances (Season 1): turn the view up toward the moon for a moment
+    // Free look: the player dragged the view up toward the sky; it eases down once she moves or fights
+    if (pitch > 0) {
+      if (inFight || moveInput().lengthSq() > 0.01) pitch = Math.max(0, pitch - real * 0.8);
+      const e = 0.12 + 0.75 * pitch, up = camPos.clone().add(cf.clone().multiplyScalar(Math.cos(e) * 20)).add(new THREE.Vector3(0, Math.sin(e) * 20, 0));
+      wantLook.lerp(up, Math.min(1, pitch * 1.4));
+    }
     const gz = seasonGaze();
     // Aim a little under the moon so it sits above the centre banner
     if (gz > 0) wantLook.lerp(camPos.clone().add(moon.position.clone().setY(moon.position.y - 45).sub(camPos).normalize().multiplyScalar(20)), gz);

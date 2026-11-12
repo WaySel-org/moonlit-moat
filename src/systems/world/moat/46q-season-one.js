@@ -38,7 +38,7 @@
   // At this distance the depth buffer can't separate the layers, so draw order decides (all in the transparent pass)
   rays.renderOrder = 7; lid.renderOrder = 8; pupil.renderOrder = 9;
   const haloBase = halo.scale.x, haloCol = halo.material.color.clone();
-  const SKY_HOR = new THREE.Vector3(0.42, 0.07, 0.0), SKY_ZEN = new THREE.Vector3(0.012, 0.0, 0.0), eyeCol = new THREE.Color(EYE_ORANGE);
+  const SKY_HOR = new THREE.Vector3(0.05, 0.01, 0.0), SKY_ZEN = new THREE.Vector3(0.0, 0.0, 0.0), eyeCol = new THREE.Color(EYE_ORANGE);
   let lightBase = null;
   eye.scale.y = 0.03; eye.visible = false;
 
@@ -79,6 +79,7 @@
     if (lightBase === null) lightBase = moonLight.color.clone();
     moonLight.color.copy(lightBase).lerp(eyeCol, o * 0.8);
     halo.material.color.copy(haloCol).lerp(eyeCol, o);
+    postU.uEye.value = o;
     if (o > 0.02) { skyU.uHor.value.lerp(SKY_HOR, o * 0.2); skyU.uZen.value.lerp(SKY_ZEN, o * 0.2); }
 
     // The wedding opening, once per save, after any banner already up has gone

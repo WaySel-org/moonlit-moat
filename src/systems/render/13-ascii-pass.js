@@ -6,13 +6,13 @@
   const postU = {
     tScene: { value: sceneRT.texture }, tMask: { value: maskRT.texture }, tAtlas: { value: null }, uRes: { value: new THREE.Vector2(1, 1) },
     uCell: { value: 8 }, uCount: { value: RAMP.length }, uTotal: { value: RAMP.length + EDGE.length },
-    uMode: { value: S.mode }, uPal: { value: 0 }, uEdges: { value: 1 }, uGain: { value: S.gain }, uLine: { value: DPR }, uSpirit: { value: 0 }, uTime
+    uMode: { value: S.mode }, uPal: { value: 0 }, uEdges: { value: 1 }, uGain: { value: S.gain }, uLine: { value: DPR }, uSpirit: { value: 0 }, uEye: { value: 0 }, uTime
   };
   const postMat = new THREE.ShaderMaterial({
     uniforms: postU, depthTest: false, depthWrite: false,
     vertexShader: `void main(){ gl_Position = vec4(position.xy, 0.0, 1.0); }`,
     fragmentShader: `uniform sampler2D tScene; uniform sampler2D tMask; uniform sampler2D tAtlas; uniform sampler2D tBloom; uniform float uBloom; uniform vec2 uRes;
-      uniform float uCell, uCount, uTotal, uMode, uPal, uEdges, uGain, uLine, uSpirit, uTime;
+      uniform float uCell, uCount, uTotal, uMode, uPal, uEdges, uGain, uLine, uSpirit, uEye, uTime;
       float L(vec3 c){ return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
       // Enhanced raw view: glow, a filmic curve, a touch more colour and a soft vignette
       vec3 grade(vec3 c, vec2 fc){
@@ -28,12 +28,26 @@
         return 0.25 * (texture2D(tScene, (b + vec2(q, q)) / uRes).rgb + texture2D(tScene, (b + vec2(3.0*q, q)) / uRes).rgb
                      + texture2D(tScene, (b + vec2(q, 3.0*q)) / uRes).rgb + texture2D(tScene, (b + vec2(3.0*q, 3.0*q)) / uRes).rgb);
       }
+      // The eye's night (Season 1): two tones, burning orange and black. Mid tones break into short staggered dashes;
+      // the eye and its rays stay solid; heroes and enemies (imp) keep their own colour
+      vec3 eyeTone(vec3 c, vec2 fc, float imp){
+        vec3 O = vec3(1.0, 0.27, 0.05);
+        if (c.r > 0.7 && c.g < 0.5 && c.b < 0.3) return O;
+        float l = clamp(L(c) * 1.7, 0.0, 1.0);
+        vec2 cell = vec2(5.0, 14.0) * uLine;
+        float col = floor(fc.x / cell.x), h = fract(sin(col * 91.7) * 43758.5453);
+        vec2 f = vec2(fract(fc.x / cell.x), fract(fc.y / cell.y + h));
+        float dash = step(0.3, f.x) * step(f.x, 0.7) * step(0.2, f.y) * step(f.y, 0.8);
+        vec3 t = l > mix(0.78, 0.1 + 0.22 * h, dash) ? O : vec3(0.0);
+        return mix(c, t, uEye * (1.0 - imp));
+      }
+      float impAt(vec2 fc){ vec2 mk = texture2D(tMask, fc / uRes).rg; return max(step(0.5, mk.r), step(0.5, mk.g)); }
       float cellL(vec2 ci){ return L(texture2D(tScene, (ci + 0.5) * uCell / uRes).rgb) * uGain; }
       void main(){
         vec2 fc = gl_FragCoord.xy;
         float splitX = uRes.x * 0.5;
         if (uMode > 0.5 && uMode < 1.5 && abs(fc.x - splitX) < uLine) { gl_FragColor = vec4(0.94, 0.9, 0.76, 1.0); return; }
-        if (uMode > 1.5 || (uMode > 0.5 && fc.x < splitX)) { gl_FragColor = vec4(grade(texture2D(tScene, fc / uRes).rgb, fc), 1.0); return; }
+        if (uMode > 1.5 || (uMode > 0.5 && fc.x < splitX)) { vec3 rc = grade(texture2D(tScene, fc / uRes).rgb, fc); if (uEye > 0.001) rc = eyeTone(rc, fc, impAt(fc)); gl_FragColor = vec4(rc, 1.0); return; }
         vec2 ci = floor(fc / uCell);
         // In the spirit realm the world sways like a dream; gameplay stays put
         vec2 wfc = fc + uSpirit * vec2(sin(fc.y * 0.018 + uTime * 1.3) * 12.0, cos(fc.x * 0.014 + uTime * 0.9) * 8.0) * (uRes.y / 900.0);
@@ -93,7 +107,8 @@
             rain = vec3(0.55, 0.95, 1.0) * rm * trail * 0.5 * uSpirit;
           }
         }
-        gl_FragColor = vec4(bg + tint * m + rain, 1.0);
+        vec3 oc = bg + tint * m + rain; if (uEye > 0.001) oc = eyeTone(oc, fc, imp);
+        gl_FragColor = vec4(oc, 1.0);
       }`
   });
   const postScene = new THREE.Scene();
