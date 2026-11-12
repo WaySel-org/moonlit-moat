@@ -1,7 +1,7 @@
   // ---------- Season 1, The Broken Wedding (owned by the Loremaster with the Shardkeeper of the Moat) ----------
   // The story ships in seasons (lore/seasons.md). STORY_SEASON is the released season; later seasons' beats check it.
   // Season 1: the moon cracked at the queens' wedding, and an eye split by the crack watches the Wanderer.
-  //  - The cracked moon: a dark half and a jagged crack over the moon, with an eye that opens and follows the hero
+  //  - The cracked moon: a dark half and a jagged crack over the moon. An orange eye opens in its place, follows the hero
   //    when the queens rise again, when they hunt, and at the season's ending.
   //  - The wedding opening: one banner the first time a save meets Season 1.
   //  - The brides' lucid lines: after each fall, the real queen breaks through for one line.
@@ -15,23 +15,31 @@
   const moonFace = new THREE.Group(); moonFace.position.copy(moon.position); moonFace.lookAt(0, 6, 0); scene.add(moonFace);
   const darkHalf = new THREE.Mesh(new THREE.CircleGeometry(9.05, 40, -Math.PI / 2, Math.PI), bas(0x0c0a12, { transparent: true, opacity: 0.86, depthWrite: false }));
   darkHalf.position.z = 9.1; moonFace.add(darkHalf);
-  const crackM = bas(0x08060c);
+  const crackM = bas(0x08060c), cracks = [];
   [[0.3, 8.6, -0.5], [-0.6, 5.2, 0.4], [0.5, 1.6, -0.35], [-0.4, -2.0, 0.45], [0.4, -5.4, -0.4], [-0.2, -8.2, 0.3]].forEach(([x, y, r]) => {
-    const seg = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 3.9), crackM); seg.position.set(x, y, 9.6); seg.rotation.z = r; seg.renderOrder = 6; moonFace.add(seg);
+    const seg = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 3.9), crackM); seg.position.set(x, y, 9.6); seg.rotation.z = r; seg.renderOrder = 6; moonFace.add(seg); cracks.push(seg);
   });
-  // The eye sits at the centre of the moon, across both halves, and the crack runs down through it;
-  // its lids are a vertical scale from shut (a sliver) to open
-  // The moon swells while the eye is open (moon, halo and face scale together)
-  const eye = new THREE.Group(); eye.position.set(0, 0, 9.3); moonFace.add(eye);
+  // The eye: an almond of burning orange with a round black pupil, centred on the moon across both halves, the
+  // crack running out above and below it. When it opens it takes the moon's place, dashes stream out across
+  // the sky from it, and the night turns orange and black. Its lids are a vertical scale from shut to open.
+  const EYE_ORANGE = 0xff4a12;
   const eyeM = (c, o) => bas(c, Object.assign({ fog: false }, o));
-  const rim = new THREE.Mesh(new THREE.CircleGeometry(4.6, 40), eyeM(0x7a0c10)); rim.scale.y = 0.62; eye.add(rim);
-  const sclera = new THREE.Mesh(new THREE.CircleGeometry(4.2, 40), eyeM(0xf2e4cc)); sclera.scale.y = 0.6; sclera.position.z = 0.03; eye.add(sclera);
-  const iris = new THREE.Group(); iris.position.z = 0.06; eye.add(iris);
-  iris.add(new THREE.Mesh(new THREE.CircleGeometry(2.1, 32), eyeM(0xff2a1e)));
-  const pupil = new THREE.Mesh(new THREE.CircleGeometry(0.95, 24), eyeM(0x040304)); pupil.position.z = 0.05; iris.add(pupil);
-  // At this distance the depth buffer can't separate the layers, so draw order decides: rim, white, iris, pupil, crack
-  [rim, sclera, iris.children[0], pupil].forEach((m, i) => { m.renderOrder = 2 + i; });
-  const haloBase = halo.scale.x;
+  const eye = new THREE.Group(); eye.position.set(0, 0, 9.3); moonFace.add(eye);
+  const almond = new THREE.Shape(); almond.moveTo(-8.5, 0); almond.quadraticCurveTo(0, 6.4, 8.5, 0); almond.quadraticCurveTo(0, -6.4, -8.5, 0);
+  const lid = new THREE.Mesh(new THREE.ShapeGeometry(almond, 24), eyeM(EYE_ORANGE, { transparent: true })); eye.add(lid);
+  const pupil = new THREE.Mesh(new THREE.CircleGeometry(2.3, 32), eyeM(0x000000, { transparent: true })); pupil.position.z = 0.05; eye.add(pupil);
+  // Dashes streaming outward from the eye across the sky, each one stretched along its ray
+  const RAYS = 1600, RAY_IN = 7, RAY_OUT = 230;
+  const rays = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.4, 1), eyeM(EYE_ORANGE, { transparent: true, opacity: 0, depthWrite: false }), RAYS);
+  rays.position.z = 8.8; rays.frustumCulled = false; rays.visible = false; moonFace.add(rays);
+  const rayA = new Float32Array(RAYS), rayR = new Float32Array(RAYS), rayS = new Float32Array(RAYS);
+  for (let i = 0; i < RAYS; i++) { rayA[i] = Math.random() * TAU; rayR[i] = Math.random(); rayS[i] = 0.6 + Math.random() * 0.8; }
+  const rayO = new THREE.Object3D();
+  // At this distance the depth buffer can't separate the layers, so draw order decides (all in the transparent pass)
+  rays.renderOrder = 7; lid.renderOrder = 8; pupil.renderOrder = 9;
+  const haloBase = halo.scale.x, haloCol = halo.material.color.clone();
+  const SKY_HOR = new THREE.Vector3(0.42, 0.07, 0.0), SKY_ZEN = new THREE.Vector3(0.012, 0.0, 0.0), eyeCol = new THREE.Color(EYE_ORANGE);
+  let lightBase = null;
   eye.scale.y = 0.03; eye.visible = false;
 
   function moonEyeOpen(secs) { if (STORY_SEASON < 1) return; S1.want = Math.max(S1.want, secs); }
@@ -49,11 +57,29 @@
     if (G.state !== 'explore' && G.state !== 'interlude') S1.glance = 0;
     S1.gz += ((S1.glance > 0 && G.world === 'moat' ? 0.85 : 0) - S1.gz) * Math.min(1, real * 1.6);
     if (S1.gz < 0.002) S1.gz = 0;
-    eye.visible = S1.open > 0.02; eye.scale.y = Math.max(0.03, S1.open);
-    const swell = 1 + 0.7 * S1.open; moon.scale.setScalar(swell); moonFace.scale.setScalar(swell); halo.scale.set(haloBase * swell, haloBase * swell, 1);
+    const o = G.world === 'moat' ? S1.open : 0;
+    eye.visible = o > 0.02; eye.scale.y = Math.max(0.03, o);
+    const swell = 1 + 0.7 * o; moon.scale.setScalar(swell); moonFace.scale.setScalar(swell); halo.scale.set(haloBase * swell, haloBase * swell, 1);
     const p = player.position;
-    iris.position.x = clamp(p.x / 70, -1, 1) * 1.6; iris.position.y = clamp(-p.z / 140, -1, 1) * 0.5;
-    darkHalf.visible = G.world === 'moat';
+    pupil.position.x = clamp(p.x / 70, -1, 1) * 2.4; pupil.position.y = clamp(-p.z / 140, -1, 1) * 0.8;
+    // The moon gives way to the eye
+    const moonGone = o > 0.35; moon.visible = !moonGone; darkHalf.visible = !moonGone && G.world === 'moat'; cracks.forEach(s => { s.visible = !moonGone; });
+    // The dashes stream outward, longer and faster the further they get
+    rays.visible = o > 0.02; rays.material.opacity = o;
+    if (rays.visible) {
+      for (let i = 0; i < RAYS; i++) {
+        rayR[i] = (rayR[i] + real * 0.09 * rayS[i]) % 1;
+        const f = rayR[i], r = RAY_IN + (RAY_OUT - RAY_IN) * f * f, a = rayA[i];
+        rayO.position.set(Math.cos(a) * r, Math.sin(a) * r * 0.85, 0); rayO.rotation.z = a - Math.PI / 2;
+        rayO.scale.set(1 + f * 2, 0.8 + f * 7 * rayS[i], 1); rayO.updateMatrix(); rays.setMatrixAt(i, rayO.matrix);
+      }
+      rays.instanceMatrix.needsUpdate = true;
+    }
+    // The night turns orange and black; the environment eases it back when the eye shuts
+    if (lightBase === null) lightBase = moonLight.color.clone();
+    moonLight.color.copy(lightBase).lerp(eyeCol, o * 0.8);
+    halo.material.color.copy(haloCol).lerp(eyeCol, o);
+    if (o > 0.02) { skyU.uHor.value.lerp(SKY_HOR, o * 0.2); skyU.uZen.value.lerp(SKY_ZEN, o * 0.2); }
 
     // The wedding opening, once per save, after any banner already up has gone
     const pr = s1Prog();
