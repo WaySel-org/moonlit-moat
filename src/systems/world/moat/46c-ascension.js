@@ -73,6 +73,7 @@
 
   function ascend(secs) {
     G.ascension++; const a = G.ascension;
+    seasonOneEnd();
     const grew = applyEdge();
     G.state = 'interlude'; G.royalLull = ROYAL_LULL; G.hunt = null; G.huntClock = 0;
     ui.royalbars.hidden = true; ui.hud.hidden = false;
@@ -95,7 +96,7 @@
     if (G.royalLull > 0) return;
     G.royalLull = 0;
     royals.forEach(r => { r.lv += 2; }); royalsToField(false);
-    showBanner('The queens rise again', `Vesthra and Nyxara walk the land again, two levels stronger. Climb the roof to call them to the throne for Ascension ${G.ascension + 1}.`, 'title'); bannerTimer = 4; sfx('horn');
+    showBanner('The queens rise again', `Vesthra and Nyxara walk the land again, two levels stronger. Climb the roof to call them to the throne for Ascension ${G.ascension + 1}.`, 'title'); bannerTimer = 4; sfx('horn'); moonEyeOpen(6);
   }
 
   function ascensionText() {

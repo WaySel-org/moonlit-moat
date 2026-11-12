@@ -111,6 +111,10 @@
     camPull = first ? clear : camPull + (clear - camPull) * (1 - Math.pow(clear < camPull ? 1e-7 : 0.25, real));
     const wantPos = head.clone().lerp(ideal, camPull).add(new THREE.Vector3(0, (1 - camPull) * 1.5, 0));
     const wantLook = player.position.clone().addScaledVector(cf, 3.5 * camPull).setY(camBase + 1.2 + (body - camBase) * 0.5);
+    // Story glances (Season 1): turn the view up toward the moon for a moment
+    const gz = seasonGaze();
+    // Aim a little under the moon so it sits above the centre banner
+    if (gz > 0) wantLook.lerp(camPos.clone().add(moon.position.clone().setY(moon.position.y - 45).sub(camPos).normalize().multiplyScalar(20)), gz);
     const k = first ? 1 : 1 - Math.pow(0.0004, real);
     camPos.lerp(wantPos, k); camLook.lerp(wantLook, k); first = false;
     // Shake: G.shake is trauma (0..1) that decays; the camera moves trauma squared times smooth noise (a few
@@ -192,7 +196,7 @@
         b.row.classList.toggle('dead', !r.alive);
       });
     }
-    updateHud(real);
+    updateHud(real); updateSeason(real);
     const mark = G.lock ? lockTarget() : null;
     ui.lockmark.hidden = !mark;
     if (mark) {
