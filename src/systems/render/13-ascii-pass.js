@@ -28,18 +28,12 @@
         return 0.25 * (texture2D(tScene, (b + vec2(q, q)) / uRes).rgb + texture2D(tScene, (b + vec2(3.0*q, q)) / uRes).rgb
                      + texture2D(tScene, (b + vec2(q, 3.0*q)) / uRes).rgb + texture2D(tScene, (b + vec2(3.0*q, 3.0*q)) / uRes).rgb);
       }
-      // The eye's night (Season 1): two tones, burning orange and black. Mid tones break into short staggered dashes;
-      // the eye and its rays stay solid; heroes and enemies (imp) keep their own colour
+      // The eye's night (Season 1): a red shade over the world, not a new light. Colours keep their shape; blues and
+      // greens dim toward the eye's red, the edges of the screen darken, and heroes and enemies (imp) are left alone
       vec3 eyeTone(vec3 c, vec2 fc, float imp){
-        vec3 O = vec3(1.0, 0.27, 0.05);
-        if (c.r > 0.7 && c.g < 0.5 && c.b < 0.3) return O;
-        float l = clamp(L(c) * 1.7, 0.0, 1.0);
-        vec2 cell = vec2(5.0, 14.0) * uLine;
-        float col = floor(fc.x / cell.x), h = fract(sin(col * 91.7) * 43758.5453);
-        vec2 f = vec2(fract(fc.x / cell.x), fract(fc.y / cell.y + h));
-        float dash = step(0.3, f.x) * step(f.x, 0.7) * step(0.2, f.y) * step(f.y, 0.8);
-        vec3 t = l > mix(0.78, 0.1 + 0.22 * h, dash) ? O : vec3(0.0);
-        return mix(c, t, uEye * (1.0 - imp));
+        vec3 shade = c * vec3(1.0, 0.62, 0.52);
+        vec2 v = fc / uRes - 0.5; shade *= 1.0 - 0.35 * smoothstep(0.25, 0.75, length(v) * 1.3);
+        return mix(c, shade, uEye * 0.75 * (1.0 - imp));
       }
       float impAt(vec2 fc){ vec2 mk = texture2D(tMask, fc / uRes).rg; return max(step(0.5, mk.r), step(0.5, mk.g)); }
       float cellL(vec2 ci){ return L(texture2D(tScene, (ci + 0.5) * uCell / uRes).rgb) * uGain; }

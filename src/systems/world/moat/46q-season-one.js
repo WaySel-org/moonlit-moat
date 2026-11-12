@@ -21,7 +21,7 @@
   });
   // The eye: an almond of burning orange with a round black pupil, centred on the moon across both halves, the
   // crack running out above and below it. When it opens it takes the moon's place, dashes stream out across
-  // the sky from it, and the night turns orange and black. Its lids are a vertical scale from shut to open.
+  // the sky from it, and a red shade falls over the night. Its lids are a vertical scale from shut to open.
   const EYE_ORANGE = 0xff4a12;
   const eyeM = (c, o) => bas(c, Object.assign({ fog: false }, o));
   const eye = new THREE.Group(); eye.position.set(0, 0, 9.3); moonFace.add(eye);
@@ -38,7 +38,7 @@
   // At this distance the depth buffer can't separate the layers, so draw order decides (all in the transparent pass)
   rays.renderOrder = 7; lid.renderOrder = 8; pupil.renderOrder = 9;
   const haloBase = halo.scale.x, haloCol = halo.material.color.clone();
-  const SKY_HOR = new THREE.Vector3(0.05, 0.01, 0.0), SKY_ZEN = new THREE.Vector3(0.0, 0.0, 0.0), eyeCol = new THREE.Color(EYE_ORANGE);
+  const SKY_HOR = new THREE.Vector3(0.14, 0.05, 0.05), SKY_ZEN = new THREE.Vector3(0.012, 0.004, 0.008), eyeCol = new THREE.Color(EYE_ORANGE);
   let lightBase = null;
   eye.scale.y = 0.03; eye.visible = false;
 
@@ -65,7 +65,7 @@
     // The moon gives way to the eye
     const moonGone = o > 0.35; moon.visible = !moonGone; darkHalf.visible = !moonGone && G.world === 'moat'; cracks.forEach(s => { s.visible = !moonGone; });
     // The dashes stream outward, longer and faster the further they get
-    rays.visible = o > 0.02; rays.material.opacity = o;
+    rays.visible = o > 0.02; rays.material.opacity = o * 0.75;
     if (rays.visible) {
       for (let i = 0; i < RAYS; i++) {
         rayR[i] = (rayR[i] + real * 0.09 * rayS[i]) % 1;
@@ -75,12 +75,12 @@
       }
       rays.instanceMatrix.needsUpdate = true;
     }
-    // The night turns orange and black; the environment eases it back when the eye shuts
+    // A red shade falls over the night; the environment eases it back when the eye shuts
     if (lightBase === null) lightBase = moonLight.color.clone();
-    moonLight.color.copy(lightBase).lerp(eyeCol, o * 0.8);
+    moonLight.color.copy(lightBase).lerp(eyeCol, o * 0.3);
     halo.material.color.copy(haloCol).lerp(eyeCol, o);
     postU.uEye.value = o;
-    if (o > 0.02) { skyU.uHor.value.lerp(SKY_HOR, o * 0.2); skyU.uZen.value.lerp(SKY_ZEN, o * 0.2); }
+    if (o > 0.02) { skyU.uHor.value.lerp(SKY_HOR, o * 0.08); skyU.uZen.value.lerp(SKY_ZEN, o * 0.08); }
 
     // The wedding opening, once per save, after any banner already up has gone
     const pr = s1Prog();
