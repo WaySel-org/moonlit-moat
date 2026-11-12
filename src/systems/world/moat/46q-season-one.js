@@ -20,7 +20,8 @@
     const seg = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 3.9), crackM); seg.position.set(x, y, 9.6); seg.rotation.z = r; seg.renderOrder = 6; moonFace.add(seg); cracks.push(seg);
   });
   // The eye: an almond of burning orange with a round black pupil, centred on the moon across both halves, the
-  // crack running out above and below it. When it opens it takes the moon's place, dashes stream out across
+  // crack running out above and below it. When it opens the moon breaks into two halves behind it, a glowing fault
+  // runs through the eye and across the sky, dashes stream out across
   // the sky from it, and a red shade falls over the night. Its lids are a vertical scale from shut to open.
   const EYE_ORANGE = 0xff4a12;
   const eyeM = (c, o) => bas(c, Object.assign({ fog: false }, o));
@@ -35,6 +36,21 @@
   const rayA = new Float32Array(RAYS), rayR = new Float32Array(RAYS), rayS = new Float32Array(RAYS);
   for (let i = 0; i < RAYS; i++) { rayA[i] = Math.random() * TAU; rayR[i] = Math.random(); rayS[i] = 0.6 + Math.random() * 0.8; }
   const rayO = new THREE.Object3D();
+  // The broken moon behind the open eye: its two halves pulled apart, the pale one and the dark one
+  const halfL = new THREE.Mesh(new THREE.CircleGeometry(9, 40, Math.PI / 2, Math.PI), eyeM(0xe6dcc0, { transparent: true }));
+  const halfR = new THREE.Mesh(new THREE.CircleGeometry(9, 40, -Math.PI / 2, Math.PI), eyeM(0x6a6258, { transparent: true }));
+  [halfL, halfR].forEach(h => { h.position.z = 8.9; h.visible = false; h.renderOrder = 5; moonFace.add(h); });
+  // The fault: a jagged line that runs through the eye and on across the sky, glowing at its edges with a black core
+  const fault = new THREE.Group(); fault.position.z = 9.7; fault.visible = false; moonFace.add(fault);
+  const faultGlow = eyeM(0xffc27a, { transparent: true, depthWrite: false }), faultCore = eyeM(0x000000, { transparent: true, depthWrite: false });
+  const faultPts = [];
+  for (let y = 54; y >= -54; y -= 3) faultPts.push([Math.abs(y) < 2 ? 0 : (Math.random() - 0.5) * 1.6, y]);
+  for (let i = 1; i < faultPts.length; i++) {
+    const [ax, ay] = faultPts[i - 1], [bx, by] = faultPts[i], len = Math.hypot(bx - ax, by - ay) + 0.3, ang = Math.atan2(by - ay, bx - ax) - Math.PI / 2;
+    [[faultGlow, 1.5, 10], [faultCore, 0.5, 11]].forEach(([m, w, ro]) => {
+      const s = new THREE.Mesh(new THREE.PlaneGeometry(w, len), m); s.position.set((ax + bx) / 2, (ay + by) / 2, ro === 11 ? 0.02 : 0); s.rotation.z = ang; s.renderOrder = ro; fault.add(s);
+    });
+  }
   // At this distance the depth buffer can't separate the layers, so draw order decides (all in the transparent pass)
   rays.renderOrder = 7; lid.renderOrder = 8; pupil.renderOrder = 9;
   const haloBase = halo.scale.x, haloCol = halo.material.color.clone();
@@ -64,6 +80,9 @@
     pupil.position.x = clamp(p.x / 70, -1, 1) * 2.4; pupil.position.y = clamp(-p.z / 140, -1, 1) * 0.8;
     // The moon gives way to the eye
     const moonGone = o > 0.35; moon.visible = !moonGone; darkHalf.visible = !moonGone && G.world === 'moat'; cracks.forEach(s => { s.visible = !moonGone; });
+    // ...but stays behind it broken in two, the halves drifting apart, with the fault running through the eye
+    halfL.visible = halfR.visible = moonGone; halfL.position.x = -4.2 * o; halfR.position.x = 4.2 * o; halfL.rotation.z = 0.12 * o; halfR.rotation.z = -0.12 * o;
+    fault.visible = o > 0.02; fault.scale.y = o; faultGlow.opacity = (0.65 + 0.35 * Math.sin(uTime.value * 7)) * o;
     // The dashes stream outward, longer and faster the further they get
     rays.visible = o > 0.02; rays.material.opacity = o * 0.75;
     if (rays.visible) {
@@ -78,7 +97,7 @@
     // A red shade falls over the night; the environment eases it back when the eye shuts
     if (lightBase === null) lightBase = moonLight.color.clone();
     moonLight.color.copy(lightBase).lerp(eyeCol, o * 0.3);
-    halo.material.color.copy(haloCol).lerp(eyeCol, o);
+    halo.material.color.copy(haloCol).lerp(eyeCol, o * 0.5);
     postU.uEye.value = o;
     if (o > 0.02) { skyU.uHor.value.lerp(SKY_HOR, o * 0.08); skyU.uZen.value.lerp(SKY_ZEN, o * 0.08); }
 
