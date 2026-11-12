@@ -1,6 +1,6 @@
   // ---------- Season 1, The Broken Wedding (owned by the Loremaster with the Shardkeeper of the Moat) ----------
   // The story ships in seasons (lore/seasons.md). STORY_SEASON is the released season; later seasons' beats check it.
-  // Season 1: the moon cracked at the queens' wedding and something in its dark half watches the Wanderer.
+  // Season 1: the moon cracked at the queens' wedding, and an eye split by the crack watches the Wanderer.
   //  - The cracked moon: a dark half and a jagged crack over the moon, with an eye that opens and follows the hero
   //    when the queens rise again, when they hunt, and at the season's ending.
   //  - The wedding opening: one banner the first time a save meets Season 1.
@@ -17,17 +17,20 @@
   darkHalf.position.z = 9.1; moonFace.add(darkHalf);
   const crackM = bas(0x08060c);
   [[0.3, 8.6, -0.5], [-0.6, 5.2, 0.4], [0.5, 1.6, -0.35], [-0.4, -2.0, 0.45], [0.4, -5.4, -0.4], [-0.2, -8.2, 0.3]].forEach(([x, y, r]) => {
-    const seg = new THREE.Mesh(new THREE.PlaneGeometry(0.45, 3.9), crackM); seg.position.set(x, y, 9.2); seg.rotation.z = r; moonFace.add(seg);
+    const seg = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 3.9), crackM); seg.position.set(x, y, 9.6); seg.rotation.z = r; seg.renderOrder = 6; moonFace.add(seg);
   });
-  // The eye sits in the dark half; its lids are a vertical scale from shut (a sliver) to open
+  // The eye sits at the centre of the moon, across both halves, and the crack runs down through it;
+  // its lids are a vertical scale from shut (a sliver) to open
   // The moon swells while the eye is open (moon, halo and face scale together)
-  const eye = new THREE.Group(); eye.position.set(4.3, 0.2, 9.3); moonFace.add(eye);
+  const eye = new THREE.Group(); eye.position.set(0, 0, 9.3); moonFace.add(eye);
   const eyeM = (c, o) => bas(c, Object.assign({ fog: false }, o));
   const rim = new THREE.Mesh(new THREE.CircleGeometry(4.6, 40), eyeM(0x7a0c10)); rim.scale.y = 0.62; eye.add(rim);
   const sclera = new THREE.Mesh(new THREE.CircleGeometry(4.2, 40), eyeM(0xf2e4cc)); sclera.scale.y = 0.6; sclera.position.z = 0.03; eye.add(sclera);
   const iris = new THREE.Group(); iris.position.z = 0.06; eye.add(iris);
   iris.add(new THREE.Mesh(new THREE.CircleGeometry(2.1, 32), eyeM(0xff2a1e)));
   const pupil = new THREE.Mesh(new THREE.CircleGeometry(0.95, 24), eyeM(0x040304)); pupil.position.z = 0.05; iris.add(pupil);
+  // At this distance the depth buffer can't separate the layers, so draw order decides: rim, white, iris, pupil, crack
+  [rim, sclera, iris.children[0], pupil].forEach((m, i) => { m.renderOrder = 2 + i; });
   const haloBase = halo.scale.x;
   eye.scale.y = 0.03; eye.visible = false;
 
