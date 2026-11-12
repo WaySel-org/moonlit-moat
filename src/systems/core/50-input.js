@@ -35,6 +35,7 @@
     const c = keyAct(ev.code);
     if (!ui.banner.hidden && !ui.bbtn.hidden && (ev.code === 'Enter' || c === 'KeyR')) { ev.preventDefault(); restart(); return; }
     if (G.shop && (c === 'KeyE' || ev.code === 'Escape' || (c === 'KeyB' && G.invUI))) { ev.preventDefault(); closeShop(); return; }
+    if (G.cutscene) { if (ev.code === 'Enter' || ev.code === 'Space' || ev.code === 'Escape') { ev.preventDefault(); skipPreface(); } return; }
     if (ev.code === 'Escape') { ev.preventDefault(); togglePause(); return; }
     if (G.paused) return;
     if (ev.target.closest && ev.target.closest('input, button, summary')) return;

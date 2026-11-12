@@ -298,3 +298,15 @@ body.touch #controlsbox { display: none; }
 body.touch #tipcard { bottom: auto; top: calc(34% + env(safe-area-inset-top, 0px)); }
 @media (max-width: 760px) { body.touch #tipcard { top: calc(46% + env(safe-area-inset-top, 0px)); } }
 @media (prefers-reduced-motion: reduce) { #tipcard.in, #statusstrip .sc { animation: none; } }
+
+/* Season 1 preface cutscene: letterbox, subtitles, flash. Everything but the stage, the pause screen and the cutscene hides. */
+body.cutscene > :not(#stage):not(#pause):not(#cutscene):not(script) { visibility: hidden !important; }
+#cutscene { position: fixed; inset: 0; z-index: 60; pointer-events: auto; cursor: pointer; }
+#cutscene[hidden] { display: none; }
+#cutscene .bar { position: absolute; left: 0; right: 0; height: 11vh; background: #000; }
+#cutscene .bar.top { top: 0; }
+#cutscene .bar.bottom { bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 0 16px; text-align: center; }
+#cutscene .who { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: #ff7a3a; min-height: 1em; }
+#cutscene .line { font-size: clamp(14px, 2.2vw, 20px); color: #f2ead8; min-height: 1.3em; transition: opacity 0.4s; }
+#cutscene .skip { position: absolute; right: 16px; top: calc(11vh + 10px); font-size: 11px; color: rgba(242, 234, 216, 0.55); letter-spacing: 0.08em; }
+#cutscene .flash { position: absolute; inset: 0; background: #fff6e8; opacity: 0; pointer-events: none; }

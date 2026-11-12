@@ -101,14 +101,91 @@
     postU.uEye.value = o;
     if (o > 0.02) { skyU.uHor.value.lerp(SKY_HOR, o * 0.08); skyU.uZen.value.lerp(SKY_ZEN, o * 0.08); }
 
-    // The wedding opening, once per save, after any banner already up has gone
+    updatePreface(real);
+    // The wedding preface plays once per save, after any banner already up has gone
     const pr = s1Prog();
-    if (pr.s1open || G.paused || G.state !== 'explore' || G.world !== 'moat') return;
+    if (pr.s1open || PF.on || G.paused || G.state !== 'explore' || G.world !== 'moat') return;
     S1.wait += real;
-    if (S1.wait < 2 || (!ui.banner.hidden && S1.wait < 9)) return;
-    pr.s1open = 1;
-    showBanner('Season 1 · The Broken Wedding', 'Every hundred years two queens of the moat are wed under a full moon. Tonight it was Nyxara and Vesthra. At the vows the moon cracked in two, and the brides turned on the one sworn to guard them: you.', 'title');
-    bannerTimer = 10; moonEyeOpen(9); moonGlance(5);
+    if (S1.wait < 1.5 || (!ui.banner.hidden && S1.wait < 9)) return;
+    playPreface();
+  }
+
+  // ---------- The preface: the Moon Wedding, played in the game's own world (about 28 s, skippable) ----------
+  // The camera flies in over the moat while Cinderwing's fireworks go up, settles on the brides at the altar for
+  // their vows, tilts up to the moon, and then the blast: a flash, a shake, the moon breaks and the eye opens.
+  // The brides turn toward the camera, and the game hands back to the Wanderer at the gate.
+  const PF = { on: false, t: 0, fired: 0, keep: null, cp: new THREE.Vector3(), cl: new THREE.Vector3() };
+  const pfEl = document.createElement('div'); pfEl.id = 'cutscene'; pfEl.hidden = true;
+  pfEl.innerHTML = '<div class="bar top"></div><div class="bar bottom"><div class="who"></div><div class="line"></div></div><div class="skip">Enter or tap to skip</div><div class="flash"></div>';
+  document.body.appendChild(pfEl);
+  const pfWho = pfEl.querySelector('.who'), pfLine = pfEl.querySelector('.line'), pfFlash = pfEl.querySelector('.flash');
+  pfEl.addEventListener('pointerdown', ev => { ev.preventDefault(); skipPreface(); });
+  const pv = (x, y, z) => new THREE.Vector3(x, y, z);
+  // Shots: camera from p0 to p1 and look from l0 to l1 between t0 and t1; a null look means the moon
+  const SHOTS = [
+    { t0: 0, t1: 7, p0: pv(-34, 28, 72), p1: pv(-9, 17, 20), l0: pv(0, 14, -27), l1: pv(0, 10.5, -27.5) },
+    { t0: 7, t1: 14.5, p0: pv(6.5, 11.2, -19.5), p1: pv(4.2, 10.4, -22), l0: pv(0, 9.8, -27.5), l1: pv(0, 9.6, -27.5) },
+    // From the right of the roof, so the keep does not hide the moon
+    { t0: 14.5, t1: 16, p0: pv(4, 10.5, -17), p1: pv(7, 10.3, -15), l0: pv(0, 9.8, -27.5), l1: null },
+    { t0: 16, t1: 22, p0: pv(7, 10.3, -15), p1: pv(8, 9.8, -11), l0: null, l1: null },
+    { t0: 22, t1: 28, p0: pv(0, 10.6, -19.5), p1: pv(0, 10.2, -21.5), l0: pv(0, 9.6, -27.5), l1: pv(0, 9.4, -27.5) }
+  ];
+  const PF_END = 28, PF_BLAST = 16, FIREWORKS = [1, 2.6, 4.2, 5.6, 12.6];
+  const PF_LINES = [
+    [1, 6.5, '', 'Every hundred years, two queens of the moat are wed under a full moon.'],
+    [8, 11, 'Nyxara', 'Under this moon, I keep you.'],
+    [11.2, 14.2, 'Vesthra', 'Under this moon, I keep you.'],
+    [17, 21.5, '', 'At the vows, the moon broke in two.'],
+    [23, 27.5, '', 'And the brides turned on the one sworn to guard them.']
+  ];
+  const pfEase = s => s * s * (3 - 2 * s);
+  const moonAim = () => moon.position.clone().setY(moon.position.y - 4);
+
+  function playPreface() {
+    PF.on = true; PF.t = 0; PF.fired = 0; G.cutscene = true;
+    pfEl.hidden = false; document.body.classList.add('cutscene'); ui.banner.hidden = true;
+    // The brides stand at the altar facing each other, wherever they were
+    PF.keep = royals.map(r => ({ pos: r.g.position.clone(), facing: r.facing, field: r.field, state: r.state, vis: r.g.visible }));
+    PF.warden = boss.visible; // the Warden perches on the gatehouse, between the camera and the altar
+    royals.forEach((r, i) => {
+      r.field = false; r.state = 'idle'; r.g.visible = true; r.body.rotation.x = 0; r.body.position.y = r.hover;
+      r.g.position.set(i === 0 ? -1.3 : 1.3, ROOF.y, -27.5); r.facing = i === 0 ? Math.PI / 2 : -Math.PI / 2;
+    });
+  }
+  function endPreface() {
+    if (!PF.on) return;
+    PF.on = false; G.cutscene = false;
+    pfEl.hidden = true; document.body.classList.remove('cutscene'); pfFlash.style.opacity = '0';
+    royals.forEach((r, i) => { const k = PF.keep[i]; r.g.position.copy(k.pos); r.facing = k.facing; r.field = k.field; r.state = k.state; r.g.visible = k.vis; });
+    boss.visible = PF.warden;
+    s1Prog().s1open = 1;
+    S1.want = Math.min(Math.max(S1.want, 4), 6);
+    showBanner('Season 1 \u00b7 The Broken Wedding', 'Something looks out of the broken moon. Find out what broke it; the brides are already hunting you.', 'title'); bannerTimer = 7;
+  }
+  function skipPreface() { if (PF.on) endPreface(); }
+  // Called by the camera in core/53-loop: during the preface the shot replaces the follow camera
+  function seasonCutCam(cp, cl) { if (!PF.on) return; cp.copy(PF.cp); cl.copy(PF.cl); }
+
+  function updatePreface(real) {
+    if (!PF.on) return;
+    keys.clear(); P.iframe = Math.max(P.iframe, 0.5); boss.visible = false;
+    if (G.paused) return;
+    const t = PF.t += real;
+    const s = SHOTS.find(x => t < x.t1) || SHOTS[SHOTS.length - 1], k = pfEase(clamp((t - s.t0) / (s.t1 - s.t0), 0, 1));
+    PF.cp.copy(s.p0).lerp(s.p1, k);
+    PF.cl.copy(s.l0 || moonAim()).lerp(s.l1 || moonAim(), k);
+    while (PF.fired < FIREWORKS.length && t >= FIREWORKS[PF.fired]) {
+      launchFirework(pv((PF.fired % 2 ? 1 : -1) * (6 + Math.random() * 6), ROOF.y + 1, -24 - Math.random() * 6)); PF.fired++;
+    }
+    // The blast
+    if (t >= PF_BLAST && !PF.blasted) { PF.blasted = true; sfx('boom'); sfx('roar'); G.shake = 1; moonEyeOpen(14); S1.open = Math.max(S1.open, 0.45); }
+    if (t < PF_BLAST) PF.blasted = false;
+    pfFlash.style.opacity = t >= PF_BLAST ? String(Math.max(0, 1 - (t - PF_BLAST) / 1.4)) : '0';
+    // The brides turn toward the camera
+    if (t >= 23) royals.forEach(r => { r.facing += angDiff(r.facing, yawTo(r.pos, PF.cp)) * Math.min(1, real * 3); });
+    const line = PF_LINES.find(l => t >= l[0] && t < l[1]);
+    pfWho.textContent = line ? line[2] : ''; pfLine.textContent = line ? line[3] : '';
+    if (t >= PF_END) endPreface();
   }
 
   // After a queen falls, the real queen breaks through for a moment

@@ -123,6 +123,7 @@
     if (gz > 0) wantLook.lerp(camPos.clone().add(moon.position.clone().setY(moon.position.y - 45).sub(camPos).normalize().multiplyScalar(20)), gz);
     const k = first ? 1 : 1 - Math.pow(0.0004, real);
     camPos.lerp(wantPos, k); camLook.lerp(wantLook, k); first = false;
+    seasonCutCam(camPos, camLook);
     // Shake: G.shake is trauma (0..1) that decays; the camera moves trauma squared times smooth noise (a few
     // incommensurate sines per axis) plus a small roll, instead of a fresh random jolt every frame
     G.shake = Math.max(0, G.shake - real * 1.8);
