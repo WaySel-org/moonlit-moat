@@ -28,7 +28,7 @@
     if (inMoat) { updateBoss(dt); wardenModelUpdate(dt); updatePods(dt); }
     updateBolts(dt);
     royals.forEach(r => updateRoyal(r, dt)); updateShots(dt);
-    if (inMoat) updateDragon(dt);
+    if (inMoat) { updateDragon(dt); cinderwingModelUpdate(dt); }
     updateFireworks(dt);
     updatePatches(dt);
     creeps.forEach(c => updateCreep(c, dt)); crawlerModelUpdate(dt); wispCageUpdate(dt);

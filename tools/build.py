@@ -122,6 +122,7 @@ def build():
             'warden': emit('warden.glb', (ROOT / 'assets' / 'bosses' / 'warden.glb').read_bytes()),
             'moonstag': emit('moonstag.glb', (ROOT / 'assets' / 'mounts' / 'moonstag.glb').read_bytes()),
             'gryphon': emit('gryphon.glb', (ROOT / 'assets' / 'mounts' / 'gryphon.glb').read_bytes()),
+            'cinderwing': emit('cinderwing.glb', (ROOT / 'assets' / 'bosses' / 'cinderwing.glb').read_bytes()),
             'drake': emit('drake.glb', (ROOT / 'assets' / 'mounts' / 'drake.glb').read_bytes()),
             'crawler': emit('crawler.glb', (ROOT / 'assets' / 'creeps' / 'crawler.glb').read_bytes()),
             'wispCage': emit('ash-wisp-cage.glb', (ROOT / 'assets' / 'creeps' / 'ash-wisp-cage.glb').read_bytes())}
