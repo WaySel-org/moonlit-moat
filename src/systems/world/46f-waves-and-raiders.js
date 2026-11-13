@@ -298,7 +298,7 @@
     }
     if (G.raid) {
       G.raid.t -= real;
-      if (G.raid.r) { updateRaider(G.raid.r, dt); if (G.raid && G.raid.t <= 0) endRaid(`${G.raid.r.name} loses interest and leaves.`); }
+      if (G.raid.r) { updateRaider(G.raid.r, dt); raidDragonModelUpdate(G.raid.r, dt); if (G.raid && G.raid.t <= 0) endRaid(`${G.raid.r.name} loses interest and leaves.`); }
       else if (!G.raid.pack.some(c => c.alive)) { dropGear(player.position, 1, 0.5); endRaid('The pack is dead.'); }
       else if (G.raid.t <= 0) endRaid('The raptors scatter.');
       else if ((G.raid.frenzy -= dt) <= 0) {
