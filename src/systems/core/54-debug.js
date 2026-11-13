@@ -10,7 +10,7 @@
   async function sfxMeter(kind, beast) {
     const keep = { ac, bus, wet, noiseBuf };
     if (!audio()) return null;
-    const o = new OfflineAudioContext(1, 44100 * 2.5, 44100), real = { noiseBuf };
+    const o = new OfflineAudioContext(1, 44100 * 5, 44100), real = { noiseBuf };
     bus = o.createGain(); bus.connect(o.destination); wet = o.createGain(); wet.gain.value = 0.22; wet.connect(bus);
     noiseBuf = o.createBuffer(1, real.noiseBuf.length, real.noiseBuf.sampleRate); noiseBuf.copyToChannel(real.noiseBuf.getChannelData(0), 0);
     ac = o; vary = 1;

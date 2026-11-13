@@ -136,7 +136,7 @@
       if (r.where !== realmKey() || flatDist(r.pos, player.position) > 30) r.cross = 2.5 + i * 2.5;
     });
     showBanner('The Royal Hunt', 'Vesthra and Nyxara are coming for you, and every creep here comes with them. They follow you through gates, rifts and the Veil. Survive 60 seconds, or bring them down.', 'title');
-    bannerTimer = 4.5; sfx('boss', 'royals'); G.shake = Math.max(G.shake, 0.5);
+    bannerTimer = 4.5; sfx('bossintro', 'royals'); G.shake = Math.max(G.shake, 0.5);
   }
   function endRoyalHunt(quiet, msg) {
     if (!G.royalHunt) return;
