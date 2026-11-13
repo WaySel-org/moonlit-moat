@@ -123,6 +123,7 @@ def build():
             'nyxara': emit('nyxara.glb', (ROOT / 'assets' / 'bosses' / 'nyxara.glb').read_bytes()),
             'moonstag': emit('moonstag.glb', (ROOT / 'assets' / 'mounts' / 'moonstag.glb').read_bytes()),
             'gryphon': emit('gryphon.glb', (ROOT / 'assets' / 'mounts' / 'gryphon.glb').read_bytes()),
+            'godling': emit('godling.glb', (ROOT / 'assets' / 'creeps' / 'godling.glb').read_bytes()),
             'cinderwing': emit('cinderwing.glb', (ROOT / 'assets' / 'bosses' / 'cinderwing.glb').read_bytes()),
             'rex': emit('tyrant-rex.glb', (ROOT / 'assets' / 'bosses' / 'tyrant-rex.glb').read_bytes()),
             'drake': emit('drake.glb', (ROOT / 'assets' / 'mounts' / 'drake.glb').read_bytes()),
