@@ -1,4 +1,4 @@
-  // ---------- Ashwing Wyrm and Rimefang Wyvern: the modelled raid dragons ----------
+  // ---------- The modelled raid bosses: Ashwing Wyrm, Rimefang Wyvern and the Tyrant Rex ----------
   // Both wear Cinderwing's body, skeleton and hand-keyed clips (assets/bosses/cinderwing.glb, already downloaded for
   // Cinderwing, so they cost the player nothing extra). Each gets its own colours, painted at load time by mapping the
   // texture's brightness through a colour ramp: Ashwing is charcoal ash with an ember belly and horns, Rimefang steel
@@ -6,11 +6,15 @@
   // arrives and stays if it fails to load. raidDragonModelUpdate(), called right after updateRaider, maps the raider's
   // state to a clip: fly while circling, hover then flee along the strafe lane, breath for the breath attack, perch
   // while it rests on the ground. Every clip is in place: updateRaider moves the raider.
+  // The Tyrant Rex has its own model (assets/bosses/tyrant-rex.glb): a two-legged rig with hand-keyed clips. It walks
+  // while it chases, roars through the charge's wind-up and then runs, bites, roars for its knock-back wave, and sags
+  // winded while it rests.
   const RAID_LOOKS = {
     wyrm: { scale: 1.3, ramp: [[0, 8, 8, 9], [26, 26, 26, 28], [41, 48, 46, 48], [61, 77, 69, 66], [94, 128, 102, 84], [120, 250, 128, 41], [143, 255, 184, 89], [163, 219, 212, 201], [255, 255, 255, 255]] },
+    rex: { asset: 'rex', scale: 1.4, ground: true },
     rime: { scale: 1.1, ramp: [[0, 5, 10, 20], [26, 20, 43, 71], [41, 36, 77, 117], [61, 61, 115, 158], [94, 158, 209, 235], [128, 214, 240, 252], [163, 247, 252, 255], [255, 255, 255, 255]] }
   };
-  const RAID_LOOPS = new Set(['fly', 'flee', 'glide', 'hover', 'perch', 'walk']);
+  const RAID_LOOPS = new Set(['fly', 'flee', 'glide', 'hover', 'perch', 'walk', 'run', 'idle', 'rest']);
   const RAID_LIFT = 2.2;   // the flight clips carry the body's middle this far above the model's origin (model metres)
 
   // Paint a copy of the texture through a brightness -> colour ramp ([brightness 0-255, r, g, b] stops)
@@ -36,16 +40,17 @@
 
   function loadRaidDragons() {
     const A = window.MM_ASSETS;
-    if (!A || !A.cinderwing || !A.gltfLoader) return;
+    if (!A || !A.gltfLoader) return;
     const go = () => raiders.forEach(r => {
       const look = RAID_LOOKS[r.type];
-      if (!look) return;
+      const url = A[look.asset || 'cinderwing'];
+      if (!look || !url) return;
       // Textures load as <img> (img-src allows blob:); the default fetch() path is blocked by connect-src 'self'
       const loader = new THREE.GLTFLoader().register(parser => {
         parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
         return { name: 'mm_img_textures' };
       });
-      loader.load(A.cinderwing, gltf => setupRaidDragon(r, look, gltf), undefined, e => console.warn(`The ${r.name} model did not load; keeping the block dragon`, e));
+      loader.load(url, gltf => setupRaidDragon(r, look, gltf), undefined, e => console.warn(`The ${r.name} model did not load; keeping the block dragon`, e));
     });
     if (THREE.GLTFLoader) { go(); return; }
     const s = document.createElement('script');
@@ -61,23 +66,24 @@
         o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false;
         const src = o.material.map || o.material.emissiveMap;
         let map = src;
-        try { if (src && src.image) map = rampTexture(src, look.ramp); } catch (e) { console.warn(`${r.name}: could not recolour the texture`, e); }
+        try { if (src && src.image && look.ramp) map = rampTexture(src, look.ramp); } catch (e) { console.warn(`${r.name}: could not recolour the texture`, e); }
         if (map === src && src) { src.encoding = THREE.LinearEncoding; src.needsUpdate = true; }
         o.material = new THREE.MeshLambertMaterial({ map, skinning: true });
       }
       o.layers.enable(2);   // hostile in the gameplay mask, like the block dragon
     });
-    const M = { root, look, mixer: new THREE.AnimationMixer(root), actions: {}, cur: null, state: '', y: -RAID_LIFT * look.scale };
+    const M = { root, look, mixer: new THREE.AnimationMixer(root), actions: {}, cur: null, state: '', y: look.ground ? 0 : -RAID_LIFT * look.scale,
+      lastPos: r.pos.clone(), moving: 0 };
     gltf.animations.forEach(c => { M.actions[c.name] = M.mixer.clipAction(c); });
     r.body.children.forEach(c => { c.visible = false; });
     root.position.y = M.y;
     r.body.add(root);
     r.model = M;
-    raidDragonPlay(M, 'fly', 0, true);
+    raidDragonPlay(M, look.ground ? 'idle' : 'fly', 0, true);
   }
 
   function raidDragonPlay(M, name, dur, restart) {
-    const next = M.actions[name] || M.actions.fly;
+    const next = M.actions[name] || M.actions.fly || M.actions.idle;
     if (!next || (next === M.cur && !restart)) return;
     next.reset();
     if (RAID_LOOPS.has(name)) { next.setLoop(THREE.LoopRepeat, Infinity); next.timeScale = 1; }
@@ -93,6 +99,21 @@
   function raidDragonModelUpdate(r, dt) {
     const M = r.model;
     if (!M || !r.g.visible) return;
+    if (M.look.ground) {
+      // The Rex: how fast the game moved it this frame decides walk or idle while it chases
+      const step = Math.hypot(r.pos.x - M.lastPos.x, r.pos.z - M.lastPos.z) / Math.max(dt, 1e-3);
+      if (dt > 0) M.moving += (step - M.moving) * Math.min(1, dt * 6);
+      M.lastPos.copy(r.pos);
+      const p = r.state === 'bite' ? ['bite', 1.3]
+        : r.state === 'charge' ? (r.t < 0.8 ? ['roar', 0.8] : ['run', 0])
+        : r.state === 'roar' ? ['roar', 1.4]
+        : r.state === 'rest' ? ['rest', 0]
+        : [M.moving > 0.8 ? 'walk' : 'idle', 0];
+      raidDragonPlay(M, p[0], p[1], r.state !== M.state && !RAID_LOOPS.has(p[0]));
+      M.state = r.state;
+      M.mixer.update(dt);
+      return;
+    }
     // [clip, seconds]: the strafe hovers through its one-second wind-up, then runs the lane with the fast flap
     const pick = r.state === 'strafe' ? [r.t < 1 ? 'hover' : 'flee', 0]
       : r.state === 'hover' ? ['breath', 2.4]
