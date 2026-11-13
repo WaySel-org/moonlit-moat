@@ -38,6 +38,7 @@
   "actors/creeps/25d-crawler-glb.js",
   "actors/creeps/25e-wisp-cage.js",
   "actors/creeps/25f-gravebelly-glb.js",
+  "actors/creeps/25g-godlings-glb.js",
   "world/moat/26-treasure-chests.js",
   "world/moat/27-moon-shrine.js",
   "ui/28-hud.js",
