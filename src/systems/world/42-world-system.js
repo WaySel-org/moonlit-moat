@@ -3,7 +3,7 @@
   Object.values(WORLDS).forEach(W => W.keys.forEach(p => { if (W.ground(p.x, p.z) !== 0) console.warn(`${W.name}: key point ${p.x},${p.z} is blocked`); }));
 
   // They reuse the melee, ranged and godling brains
-  Object.assign(CREEP_NAME, { skitter: 'Skitterling', spore: 'Spore Drifter', runner: 'Chrome Runner', drone: 'Patrol Drone', shambler: 'Shambler', bloater: 'Bloater', matron: 'The Hive Matron', halvane: 'Director Halvane', rot: 'The Rot Sovereign' });
+  Object.assign(CREEP_NAME, { skitter: 'Skitterling', spore: 'Spore Drifter', runner: 'Chrome Runner', drone: 'Patrol Drone', shambler: 'Shambler', bloater: 'Gravebelly', matron: 'The Hive Matron', halvane: 'Director Halvane', rot: 'The Rot Sovereign' });
   Object.assign(CREEP_BASE, { skitter: 34, spore: 40, runner: 46, drone: 42, shambler: 72, bloater: 56, matron: 2200, halvane: 2200, rot: 2200 });
   const WORLD_BUILD = {
     skitter() {
