@@ -141,7 +141,7 @@
       G.raid = { r, t: 75 };
       showBanner(r.name, RAIDER[pick].line, 'title');
     }
-    bannerTimer = 3.5; sfx('boss', pick === 'pack' ? 'raptors' : pick); G.shake = Math.max(G.shake, 0.5);
+    bannerTimer = 3.5; sfx('bossintro', pick === 'pack' ? 'raptors' : pick); G.shake = Math.max(G.shake, 0.5);
   }
   function endRaid(msg) {
     const R = G.raid; if (!R) return;
@@ -215,18 +215,20 @@
       // The tyrant: chase, bite up close, charge from range, roar to knock back
       const step = sp => { const f = fwdOf(r.facing), nx = r.pos.x + f.x * sp * dt, nz = r.pos.z + f.z * sp * dt; if (groundAt(nx, nz) < 0.6) { r.pos.x = nx; r.pos.z = nz; } };
       if (r.legs) r.legs.forEach((l, i) => { l.rotation.x = r.state === 'chase' || r.state === 'charge' ? Math.sin(tt * 8 + i * Math.PI) * 0.5 : 0; });
+      // Footfalls you can hear coming: one every stride while it walks, faster in a charge, only when it is near
+      if ((r.state === 'chase' && d > 3.2) || (r.state === 'charge' && r.t >= 0.8)) { r.stepT = (r.stepT || 0) - dt; if (r.stepT <= 0) { r.stepT = r.state === 'charge' ? 0.22 : 0.42; if (d < 40) sfx('rexstep'); } }
       if (r.state === 'chase') {
         r.facing += clamp(angDiff(r.facing, yawTo(r.pos, pp)), -2.5 * dt, 2.5 * dt); if (d > 3.2) step(4.6);
         if (r.cool <= 0) {
           r.t = 0;
           if (d < 4.5) { r.state = 'bite'; }
-          else if (d < 24 && Math.random() < 0.6) { r.state = 'charge'; r.facing = yawTo(r.pos, pp); }
+          else if (d < 24 && Math.random() < 0.6) { r.state = 'charge'; r.facing = yawTo(r.pos, pp); sfx('rexcharge'); }
           else { r.state = 'roar'; }
         }
       } else if (r.state === 'bite') {
         r.jaw.rotation.x = r.t < 0.6 ? 0.5 * r.t / 0.6 : 0; const front = r.pos.clone().addScaledVector(fwdOf(r.facing), 3);
         r.tele.circle(front.x, 0, front.z, 2.2, r.t / 0.6);
-        if (r.t >= 0.6 && !r.hitDone) { r.hitDone = true; r.tele.hide(); sfx('heavyhit'); if (flatDist(pp, front) < 2.5 && pp.y < 2.5) hitPlayer(34, front, 12, true, r); }
+        if (r.t >= 0.6 && !r.hitDone) { r.hitDone = true; r.tele.hide(); sfx('rexbite'); if (flatDist(pp, front) < 2.5 && pp.y < 2.5) hitPlayer(34, front, 12, true, r); }
         if (r.t > 1.3) { r.state = 'chase'; r.cool = 1.4; r.hitDone = false; }
       } else if (r.state === 'charge') {
         if (r.t < 0.8) r.tele.lane(r.pos, r.facing, 22, 3, r.t / 0.8, 0);

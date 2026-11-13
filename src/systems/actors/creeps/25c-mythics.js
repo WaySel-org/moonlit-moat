@@ -180,7 +180,7 @@
     if (!c.alive) { c.summoned = false; return false; }
     c.lastWoke = uTime.value; c.rend = 0;
     showBanner(`${c.myth.name} has woken`, `${c.myth.lore} It roams to the ${compassOf(p.x, p.z)}, marked in red on the map. Lv ${c.lv}.`, 'title');
-    bannerTimer = 4.5; sfx('boss', c.type); G.shake = Math.max(G.shake, 0.3);
+    bannerTimer = 4.5; sfx('bossintro', c.type); G.shake = Math.max(G.shake, 0.3);
     return true;
   }
   function updateMythics(dt, real) {

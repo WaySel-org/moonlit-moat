@@ -8,7 +8,7 @@
     const dir = new THREE.Vector3(0 - player.position.x, 0, -18 - player.position.z).normalize();
     B.to.copy(player.position).addScaledVector(dir, 5.5); B.to.y = 0;
     clampArena(B.to, -17.4);
-    sfx('boss', 'warden');
+    sfx('bossintro', 'warden');
     showBanner('The Gate Warden', '', 'title');
     bannerTimer = 2.2;
     ui.hud.hidden = true;

@@ -59,7 +59,7 @@
     if (n >= 3 && ST.step[W.id] === 0) {
       ST.step[W.id] = 1;
       const b = storyBossOf(W.id); if (b && !b.alive) b.respawn = 1.5;
-      showBanner(`${W.bossName} stirs`, W.bossLine, 'title'); bannerTimer = 4.5; sfx('boss', { veyra: 'matron', neon: 'halvane', ash: 'rot' }[W.id]);
+      showBanner(`${W.bossName} stirs`, W.bossLine, 'title'); bannerTimer = 4.5; sfx('bossintro', { veyra: 'matron', neon: 'halvane', ash: 'rot' }[W.id]);
     }
   }
   // A shard is taken: open the next world and, after a banner, carry the hero there

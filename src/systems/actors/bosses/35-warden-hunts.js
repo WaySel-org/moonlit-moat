@@ -10,7 +10,7 @@
     B.from.copy(boss.position); if (echo) B.from.y = 18;
     B.to.copy(player.position).addScaledVector(fwdOf(Math.random() * TAU), 6); B.to.y = 0; clampArena(B.to, -78);
     G.state = 'intro'; B.state = 'leap'; B.t = 0; B.dur = 1.6;
-    sfx('boss', 'warden');
+    sfx('bossintro', 'warden');
     showBanner(rv ? 'The Warden rises again' : 'The Warden hunts you', rv ? `Defeated ${rv} time${rv > 1 ? 's' : ''}, it has come back stronger. Survive 45 seconds, outrun it, or bring it down.` : 'Survive 45 seconds, outrun it, or bring it down.', 'title');
     bannerTimer = 3; ui.hud.hidden = true;
   }
