@@ -174,7 +174,7 @@
     if (G.state !== 'explore') {
       ui.bfill.style.width = (B.hp / B.max * 100) + '%'; ui.bghost.style.width = (B.hp / B.max * 100) + '%';
       ui.pfill.style.width = (B.state === 'stagger' ? 0 : B.poise) + '%';
-      ui.btag.textContent = B.state === 'stagger' ? 'Staggered' : G.hunt ? `Hunting \u00b7 ${Math.ceil(Math.max(0, G.hunt.t))}s` : (B.phase === 2 ? 'Enraged' : '');
+      setHudText(ui.btag, B.state === 'stagger' ? 'Staggered' : G.hunt ? `Hunting \u00b7 ${Math.ceil(Math.max(0, G.hunt.t))}s` : (B.phase === 2 ? 'Enraged' : ''));
     }
     const hpPct = P.hp / P.max * 100, mPct = P.mana / P.manaMax;
     ui.coilFill.style.strokeDashoffset = String(100 - hpPct);
@@ -182,13 +182,13 @@
     ui.arRing.style.strokeDasharray = `${P.armor / P.armorMax * 100} 100`;
     ui.orbFill.setAttribute('y', String(68 - 16 * mPct)); ui.orbFill.setAttribute('height', String(16 * mPct));
     ui.sfill.style.width = (Math.max(0, P.st) / P.stMax * 100) + '%';
-    ui.hnum.textContent = Math.ceil(P.hp); ui.anum.textContent = Math.ceil(P.armor); ui.mnum.textContent = Math.floor(P.mana);
-    ui.flasks.textContent = '◆'.repeat(Math.max(0, P.flasks)) + '◇'.repeat(Math.max(0, PR.flaskMax - P.flasks));
+    setHudText(ui.hnum, String(Math.ceil(P.hp))); setHudText(ui.anum, String(Math.ceil(P.armor))); setHudText(ui.mnum, String(Math.floor(P.mana)));
+    setHudText(ui.flasks, '◆'.repeat(Math.max(0, P.flasks)) + '◇'.repeat(Math.max(0, PR.flaskMax - P.flasks)));
     if (!ui.royalbars.hidden) {
       royals.forEach((r, i) => {
         const w = (r.hp / r.max * 100) + '%', b = ui.rb[i];
         b.fill.style.width = w; b.ghost.style.width = w;
-        b.tag.textContent = !r.alive ? 'Fallen' : r.state === 'stagger' ? 'Staggered' : (r.enraged ? 'Enraged' : '');
+        setHudText(b.tag, !r.alive ? 'Fallen' : r.state === 'stagger' ? 'Staggered' : (r.enraged ? 'Enraged' : ''));
         b.row.classList.toggle('dead', !r.alive);
       });
     }

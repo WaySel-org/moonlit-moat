@@ -1,48 +1,66 @@
   // ---------- HUD: prompt, skill bar, creep health, world tier ----------
+  const campClock = $('#campclock');
+  const hudSkills = Object.fromEntries(['z', 'c', 'v', 'x', 'g', 'h'].map(key => {
+    const el = $('#sk_' + key), touch = $('#t_' + key);
+    return [key, { el, label: el.querySelector('span'), fill: el.lastElementChild, touch, touchLabel: touch?.querySelector('span') }];
+  }));
+  const mountSkillSlots = [['z', 'mp3'], ['c', 'mp1'], ['v', 'mp4'], ['x', 'mp2']];
+  function setHudText(el, text) {
+    if (el.textContent !== text) el.textContent = text;
+  }
+  function showSkill(key, locked, cdFrac, needMana) {
+    const { el, fill, touch } = hudSkills[key];
+    const unavailable = locked || needMana;
+    el.classList.toggle('locked', unavailable);
+    const percent = locked ? 0 : clamp(cdFrac, 0, 1) * 100;
+    const height = percent + '%';
+    if (fill.style.height !== height) fill.style.height = height;
+    touchSkill(touch, unavailable, Math.round(percent) + '%');
+  }
+  function labelSkill(key, text) {
+    const { label, touchLabel } = hudSkills[key];
+    setHudText(label, text);
+    if (touchLabel) setHudText(touchLabel, text);
+  }
   let hudT = 0;
   function updateHud(real) {
     updateStatusStrip(real);
-    const cc = document.getElementById('campclock'); if (cc) cc.textContent = `Camps restock ${fmtTime(Math.max(0, G.campClock))}`;
-    const it = nearestInteract();
-    ui.prompt.hidden = !it || G.shop;
-    if (it) ui.prompt.textContent = it.kind === 'chest' ? `${keyLabel('KeyE')} \u00b7 Open ${CHEST_TIERS[it.c.tier].name.toLowerCase()} chest`
+    if (campClock) setHudText(campClock, `Camps restock ${fmtTime(Math.max(0, G.campClock))}`);
+    const it = G.shop ? null : nearestInteract();
+    let prompt = '';
+    if (it) prompt = it.kind === 'chest' ? `${keyLabel('KeyE')} \u00b7 Open ${CHEST_TIERS[it.c.tier].name.toLowerCase()} chest`
       : it.kind === 'gate' ? `${keyLabel('KeyE')} \u00b7 Challenge the Gate Warden (Lv ${worldTier() + 2}). Recommended: level ${worldTier() + 4}, you are ${PR.level}`
       : it.kind === 'beast' ? (PR.level >= BEAST_TYPES[it.b.type].level ? `${keyLabel('KeyE')} \u00b7 Ride the ${BEAST_TYPES[it.b.type].name}` : `Ride the ${BEAST_TYPES[it.b.type].name} at level ${BEAST_TYPES[it.b.type].level} (you are ${PR.level})`)
       : it.kind === 'dismount' ? `${keyLabel('KeyE')} \u00b7 Dismount the ${BEAST_TYPES[P.mount.type].name}`
       : it.kind === 'wgate' ? `${keyLabel('KeyE')} \u00b7 World Gate: travel between worlds`
       : it.kind === 'survivor' ? (G.story.unlocked.ash ? `${keyLabel('KeyE')} \u00b7 Lead the survivor to safety` : 'The survivor is too frightened to move. Ashfall is still sealed.')
       : `${keyLabel('KeyE')} \u00b7 Moon Shrine`;
-    if (!it && !G.shop && G.world !== 'moat') { const wp = worldPrompt(); if (wp) { ui.prompt.hidden = false; ui.prompt.textContent = wp; } }
-    if (!it && !G.shop && G.world === 'moat') {
+    else if (!G.shop && G.world !== 'moat') prompt = worldPrompt();
+    else if (!G.shop) {
       const nr = nearestRift();
-      if (nr.d < 4) { ui.prompt.hidden = false; ui.prompt.textContent = G.realm === 'spirit' ? `${keyLabel('KeyQ')} \u00b7 Return through the Veil Rift` : `${keyLabel('KeyQ')} \u00b7 Step into the Spirit Realm (${keyLabel('KeyQ')} works anywhere)`; }
+      if (nr.d < 4) prompt = G.realm === 'spirit' ? `${keyLabel('KeyQ')} \u00b7 Return through the Veil Rift` : `${keyLabel('KeyQ')} \u00b7 Step into the Spirit Realm (${keyLabel('KeyQ')} works anywhere)`;
     }
-    if (!ui.prompt.hidden) { const pt = touchSay(ui.prompt.textContent); if (pt !== ui.prompt.textContent) ui.prompt.textContent = pt; }
+    if (ui.prompt.hidden !== !prompt) ui.prompt.hidden = !prompt;
+    if (prompt) setHudText(ui.prompt, touchSay(prompt));
     drawMinimap(real);
     if (SHRINE.crystal) { SHRINE.crystal.rotation.y += real * 1.2; SHRINE.crystal.position.y = 2.6 + Math.sin(uTime.value * 1.8) * 0.12; }
-    const sk = (id, locked, cdFrac, needMana) => {
-      const el = document.getElementById(id);
-      el.classList.toggle('locked', locked || needMana);
-      el.lastChild.style.height = (locked ? 0 : clamp(cdFrac, 0, 1) * 100) + '%';
-      touchSkill(id.replace('sk_', 't_'), locked || needMana, locked ? 0 : cdFrac);
-    };
     const mpw = P.mount ? MOUNT_POWERS[P.mount.type] : null;
-    const lbl = (id, t) => { [id, id.replace('sk_', 't_')].forEach(i => { const sp = document.querySelector('#' + i + ' span'); if (sp && sp.textContent !== t) sp.textContent = t; }); };
     // Riding, Y U I O show the beast's skills; on foot, the spells and their rank
-    if (mpw) [['sk_z', 'mp3'], ['sk_c', 'mp1'], ['sk_v', 'mp4'], ['sk_x', 'mp2']].forEach(([id, s]) => { const w = mpw[s]; lbl(id, w.short); sk(id, false, P.cd[s] / w.cd, P.mana < w.mana); });
+    if (mpw) mountSkillSlots.forEach(([id, s]) => { const w = mpw[s]; labelSkill(id, w.short); showSkill(id, false, P.cd[s] / w.cd, P.mana < w.mana); });
     else {
-      lbl('sk_z', rankName('Dagger')); lbl('sk_c', rankName('Bolt')); lbl('sk_v', rankName('Volley')); lbl('sk_x', 'Leap');
-      sk('sk_z', false, P.cd.z / 0.45, P.st < 6);
-      sk('sk_c', false, 0, P.mana < boltCost());
-      sk('sk_v', PR.level < 3, P.cd.v / volleyCd(), P.mana < 50);
-      sk('sk_x', !PR.warden, P.cd.x / 6, P.mana < 25);
+      labelSkill('z', rankName('Dagger')); labelSkill('c', rankName('Bolt')); labelSkill('v', rankName('Volley')); labelSkill('x', 'Leap');
+      showSkill('z', false, P.cd.z / 0.45, P.st < 6);
+      showSkill('c', false, 0, P.mana < boltCost());
+      showSkill('v', PR.level < 3, P.cd.v / volleyCd(), P.mana < 50);
+      showSkill('x', !PR.warden, P.cd.x / 6, P.mana < 25);
     }
-    sk('sk_g', PR.level < HOOK_LV || !!P.mount, P.cd.g / HOOK_CD, P.mana < HOOK_MANA);
-    sk('sk_h', PR.level < SPIN_LV || !!P.mount, P.cd.h / SPIN_CD, P.mana < SPIN_MANA);
+    showSkill('g', PR.level < HOOK_LV || !!P.mount, P.cd.g / HOOK_CD, P.mana < HOOK_MANA);
+    showSkill('h', PR.level < SPIN_LV || !!P.mount, P.cd.h / SPIN_CD, P.mana < SPIN_MANA);
+    const realm = realmKey();
     creeps.forEach(c => {
-      if (!c.alive || c.realm !== realmKey() || flatDist(c.pos, player.position) > (c.ancient || c.mythic || c.ai === 'godling' ? 34 : 22)) { c.bar.hidden = true; return; }
+      if (!c.alive || c.realm !== realm || flatDist(c.pos, player.position) > (c.ancient || c.mythic || c.ai === 'godling' ? 34 : 22)) { if (!c.bar.hidden) c.bar.hidden = true; return; }
       const sp = project(c.pos.clone().setY(c.pos.y + (CREEP_BAR_H[c.type] || 0.8) * (c.ancient ? 1.8 : 1)));
-      c.bar.hidden = !sp.ok;
+      if (c.bar.hidden === sp.ok) c.bar.hidden = !sp.ok;
       if (!c.bar.hidden) {
         c.bar.style.transform = `translate(${sp.x}px, ${sp.y}px) translate(-50%, -100%)`;
         c.barFill.style.width = (Math.max(0, c.hp) / c.max * 100) + '%';
