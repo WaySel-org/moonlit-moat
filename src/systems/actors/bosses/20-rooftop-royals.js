@@ -296,6 +296,7 @@
     else winGame();
   }
   function startRoyal() {
+    loadNyxaraModel();
     const tier = worldTier(), m = tierMult(tier);
     G.dmgMult = (1 + 0.2 * (tier - 1)) * (1 + 0.25 * G.ascension); G.bossTier = tier;
     // Wherever they were feeding, they answer the throne at their full farmed strength

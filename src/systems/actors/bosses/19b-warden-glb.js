@@ -16,20 +16,8 @@
   const CAPE = { a: new Float32Array(CAPE_N), av: new Float32Array(CAPE_N), side: 0, sideV: 0, vel: new THREE.Vector3(), yaw: 0, yawRate: 0, t: 0 };
 
   function loadWardenModel() {
-    const A = window.MM_ASSETS;
-    if (!A || !A.warden || !A.gltfLoader) return;
-    const go = () => {
-      // Textures load as <img> (img-src allows blob:); the default fetch() path is blocked by connect-src 'self'
-      const loader = new THREE.GLTFLoader().register(parser => {
-        parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
-        return { name: 'mm_img_textures' };
-      });
-      loader.load(A.warden, setupWardenModel, undefined, e => console.warn('The Warden model did not load; keeping the block figure', e));
-    };
-    if (THREE.GLTFLoader) { go(); return; }
-    const s = document.createElement('script');
-    s.src = A.gltfLoader; s.onload = go;
-    document.head.appendChild(s);
+    loadModel('warden', setupWardenModel, 'The Warden model did not load; keeping the block figure');
+
   }
 
   function setupWardenModel(gltf) {

@@ -15,20 +15,8 @@
   const HER_CARRY = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(-0.45, -0.35, -0.8).normalize());
 
   function loadMoonlitHer() {
-    const A = window.MM_ASSETS;
-    if (!A || !A.hero || !A.gltfLoader) return;
-    const s = document.createElement('script');
-    s.src = A.gltfLoader;
-    s.onload = () => {
-      // The loader's default image path fetch()es the textures' blob: URLs, which the CSP's
-      // connect-src 'self' blocks. Plain <img> loading falls under img-src, which allows blob:.
-      const loader = new THREE.GLTFLoader().register(parser => {
-        parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
-        return { name: 'mm_img_textures' };
-      });
-      loader.load(A.hero, setupMoonlitHer, undefined, e => console.warn('Moonlit Her did not load; keeping the block figure', e));
-    };
-    document.head.appendChild(s);
+    loadModel('hero', setupMoonlitHer, 'Moonlit Her did not load; keeping the block figure');
+
   }
 
   function setupMoonlitHer(gltf) {

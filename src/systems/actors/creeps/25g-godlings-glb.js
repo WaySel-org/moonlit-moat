@@ -2,7 +2,7 @@
   // Aurelion the Sunless and Varghast the Hollow Thunderer share one body: a tall robed figure behind a blank mask,
   // rigged without legs (the robe hides them) and animated by hand. Aurelion keeps the model's ivory and gold;
   // Varghast is repainted at load time on a canvas: cloth to storm violet, metal to pale silver. The block figure
-  // drifts until the model arrives and stays if it fails to load. godlingModelUpdate(), called right after the
+  // drifts until the model arrives after entering the Veil, and stays if it fails to load. godlingModelUpdate(), called right after the
   // creeps update, maps each godling's state to a clip: idle while it hovers, drift while it moves, cast through
   // the 1.1 s strike (the arms come down as it lands), hurt when struck. The game floats and moves the godling.
   // The halo is still the game's own ring; the model glows a little, as a spirit should.
@@ -31,22 +31,14 @@
     return tex;
   }
 
+  let godlingsRequested = false;
   function loadGodlingModels() {
-    const A = window.MM_ASSETS;
-    if (!A || !A.godling || !A.gltfLoader) return;
-    const go = () => creeps.forEach(c => {
+    if (godlingsRequested) return;
+    godlingsRequested = true;
+    creeps.forEach(c => {
       if (c.type !== 'godling') return;
-      // Textures load as <img> (img-src allows blob:); the default fetch() path is blocked by connect-src 'self'
-      const loader = new THREE.GLTFLoader().register(parser => {
-        parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
-        return { name: 'mm_img_textures' };
-      });
-      loader.load(A.godling, gltf => setupGodling(c, gltf), undefined, e => console.warn(`The ${c.godName} model did not load; keeping the block figure`, e));
+      loadModel('godling', gltf => setupGodling(c, gltf), `The ${c.godName} model did not load; keeping the block figure`);
     });
-    if (THREE.GLTFLoader) { go(); return; }
-    const s = document.createElement('script');
-    s.src = A.gltfLoader; s.addEventListener('load', go);
-    document.head.appendChild(s);
   }
 
   function setupGodling(c, gltf) {
@@ -109,5 +101,3 @@
       M.mixer.update(dt);
     });
   }
-
-  loadGodlingModels();

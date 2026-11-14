@@ -100,6 +100,7 @@
   }
   function showWorld(w) {
     G.world = w; G.lock = false; G.target = null; G.envSnap = true;
+    if (w === 'ash') loadGravebellyModels();
     moatGroup.visible = w === 'moat';
     Object.values(WORLDS).forEach(W => { W.group.visible = W.id === w; });
     const rk = realmKey();

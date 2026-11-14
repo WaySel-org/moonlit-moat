@@ -1,5 +1,6 @@
 [
   "core/00-bootstrap.js",
+  "core/00-model-loader.js",
   "render/01-lights.js",
   "render/02-sky.js",
   "world/moat/03-ground-and-lake.js",
