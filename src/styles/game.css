@@ -279,6 +279,9 @@ body.touch #inv .card, body.touch #hero .body, body.touch #panel { touch-action:
 #ckreset:hover { color: var(--fg); }
 @media (max-width: 420px) { #controlsbox .cgrp { grid-template-columns: 1fr; } }
 body.touch #controlsbox { display: none; }
+/* Controller: a clear focus ring for menu navigation, and the read-only button list in the pause menu */
+.padfocus { outline: 2px solid var(--moon) !important; outline-offset: 2px; }
+#controlsbox .pkey { display: inline-block; text-align: center; cursor: default; }
 
 /* ---------- Status strip and tip cards (HUD agent) ---------- */
 #statusstrip:not([hidden]) { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }

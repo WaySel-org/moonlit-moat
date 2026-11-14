@@ -28,6 +28,7 @@
 
   // Prompts and objectives speak in buttons, not keys, while touch is in use. Tapping a prompt uses it.
   function touchSay(t) {
+    if (padOn()) return padSay(t);
     if (!isTouch()) return t;
     return t.replace(/^E · /, 'Tap Use · ').replace(/^Q · /, 'Tap Veil · ').replace(/press E/g, 'tap Use').replace(/\(Q works anywhere\)/, '(Veil works anywhere)')
       .replace(/ \(N\)/g, ' (tap Bag)').replace(/ \(B\)/g, '').replace(/\(O\)/g, '(Leap)');

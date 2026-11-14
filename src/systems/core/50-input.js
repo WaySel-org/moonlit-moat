@@ -64,7 +64,7 @@
   });
 
   function moveInput() {
-    const J = P.joy && Math.hypot(P.joy.x, P.joy.y) > 0.18 ? P.joy : null;
+    const J = P.joy && Math.hypot(P.joy.x, P.joy.y) > 0.18 ? P.joy : (P.pad && (P.pad.x || P.pad.y) ? P.pad : null); // touch stick, else controller stick
     const f = (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) - (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) - (J ? J.y : 0);
     const r = (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) - (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) + (J ? J.x : 0);
     const cf = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)), cr = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));

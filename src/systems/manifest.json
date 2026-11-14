@@ -86,6 +86,7 @@
   "core/50-input.js",
   "core/50b-controls.js",
   "core/50b-touch-controls.js",
+  "core/50c-gamepad.js",
   "ui/51-renderer-controls.js",
   "actors/player/52-player-update.js",
   "core/53-loop.js",
