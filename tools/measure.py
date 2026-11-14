@@ -34,7 +34,7 @@ def cache_rule(dist, path):
     rule = DEFAULT_CACHE
     vj = dist / 'vercel.json'
     if vj.exists():
-        for block in json.loads(vj.read_text()).get('headers', []):
+        for block in json.loads(vj.read_text(encoding='utf-8')).get('headers', []):
             if re.fullmatch(block['source'], path):   # Vercel sources used here are plain regexes
                 for h in block['headers']:
                     if h['key'].lower() == 'cache-control': rule = h['value']
@@ -42,7 +42,7 @@ def cache_rule(dist, path):
 
 
 def first_load(dist, fetch_external):
-    html = (dist / 'index.html').read_text()
+    html = (dist / 'index.html').read_text(encoding='utf-8')
     items = [{'url': '/', 'kind': 'html', 'blocking': True, 'data': html.encode()}]
     seen = set()
     weights = {'400'}   # browsers fetch a font weight only if some text uses it
