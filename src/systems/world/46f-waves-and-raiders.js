@@ -135,6 +135,7 @@
       showBanner('Raptors!', `A Razorclaw pack of ${mobs.length} has your scent. They are fast and grow faster the longer the hunt runs. Stand your ground or jump over them.`, 'title');
     } else {
       const r = raiders.find(x => x.type === pick), p = ringSpot(20, 26); if (!p) return;
+      loadRaidModel(r);
       r.lv = lvOfHero(r.fly ? 2 : 1); r.max = Math.round(r.base * (1 + 0.3 * (r.lv - 1))); r.hp = r.max; r.pow = 1.1 + 0.15 * (r.lv - 1);
       Object.assign(r, { alive: true, where: realmKey(), state: r.fly ? 'circle' : 'chase', t: 0, cool: 2.5, ang: Math.atan2(p.z - player.position.z, p.x - player.position.x) });
       r.pos.set(p.x, r.fly ? 12 : 0, p.z); r.g.visible = true; r.body.rotation.set(0, 0, 0);

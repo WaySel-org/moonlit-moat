@@ -16,22 +16,10 @@
   };
 
   function loadMountModels() {
-    const A = window.MM_ASSETS;
-    if (!A || !A.gltfLoader) return;
-    const go = () => beasts.forEach(b => {
+    beasts.forEach(b => {
       const T = MOUNT_MODELS[b.type];
-      if (!T || !A[T.asset]) return;
-      // Textures load as <img> (img-src allows blob:); the default fetch() path is blocked by connect-src 'self'
-      const loader = new THREE.GLTFLoader().register(parser => {
-        parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
-        return { name: 'mm_img_textures' };
-      });
-      loader.load(A[T.asset], gltf => setupMountModel(b, T, gltf), undefined, e => console.warn(`The ${T.name} model did not load; keeping the block figure`, e));
+      if (T) loadModel(T.asset, gltf => setupMountModel(b, T, gltf), `The ${T.name} model did not load; keeping the block figure`);
     });
-    if (THREE.GLTFLoader) { go(); return; }
-    const s = document.createElement('script');
-    s.src = A.gltfLoader; s.onload = go;
-    document.head.appendChild(s);
   }
 
   function setupMountModel(b, T, gltf) {

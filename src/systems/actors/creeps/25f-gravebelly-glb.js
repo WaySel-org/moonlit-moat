@@ -1,5 +1,5 @@
   // ---------- The Gravebelly (code key 'bloater'): the modelled, animated buried villager (assets/creeps/gravebelly.glb) ----------
-  // Loaded after the game starts, like the crawler. Every Gravebelly in Ashfall (roster, realm-parity camps, wave pool)
+  // Loaded on entry to Ashfall. Every Gravebelly there (roster, realm-parity camps, wave pool)
   // gets its own skinned copy; the block bloater stays until the model arrives, and for good if it fails to load.
   // gravebellyUpdate(), called right after the creeps update, maps each one's state to a clip. Visual only: the
   // ranged brain, its timing and its damage are untouched.
@@ -20,22 +20,11 @@
   const gbEmberGeo = new THREE.TetrahedronGeometry(0.06, 0);
   const gbEmberMat = new THREE.MeshLambertMaterial({ color: 0xd2552a, emissive: 0xd2552a, emissiveIntensity: 0.35 });   // dull: a painted colour, no glow
 
+  let gravebellyRequested = false;
   function loadGravebellyModels() {
-    const A = window.MM_ASSETS;
-    if (!A || !A.gravebelly || !A.gltfLoader) return;
-    const go = () => {
-      // Textures load as <img> (img-src allows blob:); the default fetch() path is blocked by connect-src 'self'
-      const loader = new THREE.GLTFLoader().register(parser => {
-        parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
-        return { name: 'mm_img_textures' };
-      });
-      loader.load(A.gravebelly, gltf => { gbTemplate = gltf; },
-        undefined, e => console.warn('The Gravebelly model did not load; keeping the block bloater', e));
-    };
-    if (THREE.GLTFLoader) { go(); return; }
-    const s = document.createElement('script');
-    s.src = A.gltfLoader; s.onload = go;
-    document.head.appendChild(s);
+    if (gravebellyRequested) return;
+    gravebellyRequested = true;
+    loadModel('gravebelly', gltf => { gbTemplate = gltf; }, 'The Gravebelly model did not load; keeping the block bloater');
   }
 
   // A copy of the template with its own skeleton (three r128 has no SkeletonUtils in the vendored build)
@@ -168,5 +157,3 @@
       M.mixer.update(dt);
     });
   }
-
-  loadGravebellyModels();

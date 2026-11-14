@@ -1,12 +1,12 @@
   // ---------- Nyxara, the Thorn Empress: the modelled, animated boss (assets/bosses/nyxara.glb) ----------
-  // Loaded after the game starts, like the Warden; the block figure fights until the model arrives, and stays if it
+  // Loaded when the player approaches Nyxara; the block figure fights until the model arrives, and stays if it
   // fails to load. nyxaraModelUpdate(), called right after the royals update, maps her state to a clip: idle and move
   // while hovering, walk / run / walkback when she travels (she sets down on the floor for these and lifts off again
   // when she stops), fan for the thorn fan, burst for the pyre and her kit spells, vanish for the blink, hurt when
   // staggered, dead when she falls. Every clip is in place: updateRoyal moves her, the clips only animate her.
   // Added back in code, as her style bible asks: two wings of overlapping briar leaves on the upper spine that beat
   // slowly and flare when she casts, and her staff, carried upright in the right hand. The thorn shards are unchanged.
-  const NM = { ready: false, r: null, root: null, mixer: null, actions: {}, cur: null, curName: '', mats: [], hand: null, spine: null,
+  const NM = { ready: false, requested: false, r: royals.find(r => r.kind === 'empress'), root: null, mixer: null, actions: {}, cur: null, curName: '', mats: [], hand: null, spine: null,
     atk: null, state: '', kitAt: 0, one: null, oneT: 0, lastPos: new THREE.Vector3(), moving: 0, flare: 0, wings: [],
     vx: 0, vz: 0, gait: '', ground: 0, yaw: 0 };
   const NM_SCALE = 1.45;        // 1.99 m to the horn tips in the model; about the block figure's height inside r.g (x1.15)
@@ -21,21 +21,9 @@
   const staffGrip = new THREE.Group(), wingRoot = new THREE.Group();
 
   function loadNyxaraModel() {
-    const A = window.MM_ASSETS;
-    NM.r = royals.find(r => r.kind === 'empress');
-    if (!A || !A.nyxara || !A.gltfLoader || !NM.r) return;
-    const go = () => {
-      // Textures load as <img> (img-src allows blob:); the default fetch() path is blocked by connect-src 'self'
-      const loader = new THREE.GLTFLoader().register(parser => {
-        parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
-        return { name: 'mm_img_textures' };
-      });
-      loader.load(A.nyxara, setupNyxaraModel, undefined, e => console.warn('The Nyxara model did not load; keeping the block figure', e));
-    };
-    if (THREE.GLTFLoader) { go(); return; }
-    const s = document.createElement('script');
-    s.src = A.gltfLoader; s.onload = go;
-    document.head.appendChild(s);
+    if (NM.requested) return;
+    NM.requested = true;
+    loadModel('nyxara', setupNyxaraModel, 'The Nyxara model did not load; keeping the block figure');
   }
 
   // One wing: a fan of long serrated briar leaves along a thorny branch, drawn pointing up and out to +x
@@ -132,9 +120,11 @@
 
   const _nv = new THREE.Vector3();
   function nyxaraModelUpdate(dt) {
+    const r = NM.r;
+    if (!r || !r.g.visible) return;
+    if (!NM.requested && flatDist(r.pos, player.position) < 45) loadNyxaraModel();
     if (!NM.ready) return;
-    const r = NM.r, tt = uTime.value;
-    if (!r.g.visible) return;
+    const tt = uTime.value;
     // The clips carry the stagger and the fall; the block figure's own tilt would double them
     r.body.rotation.x = 0;
     NM.mats.forEach(m => m.emissive.copy(r.robe.emissive));
@@ -186,5 +176,3 @@
       w.leaves.forEach(L => { L.m.rotation.z = L.rest * (1 - 0.18 * NM.flare + 0.05 * beat * L.k); });
     });
   }
-
-  loadNyxaraModel();

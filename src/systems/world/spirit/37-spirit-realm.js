@@ -43,6 +43,7 @@
   }
   function setRealm(r, silent) {
     G.realm = r; G.lock = false; G.target = null;
+    if (r === 'spirit' && G.world === 'moat') loadGodlingModels();
     const rk = realmKey();
     creeps.forEach(c => { c.g.visible = c.alive && c.realm === rk; if (c.realm !== rk) { c.bar.hidden = true; c.tele.hide(); c.atk = null; } });
     if (P.mount && r === 'spirit') dismount(true);

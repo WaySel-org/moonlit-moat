@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Measure what a phone downloads to start the game, from a built dist/.
 
-    python3 tools/measure.py [dist_dir] [--fetch-external] [--json]
+    python3 tools/measure.py [dist_dir] [--fetch-external] [--json] [--startup-har FILE]
 
 Reports, for a first visit and a repeat visit:
 - every file on the first load, raw / gzip / Brotli size (Brotli needs the `brotli` CLI),
@@ -12,8 +12,9 @@ Reports, for a first visit and a repeat visit:
 And a simple timing model on a slow 4G link (150 ms RTT, 1.6 Mbps, Lighthouse's mobile preset).
 
 --fetch-external also downloads outside resources (e.g. Google Fonts) once to size them.
+--startup-har adds GLB sizes from a cold browser load recorded before moving the player.
 """
-import gzip, json, pathlib, re, shutil, subprocess, sys, urllib.request
+import argparse, gzip, json, pathlib, re, shutil, subprocess, sys, urllib.parse, urllib.request
 
 RTT, BW = 0.150, 1.6e6 / 8          # seconds, bytes per second
 UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'
@@ -136,6 +137,18 @@ def measure(dist, fetch_external=False):
 def kb(n): return '—' if n is None else f'{n / 1024:.1f}'
 
 
+def startup_models(path):
+    har = json.loads(path.read_text(encoding='utf-8'))
+    files = []
+    for entry in har['log']['entries']:
+        url = entry['request']['url']
+        asset = pathlib.PurePosixPath(urllib.parse.urlsplit(url).path).name
+        response = entry['response']
+        if asset.endswith('.glb') and response['status'] == 200:
+            files.append({'asset': asset, 'bytes': response['content']['size']})
+    return {'files': files, 'bytes': sum(f['bytes'] for f in files)}
+
+
 def report(m, title):
     print(f'\n== {title} ==')
     print(f'{"file":44} {"raw KB":>7} {"gz KB":>7} {"br KB":>7}  block  repeat visit')
@@ -145,10 +158,22 @@ def report(m, title):
     md = m['model']
     print(f'slow 4G model: first paint {md["first_paint_s"]} s, scripts ready {md["scripts_ready_s"]} s; '
           f'repeat visit: {md["repeat_requests"]} requests, {md["repeat_network_s"]} s of network wait')
+    if 'startup_models' in m:
+        models = m['startup_models']
+        print(f'\nStartup model payloads from browser capture ({kb(models["bytes"])} KiB decoded)')
+        for f in models['files']:
+            print(f'  {f["asset"]:<44} {kb(f["bytes"]):>7} KiB')
 
 
 if __name__ == '__main__':
-    args = [a for a in sys.argv[1:] if not a.startswith('--')]
-    m = measure(args[0] if args else pathlib.Path(__file__).resolve().parent.parent / 'dist', '--fetch-external' in sys.argv)
-    if '--json' in sys.argv: print(json.dumps(m, indent=2))
-    else: report(m, str(args[0] if args else 'dist'))
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('dist', nargs='?', type=pathlib.Path)
+    parser.add_argument('--fetch-external', action='store_true')
+    parser.add_argument('--json', action='store_true')
+    parser.add_argument('--startup-har', type=pathlib.Path)
+    args = parser.parse_args()
+    m = measure(args.dist or pathlib.Path(__file__).resolve().parent.parent / 'dist', args.fetch_external)
+    if args.startup_har:
+        m['startup_models'] = startup_models(args.startup_har)
+    if args.json: print(json.dumps(m, indent=2))
+    else: report(m, str(args.dist or 'dist'))

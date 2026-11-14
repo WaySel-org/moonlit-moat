@@ -11,23 +11,10 @@
   let crawlerTemplate = null;
 
   function loadCrawlerModels() {
-    const A = window.MM_ASSETS;
-    if (!A || !A.crawler || !A.gltfLoader) return;
-    const go = () => {
-      // Textures load as <img> (img-src allows blob:); the default fetch() path is blocked by connect-src 'self'
-      const loader = new THREE.GLTFLoader().register(parser => {
-        parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
-        return { name: 'mm_img_textures' };
-      });
-      loader.load(A.crawler, gltf => {
-        crawlerTemplate = gltf;
-        creeps.forEach(c => { if (c.type === 'crawler') setupCrawler(c); });
-      }, undefined, e => console.warn('The Mire Crawler model did not load; keeping the block crawler', e));
-    };
-    if (THREE.GLTFLoader) { go(); return; }
-    const s = document.createElement('script');
-    s.src = A.gltfLoader; s.onload = go;
-    document.head.appendChild(s);
+    loadModel('crawler', gltf => {
+      crawlerTemplate = gltf;
+      creeps.forEach(c => { if (c.type === 'crawler') setupCrawler(c); });
+    }, 'The Mire Crawler model did not load; keeping the block crawler');
   }
 
   // A copy of the template with its own skeleton (three r128 has no SkeletonUtils in the vendored build)

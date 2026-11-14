@@ -38,24 +38,11 @@
     return tex;
   }
 
-  function loadRaidDragons() {
-    const A = window.MM_ASSETS;
-    if (!A || !A.gltfLoader) return;
-    const go = () => raiders.forEach(r => {
-      const look = RAID_LOOKS[r.type];
-      const url = A[look.asset || 'cinderwing'];
-      if (!look || !url) return;
-      // Textures load as <img> (img-src allows blob:); the default fetch() path is blocked by connect-src 'self'
-      const loader = new THREE.GLTFLoader().register(parser => {
-        parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
-        return { name: 'mm_img_textures' };
-      });
-      loader.load(url, gltf => setupRaidDragon(r, look, gltf), undefined, e => console.warn(`The ${r.name} model did not load; keeping the block dragon`, e));
-    });
-    if (THREE.GLTFLoader) { go(); return; }
-    const s = document.createElement('script');
-    s.src = A.gltfLoader; s.addEventListener('load', go);
-    document.head.appendChild(s);
+  function loadRaidModel(r) {
+    const look = RAID_LOOKS[r.type];
+    if (!look || r.modelRequested) return;
+    r.modelRequested = true;
+    loadModel(look.asset || 'cinderwing', gltf => setupRaidDragon(r, look, gltf), `The ${r.name} model did not load; keeping the block model`);
   }
 
   function setupRaidDragon(r, look, gltf) {
@@ -128,4 +115,4 @@
     M.mixer.update(dt);
   }
 
-  loadRaidDragons();
+  raiders.forEach(r => { if (r.fly) loadRaidModel(r); });

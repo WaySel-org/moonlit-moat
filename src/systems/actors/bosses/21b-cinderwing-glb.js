@@ -13,20 +13,8 @@
   const CW_FIREBALL_AT = 0.48;   // fraction of the fireball clip where the neck thrusts forward
 
   function loadCinderwingModel() {
-    const A = window.MM_ASSETS;
-    if (!A || !A.cinderwing || !A.gltfLoader) return;
-    const go = () => {
-      // Textures load as <img> (img-src allows blob:); the default fetch() path is blocked by connect-src 'self'
-      const loader = new THREE.GLTFLoader().register(parser => {
-        parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
-        return { name: 'mm_img_textures' };
-      });
-      loader.load(A.cinderwing, setupCinderwingModel, undefined, e => console.warn('The Cinderwing model did not load; keeping the block dragon', e));
-    };
-    if (THREE.GLTFLoader) { go(); return; }
-    const s = document.createElement('script');
-    s.src = A.gltfLoader; s.onload = go;
-    document.head.appendChild(s);
+    loadModel('cinderwing', setupCinderwingModel, 'The Cinderwing model did not load; keeping the block dragon');
+
   }
 
   function setupCinderwingModel(gltf) {

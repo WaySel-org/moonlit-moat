@@ -18,32 +18,20 @@
   }
 
   function loadWispCages() {
-    const A = window.MM_ASSETS;
-    if (!A || !A.wispCage || !A.gltfLoader) return;
-    const go = () => {
-      const loader = new THREE.GLTFLoader().register(parser => {
-        parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
-        return { name: 'mm_img_textures' };
+    loadModel('wispCage', gltf => {
+      // Lambert like the other models. The inner (char) side takes a little of the flame's light; the outer ash
+      // carries some of its own colour as self-light, or the night lighting turns the approved #6E6E6A near-black
+      gltf.scene.traverse(o => {
+        if (!o.isMesh) return;
+        const src = o.material, inner = src.name === 'char';
+        o.material = new THREE.MeshLambertMaterial({ color: src.color, side: THREE.DoubleSide,
+          emissive: inner ? new THREE.Color(0x8fd8ff).multiplyScalar(0.12) : src.color.clone().multiplyScalar(0.45) });
+        o.material.name = src.name;
       });
-      loader.load(A.wispCage, gltf => {
-        // Lambert like the other models. The inner (char) side takes a little of the flame's light; the outer ash
-        // carries some of its own colour as self-light, or the night lighting turns the approved #6E6E6A near-black
-        gltf.scene.traverse(o => {
-          if (!o.isMesh) return;
-          const src = o.material, inner = src.name === 'char';
-          o.material = new THREE.MeshLambertMaterial({ color: src.color, side: THREE.DoubleSide,
-            emissive: inner ? new THREE.Color(0x8fd8ff).multiplyScalar(0.12) : src.color.clone().multiplyScalar(0.45) });
-          o.material.name = src.name;
-        });
-        wispCage = gltf.scene;
-        wispGlowTex = wispSoftTex();
-        creeps.forEach(c => { if (c.type === 'wisp') setupWisp(c); });
-      }, undefined, e => console.warn('The Ash Wisp cage did not load; keeping the block wisp', e));
-    };
-    if (THREE.GLTFLoader) { go(); return; }
-    const s = document.createElement('script');
-    s.src = A.gltfLoader; s.onload = go;
-    document.head.appendChild(s);
+      wispCage = gltf.scene;
+      wispGlowTex = wispSoftTex();
+      creeps.forEach(c => { if (c.type === 'wisp') setupWisp(c); });
+    }, 'The Ash Wisp cage did not load; keeping the block wisp');
   }
 
   function setupWisp(c) {
