@@ -55,7 +55,7 @@
     for (const c in P.cd) P.cd[c] = Math.max(0, P.cd[c] - dt);
 
     const mv = moveInput();
-    let speed = 0;
+    let speed = 0, moved = false;
     // The beast keeps running (at 85%) through its own attacks and skills
     const ride = rideAct();
     if (P.act === null || ride) {
@@ -63,13 +63,14 @@
       if (mv.lengthSq() > 0) {
         mv.normalize();
         movePlayer(mv.x * speed * dt, mv.z * speed * dt);
-        if (!(G.lock && lockTarget())) P.facing = Math.atan2(mv.x, mv.z);
+        moved = true;
         walk += dt * (P.block ? 6 : 12);
       }
       if (!ride && P.combo && P.actT > 0.5) P.combo = 0;
     }
     const lt = G.lock && P.act !== 'roll' && P.act !== 'leap' ? lockTarget() : null;
     if (lt) P.facing += angDiff(P.facing, yawTo(player.position, lt.pos)) * Math.min(1, dt * 12);
+    else if (moved) P.facing = Math.atan2(mv.x, mv.z);
 
     if (P.act) {
       P.actT += dt;

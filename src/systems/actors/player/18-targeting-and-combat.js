@@ -1,12 +1,20 @@
   // ---------- Targets: the Warden and the royals share one interface ----------
   const WARDEN = { get pos() { return boss.position; }, radius: 1.3, hitY: 2.6, markY: 6.3, isWarden: true };
+  function isLiveTarget(t, realm, inMoat) {
+    if (t.isWarden) return inMoat && HITTABLE.includes(B.state);
+    if (!t.alive) return false;
+    if (t.isCreep) return t.realm === realm && flatDist(t.pos, player.position) < (t.ai === 'godling' || t.mythic ? 40 : 26);
+    if (t.isRaider) return t.g.visible && flatDist(t.pos, player.position) < 40;
+    return t.field ? t.g.visible && flatDist(t.pos, player.position) < 30 : inMoat && t.active;
+  }
   function liveTargets() {
     const out = [];
     const rk = realmKey(), inMoat = G.world === 'moat';
-    if (inMoat && HITTABLE.includes(B.state)) out.push(WARDEN);
-    royals.forEach(r => { if (r.field ? r.alive && r.g.visible && flatDist(r.pos, player.position) < 30 : inMoat && r.active && r.alive) out.push(r); });
-    raiders.forEach(r => { if (r.alive && r.g.visible && flatDist(r.pos, player.position) < 40) out.push(r); });
-    creeps.forEach(c => { if (c.alive && c.realm === rk && flatDist(c.pos, player.position) < (c.ai === 'godling' || c.mythic ? 40 : 26)) out.push(c); });
+    const add = t => { if (isLiveTarget(t, rk, inMoat)) out.push(t); };
+    add(WARDEN);
+    royals.forEach(add);
+    raiders.forEach(add);
+    creeps.forEach(add);
     return out;
   }
   function nearestTarget(list, from) {
@@ -15,12 +23,11 @@
     return best;
   }
   function lockTarget() {
+    if (G.target && isLiveTarget(G.target, realmKey(), G.world === 'moat')) return G.target;
     const live = liveTargets();
     if (!live.length) return null;
-    if (!G.target || !live.includes(G.target)) {
-      const bosses = live.filter(t => !t.isCreep && !(t.field && !G.royalHunt && !(t.provoked > 0)));
-      G.target = nearestTarget(bosses.length ? bosses : live, player.position);
-    }
+    const bosses = live.filter(t => !t.isCreep && !(t.field && !G.royalHunt && !(t.provoked > 0)));
+    G.target = nearestTarget(bosses.length ? bosses : live, player.position);
     return G.target;
   }
   function damageEnemy(t, dmg, poiseDmg, heavy) { if (t.isWarden) damageBoss(dmg, poiseDmg, heavy); else if (t.isCreep) damageCreep(t, dmg, poiseDmg, heavy); else if (t.isRaider) damageRaider(t, dmg, poiseDmg, heavy); else damageRoyal(t, dmg, poiseDmg, heavy); }
