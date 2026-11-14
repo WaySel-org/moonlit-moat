@@ -1,14 +1,22 @@
   // ---------- Nyxara, the Thorn Empress: the modelled, animated boss (assets/bosses/nyxara.glb) ----------
   // Loaded after the game starts, like the Warden; the block figure fights until the model arrives, and stays if it
   // fails to load. nyxaraModelUpdate(), called right after the royals update, maps her state to a clip: idle and move
-  // while hovering, fan for the thorn fan, burst for the pyre and her kit spells, vanish for the blink, hurt when
+  // while hovering, walk / run / walkback when she travels (she sets down on the floor for these and lifts off again
+  // when she stops), fan for the thorn fan, burst for the pyre and her kit spells, vanish for the blink, hurt when
   // staggered, dead when she falls. Every clip is in place: updateRoyal moves her, the clips only animate her.
   // Added back in code, as her style bible asks: two wings of overlapping briar leaves on the upper spine that beat
   // slowly and flare when she casts, and her staff, carried upright in the right hand. The thorn shards are unchanged.
   const NM = { ready: false, r: null, root: null, mixer: null, actions: {}, cur: null, curName: '', mats: [], hand: null, spine: null,
-    atk: null, state: '', kitAt: 0, one: null, oneT: 0, lastPos: new THREE.Vector3(), moving: 0, flare: 0, wings: [] };
+    atk: null, state: '', kitAt: 0, one: null, oneT: 0, lastPos: new THREE.Vector3(), moving: 0, flare: 0, wings: [],
+    vx: 0, vz: 0, gait: '', ground: 0, yaw: 0 };
   const NM_SCALE = 1.45;        // 1.99 m to the horn tips in the model; about the block figure's height inside r.g (x1.15)
-  const NM_LOOPS = new Set(['idle', 'move']);
+  const NM_GAITS = new Set(['walk', 'run', 'walkback']);
+  const NM_LOOPS = new Set(['idle', 'move', ...NM_GAITS]);
+  // Ground speed (game units/s) each gait's feet match at timeScale 1, at her size in the game; the clip is sped up or
+  // slowed to the real speed so the feet don't slide. Walking starts above NM_WALK_ON, stops below NM_WALK_OFF;
+  // she runs above NM_RUN_AT (the field chase and the hunt), walks the rooftop's 2.2-2.6.
+  const NM_PACE = { walk: 2.3, run: 5.6, walkback: 2.0 };
+  const NM_WALK_ON = 1.0, NM_WALK_OFF = 0.6, NM_RUN_AT = 3.3;
   const NM_FAN_AT = 0.45, NM_BURST_AT = 0.6;   // fraction of the clip where the cast lands
   const staffGrip = new THREE.Group(), wingRoot = new THREE.Group();
 
@@ -109,7 +117,17 @@
       if (A.name === 'blink') return ['vanish', 0.7];
     }
     if (NM.one) return [NM.one, NM.oneT0];
+    if (NM.gait) return [NM.gait, 0];
     return [NM.moving > 0.4 ? 'move' : 'idle', 0];
+  }
+
+  // Which gait her travel calls for: none (hover), walk, run, or walkback when she backs away while facing you
+  function nyxaraGait(r) {
+    const sp = NM.moving, on = NM.gait ? NM_WALK_OFF : NM_WALK_ON;
+    if (!r.alive || r.state !== 'chase' || NM.one || sp < on) return '';
+    const f = fwdOf(r.facing), along = (NM.vx * f.x + NM.vz * f.z) / Math.max(sp, 1e-3);
+    if (along < -0.5) return 'walkback';
+    return sp > NM_RUN_AT ? 'run' : 'walk';
   }
 
   const _nv = new THREE.Vector3();
@@ -120,9 +138,13 @@
     // The clips carry the stagger and the fall; the block figure's own tilt would double them
     r.body.rotation.x = 0;
     NM.mats.forEach(m => m.emissive.copy(r.robe.emissive));
-    const step = Math.hypot(r.pos.x - NM.lastPos.x, r.pos.z - NM.lastPos.z) / Math.max(dt, 1e-3);
-    if (dt > 0) NM.moving += (step - NM.moving) * Math.min(1, dt * 6);
+    // Her velocity, smoothed; a blink or a respawn jumps her across the map, which is not travel
+    let sx = (r.pos.x - NM.lastPos.x) / Math.max(dt, 1e-3), sz = (r.pos.z - NM.lastPos.z) / Math.max(dt, 1e-3);
+    if (Math.hypot(sx, sz) > 12) sx = sz = 0;
+    if (dt > 0) { const k = Math.min(1, dt * 6); NM.vx += (sx - NM.vx) * k; NM.vz += (sz - NM.vz) * k; }
+    NM.moving = Math.hypot(NM.vx, NM.vz);
     NM.lastPos.copy(r.pos);
+    NM.gait = nyxaraGait(r);
     // Spells with no attack state of their own: her kit (Thorn nova, Briar lances) and the hunt's volley
     if (r.alive && r.state !== 'attack') {
       if ((r.kitAt || 0) !== NM.kitAt) { NM.one = 'burst'; NM.oneT0 = NM.oneT = 1.3; nyxaraPlay('burst', 1.3, true); }
@@ -134,6 +156,19 @@
     const restart = !NM_LOOPS.has(name) && !NM.one && (r.atk !== NM.atk || r.state !== NM.state);
     NM.atk = r.atk; NM.state = r.state;
     nyxaraPlay(name, dur, restart);
+    // Gaits: feet match her real speed; she sets down on the floor (updateRoyal keeps the body at hover height, so the
+    // model drops inside it) and turns her hips toward where she is going, up to a quarter turn, then back to you
+    const gait = NM_GAITS.has(name) ? name : '';
+    if (gait) NM.cur.timeScale = clamp(NM.moving / NM_PACE[gait], 0.6, 1.5);
+    NM.ground += ((gait ? 1 : 0) - NM.ground) * Math.min(1, dt * 5);
+    NM.root.position.y = -r.body.position.y * NM.ground;
+    let yaw = 0;
+    if (gait && NM.moving > 0.3) {
+      const head = Math.atan2(NM.vx, NM.vz) + (gait === 'walkback' ? Math.PI : 0);
+      yaw = clamp(angDiff(r.facing, head), -1.2, 1.2);
+    }
+    NM.yaw += (yaw - NM.yaw) * Math.min(1, dt * 6);
+    NM.root.rotation.y = NM.yaw;
     NM.mixer.update(dt);
 
     // Staff: follows the right hand, carried upright, tipping forward as she casts
