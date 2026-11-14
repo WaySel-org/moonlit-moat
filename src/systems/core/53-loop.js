@@ -1,5 +1,6 @@
   // ---------- Loop ----------
   const camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
+  const reflectionFrustum = new THREE.Frustum(), viewProjection = new THREE.Matrix4();
   let camBase = 0, camPull = 1; // camera height track and pull-in fraction (1 = full distance)
   const label = $('#label'), proj = new THREE.Vector3();
   let last = performance.now(), nextFish = 1.5, lastSplash = 0, walk = 0, first = true;
@@ -55,14 +56,18 @@
     }
 
     // Sparks
-    for (let i = 0; i < SP; i++) {
-      if (spLife[i] <= 0) continue;
-      spLife[i] -= dt;
-      if (spLife[i] <= 0) { spPos[i * 3 + 1] = -999; continue; }
-      spVel[i * 3 + 1] -= 14 * dt;
-      spPos[i * 3] += spVel[i * 3] * dt; spPos[i * 3 + 1] = Math.max(0.03, spPos[i * 3 + 1] + spVel[i * 3 + 1] * dt); spPos[i * 3 + 2] += spVel[i * 3 + 2] * dt;
+    if (sparks.visible) {
+      sparks.visible = false;
+      for (let i = 0; i < SP; i++) {
+        if (spLife[i] <= 0) continue;
+        spLife[i] -= dt;
+        if (spLife[i] <= 0) { spPos[i * 3 + 1] = -999; continue; }
+        sparks.visible = true;
+        spVel[i * 3 + 1] -= 14 * dt;
+        spPos[i * 3] += spVel[i * 3] * dt; spPos[i * 3 + 1] = Math.max(0.03, spPos[i * 3 + 1] + spVel[i * 3 + 1] * dt); spPos[i * 3 + 2] += spVel[i * 3 + 2] * dt;
+      }
+      if (sparks.visible) spGeo.attributes.position.needsUpdate = true;
     }
-    spGeo.attributes.position.needsUpdate = true;
 
     // Ripples
     const inLake = pr.dl < LAKE.r - 0.2;
@@ -137,24 +142,37 @@
     }
     sky.position.copy(camera.position);
 
-    // Pass 1: reflection from a camera mirrored below the water line
-    if (S.reflect && G.world === 'moat' && Math.hypot(player.position.x - LAKE.x, player.position.z - LAKE.z) < 45) {
-      mirrorCam.position.set(camera.position.x, -camera.position.y, camera.position.z);
-      mirrorCam.lookAt(camLook.x, -camLook.y, camLook.z);
-      water.visible = false;
-      sky.position.copy(mirrorCam.position);
-      renderer.setRenderTarget(reflRT); renderer.render(scene, mirrorCam);
-      sky.position.copy(camera.position);
-      water.visible = true;
+    // Reflect the scene only when the main camera can see the water.
+    if (S.reflect && G.world === 'moat' && water.visible && Math.hypot(player.position.x - LAKE.x, player.position.z - LAKE.z) < 45) {
+      camera.updateMatrixWorld();
+      water.updateWorldMatrix(true, false);
+      reflectionFrustum.setFromProjectionMatrix(viewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+      if (reflectionFrustum.intersectsObject(water)) {
+        mirrorCam.position.set(camera.position.x, -camera.position.y, camera.position.z);
+        mirrorCam.lookAt(camLook.x, -camLook.y, camLook.z);
+        water.visible = false;
+        sky.position.copy(mirrorCam.position);
+        try {
+          renderer.setRenderTarget(reflRT); renderer.render(scene, mirrorCam);
+        } finally {
+          sky.position.copy(camera.position);
+          water.visible = true;
+        }
+      }
     }
-    // Pass 2: the normal scene into a texture. Pass 3: turn it into characters.
-    markDynamic();
-    scene.overrideMaterial = maskFriend; camera.layers.set(1);
-    renderer.setRenderTarget(maskRT); renderer.render(scene, camera);
-    renderer.autoClear = false; scene.overrideMaterial = maskFoe; camera.layers.set(2);
-    renderer.render(scene, camera);
-    if (HER.ready) { scene.overrideMaterial = maskFriendSkinned; camera.layers.set(3); renderer.render(scene, camera); }
-    renderer.autoClear = true; scene.overrideMaterial = null; camera.layers.set(0);
+    // Only ASCII and Split sample the gameplay mask.
+    if (S.mode !== 2) {
+      markDynamic();
+      try {
+        scene.overrideMaterial = maskFriend; camera.layers.set(1);
+        renderer.setRenderTarget(maskRT); renderer.render(scene, camera);
+        renderer.autoClear = false; scene.overrideMaterial = maskFoe; camera.layers.set(2);
+        renderer.render(scene, camera);
+        if (HER.ready) { scene.overrideMaterial = maskFriendSkinned; camera.layers.set(3); renderer.render(scene, camera); }
+      } finally {
+        renderer.autoClear = true; scene.overrideMaterial = null; camera.layers.set(0);
+      }
+    }
     gfxBeforeScene();
     renderer.setRenderTarget(sceneRT); renderer.render(scene, camera);
     gfxAfterScene();
