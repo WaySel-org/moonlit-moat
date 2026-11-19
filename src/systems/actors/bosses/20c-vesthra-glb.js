@@ -1,23 +1,24 @@
   // ---------- Vesthra, the Gorgon: the modelled, animated boss (assets/bosses/vesthra.glb) ----------
   // A woman's torso on a serpent's body: the tail drops to the floor and runs out behind her. Rigged without legs
   // (tools/rig_serpent.py) and animated by hand. Loaded on approach or at the start of the rooftop fight. The block figure
-  // fights until the model arrives and stays if it fails to load. vesthraModelUpdate(), called right after the royals update,
+  // finishes any attack in progress before swapping to the model and stays if it fails to load. vesthraModelUpdate()
   // maps her state to a clip: idle, slither when she moves (the ripple speeds up with her), coil for the tail sweep,
   // gaze for the stone gaze and her kit spells, lunge for the sickle dash and for devouring a creep in the field, hurt
   // when staggered or struck, dead when she falls. Every clip is in place: updateRoyal moves and turns her.
   // Her twin sickles are the block figure's own, moved into her hands; while she stares, her body glows gorgon green.
-  const VM = { ready: false, requested: false, r: royals.find(r => r.kind === 'gorgon'), root: null, mixer: null, actions: {}, cur: null, mats: [], hands: [], arms: [],
+  const VM = { ready: false, requested: false, pending: null, r: royals.find(r => r.kind === 'gorgon'), root: null, mixer: null, actions: {}, cur: null, mats: [], hands: [], arms: [],
     grips: [], atk: null, state: '', kitAt: 0, one: null, oneT: 0, oneT0: 0, lastPos: new THREE.Vector3(), moving: 0,
     hp: 0, devour: false };
   const VM_SCALE = 0.95;         // 2.7 m to the crown of snakes in the model; inside r.g (x1.15) about Nyxara's height
   const VM_LOOPS = new Set(['idle', 'slither']);
   const VM_COIL_AT = 28 / 45, VM_GAZE_AT = 29 / 36, VM_LUNGE_AT = 16 / 40;   // where each strike lands in its clip
   const VM_SLITHER_PACE = 2.6;   // her rooftop speed; the ripple runs faster or slower with her real speed
+  const VM_LOAD_WARNING = 'The Vesthra model did not load; keeping the block figure';
 
   function loadVesthraModel() {
     if (VM.requested || !VM.r) return;
     VM.requested = true;
-    loadModel('vesthra', setupVesthraModel, 'The Vesthra model did not load; keeping the block figure');
+    loadModel('vesthra', gltf => { VM.pending = gltf; }, VM_LOAD_WARNING);
   }
 
   function setupVesthraModel(gltf) {
@@ -88,7 +89,14 @@
   function vesthraModelUpdate(dt) {
     const r = VM.r;
     if (!VM.requested && r && r.g.visible && flatDist(r.pos, player.position) < 30) loadVesthraModel();
-    if (!VM.ready) return;
+    if (!VM.ready) {
+      // Swapping mid-attack starts the new clip at zero while the hit timer is already running.
+      if (!VM.pending || !r.g.visible || !r.alive || r.state === 'attack' || r.state === 'stagger' || (r.field && r.pivot.rotation.x < -1)) return;
+      const gltf = VM.pending;
+      VM.pending = null;
+      try { setupVesthraModel(gltf); }
+      catch (error) { console.warn(VM_LOAD_WARNING, error); return; }
+    }
     if (!r.g.visible) { VM.lastPos.copy(r.pos); VM.hp = r.hp; return; }
     // The clips carry the stagger and the fall; the block figure's own tilt would double them
     r.body.rotation.x = 0;

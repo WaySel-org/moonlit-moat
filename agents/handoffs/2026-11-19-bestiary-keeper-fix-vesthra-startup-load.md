@@ -8,13 +8,14 @@
 ## What I changed
 
 - Request Vesthra's GLB through the shared loader once she is visible within 30 game units or the rooftop fight starts.
-- Keep the block figure visible while the request is pending or if it fails. The model and sickles retain their hostile gameplay layer when the swap succeeds.
+- Keep the block figure visible while the request is pending, if it fails, or while an attack or stagger is still in progress. The model and sickles retain their hostile gameplay layer when the swap succeeds.
 
 ## How I tested it
 
-- `python tools/build.py` passed. The build reported 344.9 KB gzip against the 400 KB first-load budget.
+- `python tools/build.py` passed. The build reported 345.0 KB gzip against the 400 KB first-load budget.
 - Headless Chrome loaded fresh Moat sessions with the repository CSP and no console errors. The cold-load comparison went from nine GLBs totaling 18,198,072 decoded bytes to eight totaling 14,533,220 bytes.
 - Approached Vesthra in the field, entered combat on the roof, and used movement and attack inputs. Each path loaded the model once, including when the fight started before an approach. Aborting the request kept the block figure visible.
+- Held and released the model response during a tail sweep wind-up. Verified the block figure stayed through recovery and the model attached once the boss returned to chase.
 
 ## What is left
 
