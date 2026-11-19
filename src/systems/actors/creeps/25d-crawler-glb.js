@@ -69,7 +69,7 @@
     if (!crawlerTemplate) return;
     creeps.forEach(c => {
       const M = c.model;
-      if (!M) return;
+      if (!M || c.type !== 'crawler') return;   // other creeps (godlings, the Oni) have models and updates of their own
       // Died this frame (hp ran out, not a wave clean-up or a reset): keep the body up for the roll
       if (M.alive && !c.alive && c.hp <= 0 && c.realm === realmKey()) {
         M.corpseT = CR_CORPSE; c.g.visible = true;
