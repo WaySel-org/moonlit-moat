@@ -141,25 +141,28 @@
       });
     }
     sky.position.copy(camera.position);
-    scene.updateMatrixWorld();
+    // Three still updates hidden branches in updateMatrixWorld(). The renderer skips them.
+    scene.updateWorldMatrix(false, false);
+    for (const child of scene.children) {
+      if (child.visible) child.updateMatrixWorld(true);
+    }
 
     // Reflect the scene only when the main camera can see the water.
     if (S.reflect && G.world === 'moat' && water.visible && Math.hypot(player.position.x - LAKE.x, player.position.z - LAKE.z) < 45) {
       camera.updateMatrixWorld();
-      water.updateWorldMatrix(true, false);
       reflectionFrustum.setFromProjectionMatrix(viewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
       if (reflectionFrustum.intersectsObject(water)) {
         mirrorCam.position.set(camera.position.x, -camera.position.y, camera.position.z);
         mirrorCam.lookAt(camLook.x, -camLook.y, camLook.z);
         water.visible = false;
-        sky.position.copy(mirrorCam.position);
-        sky.updateMatrixWorld();
         try {
+          sky.position.copy(mirrorCam.position);
+          sky.updateMatrixWorld();
           renderer.setRenderTarget(reflRT); renderer.render(scene, mirrorCam);
         } finally {
+          water.visible = true;
           sky.position.copy(camera.position);
           sky.updateMatrixWorld();
-          water.visible = true;
         }
       }
     }

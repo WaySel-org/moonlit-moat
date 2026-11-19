@@ -7,7 +7,7 @@
 
 ## What I changed
 
-- Update the world scene's matrices once after simulation and camera placement. Refresh the sky when the reflection moves and restores it. Refresh the moon and torch transforms before the main pass so it renders the current shadows and lights.
+- Update visible scene branches once after simulation and camera placement. Skip branches whose root is hidden. Refresh the sky when the reflection moves and restores it, and refresh the moon and torch transforms before the main pass.
 - Skip Enhanced bloom in full ASCII. Check both dimensions when sizing the blur targets so bloom follows a height-only resize in Raw and Split.
 
 ## How I tested it
@@ -15,7 +15,7 @@
 - `python tools/build.py` passed at 345.2 KB gzip against the 400 KB first-load budget.
 - Headless Chrome with the repository CSP reported no console errors through movement, sword and jump inputs, a height-only resize, reflection toggles, and a switch from the Moat to Veyra.
 - Checked Raw, ASCII and Split in Enhanced, plus Raw and ASCII in Classic. Compared visible world matrices at pass entry against a full recompute. Verified sky placement, water visibility, the shadow update flag, mask passes and bloom target dimensions.
-- In the opening view with the lake visible, full scene updates fell from five to one per ASCII frame and from two to one per Raw frame. Enhanced ASCII went from four bloom passes to zero per frame.
+- In the opening view with the lake visible, the scene-matrix walk fell from five to one per ASCII frame and from two to one per Raw frame. In the updated Raw smoke test, skipping hidden branches left about 2,600 of 10,400 children and descendants to visit. Enhanced ASCII went from four bloom passes to zero per frame.
 
 ## What is left
 
