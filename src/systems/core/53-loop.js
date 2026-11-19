@@ -141,6 +141,7 @@
       });
     }
     sky.position.copy(camera.position);
+    scene.updateMatrixWorld();
 
     // Reflect the scene only when the main camera can see the water.
     if (S.reflect && G.world === 'moat' && water.visible && Math.hypot(player.position.x - LAKE.x, player.position.z - LAKE.z) < 45) {
@@ -152,10 +153,12 @@
         mirrorCam.lookAt(camLook.x, -camLook.y, camLook.z);
         water.visible = false;
         sky.position.copy(mirrorCam.position);
+        sky.updateMatrixWorld();
         try {
           renderer.setRenderTarget(reflRT); renderer.render(scene, mirrorCam);
         } finally {
           sky.position.copy(camera.position);
+          sky.updateMatrixWorld();
           water.visible = true;
         }
       }
