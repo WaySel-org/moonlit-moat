@@ -134,18 +134,19 @@
     wispMesh.visible = shrineMesh.visible = riftMesh.visible = false;
     evTeles.forEach(t => t.hide());
     (E.rocks || []).forEach(r => scene.remove(r.m));
-    if (E.elite && quiet) E.elite.elite = false;
+    if (E.elite) E.elite.elite = false;
     if (!quiet && msg) { showBanner(EVENTS[E.kind].name, msg, 'title'); bannerTimer = 3; }
   }
   function eliteDown(c) {
     c.elite = false;
-    const E = G.event, m = tierMult(worldTier());
+    if (G.event?.elite !== c) return;
+    const m = tierMult(worldTier());
     reward(90 * m, 110 * m, c.pos.clone().add(new THREE.Vector3(0, 2.6, 0)));
     spawnLoot(c.pos.x + 1, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
     spawnLoot(c.pos.x - 1, c.pos.z, BOOST_KEYS[Math.floor(Math.random() * BOOST_KEYS.length)]);
     dropGear(c.pos, 1, 0.6);
     dropRelic(c.pos.x, c.pos.z + 1.2);
-    if (E && E.elite === c) endEvent(false, 'The elite is down and the ambush breaks. Bounty paid.');
+    endEvent(false, 'The elite is down and the ambush breaks. Bounty paid.');
   }
   function eventText() {
     const E = G.event; if (!E) return '';
@@ -178,7 +179,13 @@
     const d = E.p ? flatDist(here(), E.p) : 0;
     if (E.kind === 'ambush') {
       if (!E.elite.alive) { endEvent(true); return; }
-      if (E.t <= 0) { endEvent(false, 'The elite slips away into the dark.'); return; }
+      if (E.t <= 0) {
+        dropMob(E.elite);
+        E.elite.respawn = 7 + Math.random() * 6;
+        if (G.target === E.elite) G.target = null;
+        endEvent(false, 'The elite slips away into the dark.');
+        return;
+      }
     } else if (E.kind === 'starfall') {
       E.next -= real;
       if (E.t > 1.2 && E.next <= 0) {

@@ -42,8 +42,9 @@
     c.mat.color.copy(flame).lerp(new THREE.Color(0xffffff), 0.65);            // white-hot centre
     const cage = wispCage.clone(true);
     cage.scale.setScalar(WC_SCALE);
-    cage.traverse(o => { o.layers.enable(2); if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
+    cage.traverse(o => { if (o.isMesh) { o.castShadow = true; o.frustumCulled = false; } });
     c.body.add(cage);
+    tag(cage, 2);
     const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: wispGlowTex, color: flame, blending: THREE.AdditiveBlending,
       transparent: true, depthWrite: false, opacity: 0.85 }));
     glow.scale.setScalar(0.9); glow.layers.enable(2); c.body.add(glow);

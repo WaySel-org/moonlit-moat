@@ -9,8 +9,9 @@ src/index.html, styles ┘   validate, assemble       ├─► container image 
 ```
 
 - **Systems** (`src/systems/`) are plain scripts grouped by domain: `core`, `render`, `ui`, `world/<world>`, `actors/<kind>`. `manifest.json` fixes the order; the build concatenates them inside one closure, so systems share scope. This keeps the original game behaviour exactly while letting people work on one file at a time.
-- **Content** (`content/`) is data: one JSON per character, one `world.json` per world, plus `environments.json`. The build validates every file and bundles it as `window.MM_CONTENT`; `core/39-content.js` applies it over the code defaults. Today mounts, creep names and health, and environments are data-driven; bosses and world layouts are described in data but still built in code (`"dataDriven": false`). Moving them into data is Gatewright work.
-- **Rendering**: the scene renders to a texture, a gameplay mask renders friendly (layer 1) and hostile (layer 2) objects, and a post shader turns cells into glyphs. Scenery recedes; gameplay stays bright.
+- **Content** (`content/`) has one JSON file per character and world, plus `environments.json`. The build validates each file and bundles it as `window.MM_CONTENT`. `core/48-content.js` applies mount, creep and environment data over the code defaults. Bosses and world layouts are still built in code.
+- **Rendering** draws the scene to a texture and uses a gameplay mask to keep actors bright in the glyph shader. Rigid friendly and hostile objects use layers 1 and 2. Skinned objects share layer 3 and draw in the current pose with their own friendly or hostile mask color.
+- **Render passes** share one world-matrix update of visible scene branches after simulation and camera updates. The reflection moves the sky and restores it before the next pass. The main pass updates the moon and torch transforms just before rendering shadows. Enhanced bloom runs in Raw and Split views.
 
 ## Delivery (cloud native)
 - **Stateless and static.** The whole game is static files; any number of replicas can serve it. No server state, no database, no secrets.

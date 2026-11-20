@@ -25,6 +25,7 @@
   $('#stage').appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
+  scene.autoUpdate = false; // The frame loop shares one world-matrix update across scene passes.
   const camera = new THREE.PerspectiveCamera(58, 1, 0.1, 900);
   const mirrorCam = new THREE.PerspectiveCamera(58, 1, 0.1, 900);
 

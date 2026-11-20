@@ -296,6 +296,7 @@
     else winGame();
   }
   function startRoyal() {
+    loadVesthraModel();
     loadNyxaraModel();
     const tier = worldTier(), m = tierMult(tier);
     G.dmgMult = (1 + 0.2 * (tier - 1)) * (1 + 0.25 * G.ascension); G.bossTier = tier;

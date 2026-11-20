@@ -91,7 +91,6 @@
       if (name === 'slide' && (P.mount || P.st < 4)) { P.buffer = null; return; }
       if (name === 'hook') { if (PR.level < HOOK_LV) return say(`Moonhook unlocks at level ${HOOK_LV}`, '#ffd36a'); if (P.mount) return say('Not while riding', '#ffd36a'); if (P.cd.g > 0) { P.buffer = null; return; } if (P.mana < HOOK_MANA) return say('not enough mana'); }
       if (name === 'leap') { if (!PR.warden) return say("Beat the Warden to learn this", '#ffd36a'); if (P.cd.x > 0) { P.buffer = null; return; } if (P.mana < 25) return say('not enough mana'); }
-      if (name === 'drink') { P.flasks--; }
       if (name !== 'light') P.combo = 0;
       if (startAct(name)) P.buffer = null;
     } else if (P.act === 'light' && name === 'light' && P.combo < 2 && P.actT > P.actDur * 0.55) {

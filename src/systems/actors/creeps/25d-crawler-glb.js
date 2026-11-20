@@ -33,7 +33,6 @@
     root.scale.setScalar(CR_SCALE);
     let mat = null;
     root.traverse(o => {
-      o.layers.enable(2);   // hostile in the gameplay mask, like the block crawler
       if (o.isMesh) {
         o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false;
         const map = o.material.map;
@@ -47,6 +46,7 @@
     crawlerTemplate.animations.forEach(k => { M.actions[k.name] = M.mixer.clipAction(k); });
     c.body.children.forEach(o => { o.visible = false; });
     c.body.add(root);
+    tag(root, 2);
     if (mat) c.mat = mat;
     c.model = M;
     crawlerPlay(M, 'idle', 1, true);

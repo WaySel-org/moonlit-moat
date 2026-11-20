@@ -60,11 +60,12 @@
     const ride = rideAct();
     if (P.act === null || ride) {
       speed = (P.block ? 2.4 : 6.8) * (P.mount ? BEAST_TYPES[P.mount.type].speed : 1) * PR.speed * (agi ? 1.4 : 1) * (wading ? 0.6 : 1) * (P.stone > 0 ? 0 : 1) * heroSlow() * (ride ? 0.85 : 1);
-      if (mv.lengthSq() > 0) {
-        mv.normalize();
+      const inputLength = mv.length();
+      if (inputLength > 0) {
+        if (inputLength > 1) mv.divideScalar(inputLength);
         movePlayer(mv.x * speed * dt, mv.z * speed * dt);
         moved = true;
-        walk += dt * (P.block ? 6 : 12);
+        walk += dt * (P.block ? 6 : 12) * Math.min(inputLength, 1);
       }
       if (!ride && P.combo && P.actT > 0.5) P.combo = 0;
     }

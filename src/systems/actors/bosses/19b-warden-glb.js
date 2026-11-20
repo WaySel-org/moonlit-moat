@@ -50,6 +50,7 @@
     capeHang.add(cape); cape.visible = true; cape.position.set(0, 0, 0); cape.frustumCulled = false;
     bBody.add(capeHang);
     bBody.add(root);
+    [root, hammerGrip, capeHang].forEach(o => tag(o, 2));
     WM.lastPos.copy(boss.position);
     WM.ready = true;
   }
