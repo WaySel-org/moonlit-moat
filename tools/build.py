@@ -22,6 +22,7 @@ and browsers can keep it for a year without asking again.
 dist/ is build output and is never committed. A dist/.vercel link, if present, is kept.
 """
 import gzip, hashlib, json, pathlib, shutil, subprocess, sys
+from urllib.parse import quote
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC, CONTENT, DIST = ROOT / 'src', ROOT / 'content', ROOT / 'dist'
@@ -141,6 +142,11 @@ def build():
     (DIST / 'healthz').write_text('ok\n', encoding='utf-8')
 
     markup = (SRC / 'index.html').read_text(encoding='utf-8')
+    icon = quote(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
+        '<rect width="32" height="32" rx="6" fill="#0a1418"/>'
+        '<path d="M20 5a11 11 0 1 0 7 16A11 11 0 0 1 20 5Z" fill="#ffe6a8"/>'
+        '</svg>', safe='')
     (DIST / 'index.html').write_text(
         '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
@@ -148,6 +154,7 @@ def build():
         '<meta name="mobile-web-app-capable" content="yes">\n'
         '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n'
         '<meta name="referrer" content="no-referrer">\n<title>Moonlit Moat</title>\n'
+        f'<link rel="icon" href="data:image/svg+xml,{icon}">\n'
         f'<link rel="preload" href="{fonts["400"]}" as="font" type="font/woff2" crossorigin>\n'
         f'<link rel="stylesheet" href="{styles}">\n</head>\n<body>\n' + markup +
         f'<script src="{three}"></script>\n<script src="{game}"></script>\n'

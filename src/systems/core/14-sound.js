@@ -6,7 +6,7 @@
   let ac = null, noiseBuf = null, bus = null, wet = null, clipCurve = null, vary = 1, sfxGain = 1, sfxAt = 0;
   const sfxLast = {};
   function audio() {
-    if (!S.sound) return null;
+    if (!S.sound || navigator.userActivation?.hasBeenActive === false) return null;
     if (!ac) {
       try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
       const comp = ac.createDynamicsCompressor();

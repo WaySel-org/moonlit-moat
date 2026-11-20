@@ -56,13 +56,13 @@
         o.material = new THREE.MeshLambertMaterial({ map, skinning: true, emissive: 0x555555, emissiveMap: map });
         mats.push(o.material);
       }
-      o.layers.enable(2);   // hostile in the gameplay mask, like the block figure
     });
     const M = { root, mats, mixer: new THREE.AnimationMixer(root), actions: {}, cur: null, atk: null, hp: c.hp, one: 0,
       lastPos: c.pos.clone(), moving: 0 };
     gltf.animations.forEach(a => { M.actions[a.name] = M.mixer.clipAction(a); });
     c.body.children.forEach(ch => { if (ch !== c.halo) ch.visible = false; });
     c.body.add(root);
+    tag(root, 2);
     c.model = M;
     godlingPlay(M, 'idle', 0, true);
   }

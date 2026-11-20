@@ -18,7 +18,7 @@
       P.rollDir.copy(mv.lengthSq() > 0 ? mv.normalize() : fwdOf(P.facing));
       P.facing = Math.atan2(P.rollDir.x, P.rollDir.z);
     }
-    else if (name === 'drink') { P.actDur = 0.95; P.healed = false; P.combo = 0; }
+    else if (name === 'drink') { P.flasks--; P.actDur = 0.95; P.healed = false; P.combo = 0; }
     else if (name === 'cast') { P.actDur = 0.45; P.mana -= boltCost(); P.combo = 0; sfx('cast'); }
     else if (isMp(name)) { if (!startMountPower(name)) { P.act = null; return false; } return true; }
     else if (name === 'throw') { P.actDur = 0.28; P.st -= stCost(10); P.stDelay = 0.5; P.cd.z = 0.45; P.combo = 0; sfx('throw'); }

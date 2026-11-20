@@ -38,6 +38,7 @@
     gltf.animations.forEach(c => { M.actions[c.name] = M.mixer.clipAction(c); });
     b.body.visible = false;
     b.g.add(root);
+    tag(root, 1);
     b.model = M;
     mountPlay(M, 'idle', 0, true);
   }

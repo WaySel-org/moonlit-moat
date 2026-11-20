@@ -49,7 +49,7 @@
     });
     r.body.add(root);
     // Hostile in the gameplay mask, like the block figure (tag() ran before these existed)
-    [root, ...VM.grips].forEach(o => o.traverse(c => c.layers.enable(2)));
+    [root, ...VM.grips].forEach(o => tag(o, 2));
     VM.root = root; VM.lastPos.copy(r.pos); VM.kitAt = r.kitAt || 0; VM.hp = r.hp;
     VM.ready = true;
     vesthraPlay('idle', 0, true);

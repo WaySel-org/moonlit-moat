@@ -15,7 +15,20 @@
     while (k < 620) { m.makeScale(0, 0, 0); hedges.setMatrixAt(k++, m); }
     hedges.instanceMatrix.needsUpdate = true;
   }
-  function genMaze() {
+  const newMazeSeed = () => Math.floor(Math.random() * 0x100000000);
+  let mazeSeed = newMazeSeed();
+  function mazeCellCenter(x, z) {
+    const { x0, z0, cell, n } = MAZE;
+    const center = offset => (Math.max(0, Math.min(n - 1, Math.floor(offset / cell))) + 0.5) * cell;
+    return { x: x0 + center(x - x0), z: z0 + center(z - z0) };
+  }
+  function genMaze(tier) {
+    // Use a local random stream so other systems cannot change this run's layout.
+    let state = (mazeSeed + Math.imul(tier, 0x9e3779b1)) >>> 0;
+    const random = () => {
+      state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+      return state / 0x100000000;
+    };
     const n = MAZE.n;
     const v = Array.from({ length: n + 1 }, () => Array(n).fill(true));
     const h = Array.from({ length: n }, () => Array(n + 1).fill(true));
@@ -28,13 +41,13 @@
       if (cz > 0 && !seen[cx][cz - 1]) opts.push([0, -1]);
       if (cz < n - 1 && !seen[cx][cz + 1]) opts.push([0, 1]);
       if (!opts.length) { stack.pop(); continue; }
-      const [dx, dz] = opts[Math.floor(Math.random() * opts.length)];
+      const [dx, dz] = opts[Math.floor(random() * opts.length)];
       if (dx === -1) v[cx][cz] = false; if (dx === 1) v[cx + 1][cz] = false;
       if (dz === -1) h[cx][cz] = false; if (dz === 1) h[cx][cz + 1] = false;
       seen[cx + dx][cz + dz] = true; stack.push([cx + dx, cz + dz]);
     }
-    for (let k = 0; k < 16; k++) v[1 + Math.floor(Math.random() * (n - 1))][Math.floor(Math.random() * n)] = false;
-    for (let k = 0; k < 10; k++) h[Math.floor(Math.random() * n)][1 + Math.floor(Math.random() * (n - 1))] = false;
+    for (let k = 0; k < 16; k++) v[1 + Math.floor(random() * (n - 1))][Math.floor(random() * n)] = false;
+    for (let k = 0; k < 10; k++) h[Math.floor(random() * n)][1 + Math.floor(random() * (n - 1))] = false;
     // Two fixed, marked entrances: east (towards the castle) and north (towards the meadow)
     v[n][MAZE_GATES.east] = false; h[MAZE_GATES.north][n] = false;
     v[n - 1][MAZE_GATES.east] = false; h[MAZE_GATES.north][n - 1] = false;
@@ -42,4 +55,4 @@
     layoutHedges();
     placeTraps();
   }
-  genMaze();
+  genMaze(1);

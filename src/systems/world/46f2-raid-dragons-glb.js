@@ -57,7 +57,6 @@
         if (map === src && src) { src.encoding = THREE.LinearEncoding; src.needsUpdate = true; }
         o.material = new THREE.MeshLambertMaterial({ map, skinning: true });
       }
-      o.layers.enable(2);   // hostile in the gameplay mask, like the block dragon
     });
     const M = { root, look, mixer: new THREE.AnimationMixer(root), actions: {}, cur: null, state: '', y: look.ground ? 0 : -RAID_LIFT * look.scale,
       lastPos: r.pos.clone(), moving: 0 };
@@ -65,6 +64,7 @@
     r.body.children.forEach(c => { c.visible = false; });
     root.position.y = M.y;
     r.body.add(root);
+    tag(root, 2);
     r.model = M;
     raidDragonPlay(M, look.ground ? 'idle' : 'fly', 0, true);
   }

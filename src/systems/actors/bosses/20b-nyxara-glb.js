@@ -74,7 +74,7 @@
     [makeLeafWing(1), makeLeafWing(-1)].forEach(w => { wingRoot.add(w.wing); NM.wings.push(w); });
     r.body.add(root); r.body.add(staffGrip); r.body.add(wingRoot);
     // Hostile in the gameplay mask, like the block figure (tag() ran before these existed)
-    [root, staffGrip, wingRoot].forEach(o => o.traverse(c => c.layers.enable(2)));
+    [root, staffGrip, wingRoot].forEach(o => tag(o, 2));
     NM.root = root; NM.lastPos.copy(r.pos); NM.kitAt = r.kitAt || 0;
     NM.ready = true;
     nyxaraPlay('idle', 0, true);
