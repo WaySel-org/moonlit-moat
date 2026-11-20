@@ -3,8 +3,8 @@
 #   make image && make run        ->  http://localhost:8080   (health: /healthz)
 
 ARG PYTHON_IMAGE=python:3.12-alpine
-# 1.30 is nginx's current stable branch; 1.27 is retired and frozen on an unpatched Alpine.
-ARG NGINX_IMAGE=nginxinc/nginx-unprivileged:1.30-alpine
+# Stable 1.30 updates are published under nginx/, the publisher's current Docker Hub namespace.
+ARG NGINX_IMAGE=nginx/nginx-unprivileged:1.30-alpine
 
 # ---- build: validate content and assemble dist/ (no network, no extra packages)
 FROM ${PYTHON_IMAGE} AS build
