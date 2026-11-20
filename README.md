@@ -40,13 +40,16 @@ A normal 3D scene renders every frame, then a shader replaces each screen cell w
 |---|---|
 | WASD / arrows | Move |
 | J or click / K | Light combo / heavy attack |
-| Space | Roll |
+| Space | Jump |
+| L / X | Roll |
 | Shift | Block (tap just before a hit to parry) |
-| Z / C / V / X | Dagger, moon bolt, arc volley, leap (mounted: the beast's powers) |
+| Y / U / I / O | Dagger, moon bolt, arc volley, Warden's Leap (mounted: the beast's powers) |
+| G / H | Moonhook / Blade Spin |
 | F | Flask |
 | E | Chests, shrine, ride beasts |
 | Q | Spirit realm |
 | R / T | Lock on / switch target |
+| B / N | Bag / upgrade sword |
 | P / M | Hero sheet / map |
 | Esc | Pause |
 

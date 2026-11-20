@@ -148,7 +148,11 @@
       if (G.hunt && G.hunt.echo) { B.state = 'dead'; boss.visible = false; hideTele(); ui.bossbar.hidden = true; }
       Object.assign(G, { hitstop: 0, slow: 0, shake: 0, lock: false, target: null, shop: false, hunt: null, huntClock: 0 });
       if (G.wardenDown) {
-        resetRoyals(); if (royals.some(r => !r.field)) royalsToField(false); G.state = 'interlude'; player.position.set(1.5, 0, -16); ui.obj.textContent = OBJ_CLIMB;
+        if (!(G.royalLull > 0)) {
+          resetRoyals();
+          if (royals.some(r => !r.field)) royalsToField(false);
+        }
+        G.state = 'interlude'; player.position.set(1.5, 0, -16); ui.obj.textContent = OBJ_CLIMB;
       } else {
         resetWarden(); G.state = 'explore'; player.position.copy(SPAWN); ui.obj.textContent = OBJ_START;
       }

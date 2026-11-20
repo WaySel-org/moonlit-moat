@@ -32,7 +32,6 @@
         if (map) { map.encoding = THREE.LinearEncoding; map.needsUpdate = true; }
         o.material = new THREE.MeshLambertMaterial({ map, skinning: true });
         HER.mats.push(o.material);
-        o.layers.enable(3); // readability mask: skinned friends have their own pass (render/36-gameplay-mask.js)
       }
       if (o.isBone && /RightHand$/.test(o.name)) HER.hand = o;
     });
@@ -41,6 +40,7 @@
     // Swap: hide the block figure's shapes but keep the sword, the lantern light and every hook other files use
     pBody.children.forEach(c => { if (c !== swordPivot && !c.isLight) c.visible = false; });
     pBody.add(root);
+    tag(root, 1);
     HER.ready = true;
   }
 

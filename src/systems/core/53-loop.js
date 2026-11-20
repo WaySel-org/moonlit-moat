@@ -10,18 +10,13 @@
     return { x: (proj.x + 1) / 2 * window.innerWidth, y: (1 - proj.y) / 2 * window.innerHeight, ok: proj.z < 1 && Math.abs(proj.x) < 1.2 && Math.abs(proj.y) < 1.2 };
   }
 
-  function frame(now) {
-    // Schedule the next frame first, so one bad frame can never stop the game
-    requestAnimationFrame(frame);
-    const real = Math.min(0.05, (now - last) / 1000); last = now;
+  function stepGame(real) {
     let dt = real;
-    if (!G.shop && !G.paused) worldTick(real);
-    if (G.shop || G.paused) dt = 0;
-    else if (G.hitstop > 0) { G.hitstop -= real; dt = 0; }
+    worldTick(real);
+    if (G.hitstop > 0) { G.hitstop -= real; dt = 0; }
     else if (G.slow > 0) { G.slow -= real; dt = real * 0.3; }
     uTime.value += dt;
     const t = uTime.value;
-
 
     const pr = updatePlayer(dt);
     updateStatus(dt); updateRend(dt);
@@ -42,7 +37,7 @@
     updateSwooshes(dt);
     if (inMoat) { updateBeasts(dt); mountModelUpdate(dt); if (!G.storm) updateHunt(dt); }
     if (inMoat && !G.storm && G.state === 'interlude' && !(G.royalLull > 0) && player.position.y > ROOF.y - 0.5 && Math.abs(player.position.z) > 20) startRoyal();
-    if (!G.shop && !G.paused) { updateWorlds(dt, real); updateAscension(dt, real); updateMythics(dt, real); }
+    updateWorlds(dt, real); updateAscension(dt, real); updateMythics(dt, real);
     if (G.wardenDown) wards.forEach(w => { if (w.visible) { w.material.opacity -= real * 0.6; if (w.material.opacity <= 0) w.visible = false; } });
     else wards.forEach(w => { w.material.opacity = 0.55 + 0.2 * Math.sin(t * 6); });
 
@@ -80,6 +75,15 @@
       }
     }
     if (t > nextFish) { nextFish = t + (reduce ? 4 : 1.2 + Math.random() * 1.8); const a = Math.random() * TAU, rr = Math.random() * (LAKE.r - 1.5); spawnDrop(LAKE.x + Math.cos(a) * rr, LAKE.z + Math.sin(a) * rr, 0.6); }
+  }
+
+  function frame(now) {
+    // Schedule the next frame first, so one bad frame can never stop the game
+    requestAnimationFrame(frame);
+    const real = Math.min(0.05, (now - last) / 1000); last = now;
+    // A zero delta still lets contact checks resolve. Keep simulation out of paused/menu frames.
+    if (!G.shop && !G.paused) stepGame(real);
+    const t = uTime.value;
 
     torches.forEach(tc => { const k = 0.85 + 0.15 * Math.sin(t * 13 + tc.phase) * Math.sin(t * 7.3 + tc.phase * 2); tc.light.intensity = 2.2 * k; tc.flame.scale.set(1, k, 1); });
     grassU.uTorchI.value = 0.9 + 0.1 * Math.sin(t * 11);
@@ -174,7 +178,7 @@
         renderer.setRenderTarget(maskRT); renderer.render(scene, camera);
         renderer.autoClear = false; scene.overrideMaterial = maskFoe; camera.layers.set(2);
         renderer.render(scene, camera);
-        if (HER.ready) { scene.overrideMaterial = maskFriendSkinned; camera.layers.set(3); renderer.render(scene, camera); }
+        if (hasSkinnedMask) { scene.overrideMaterial = maskSkinned; camera.layers.set(3); renderer.render(scene, camera); }
       } finally {
         renderer.autoClear = true; scene.overrideMaterial = null; camera.layers.set(0);
       }

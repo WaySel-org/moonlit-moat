@@ -2,7 +2,7 @@
   const keys = new Set();
   const HELD = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ShiftLeft', 'ShiftRight'];
   function press(code) {
-    if (G.paused) return;
+    if (G.paused || G.shop) return;
     audio();
     // J and K attack, Y U I O are the spells right above them, H spins, Space jumps, L rolls (X still works)
     if (code === 'KeyJ') request('light');
@@ -36,7 +36,7 @@
     if (!ui.banner.hidden && !ui.bbtn.hidden && (ev.code === 'Enter' || c === 'KeyR')) { ev.preventDefault(); restart(); return; }
     if (G.shop && (c === 'KeyE' || ev.code === 'Escape' || (c === 'KeyB' && G.invUI))) { ev.preventDefault(); closeShop(); return; }
     if (ev.code === 'Escape') { ev.preventDefault(); togglePause(); return; }
-    if (G.paused) return;
+    if (G.paused || G.shop) return;
     if (ev.target.closest && ev.target.closest('input, button, summary')) return;
     if (!c) return;
     ev.preventDefault();

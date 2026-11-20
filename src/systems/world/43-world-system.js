@@ -1,11 +1,12 @@
   // ---------- World system: story progression and travel ----------
-  function freshStory() { return { unlocked: { moat: true }, shards: {}, step: { moat: 0, veyra: 0, neon: 0, ash: 0 }, prog: { veyra: [0, 0, 0], neon: [0, 0, 0], ash: [0, 0, 0] }, stage: { veyra: 1, neon: 1, ash: 1 }, nextStage: {}, lastEvent: null, pending: null }; }
+  function freshStory() { return { unlocked: { moat: true }, shards: {}, step: { moat: 0, veyra: 0, neon: 0, ash: 0 }, prog: { veyra: [0, 0, 0], neon: [0, 0, 0], ash: [0, 0, 0] }, stage: { veyra: 1, neon: 1, ash: 1 }, nextStage: {}, lastEvent: null, pending: null, heartRewarded: false }; }
   G.story = freshStory(); G.lastPos = {}; G.storm = null; G.stormClock = 0;
   const hudTitle = $('#hud h1');
   function resetStory() {
     if (G.world !== 'moat') showWorld('moat');
     endEvent(true); G.eventClock = 0;
     G.story = freshStory(); G.lastPos = {}; G.storm = null; G.stormClock = 0;
+    mazeSeed = newMazeSeed(); genMaze(1);
     Object.values(WORLDS).forEach(W => W.objs.forEach(o => W.objLook(o, false)));
   }
   const shardCount = () => CHAPTERS.filter(w => G.story.shards[w]).length;
@@ -68,20 +69,28 @@
     ST.shards[w] = true; ST.step[w] = 2;
     const next = CHAPTERS[CHAPTERS.indexOf(w) + 1];
     if (next) ST.unlocked[next] = true;
+    ST.pending = { t: w === 'moat' ? 10 : 6, w, to: next || null, shown: false, whole: shardCount() === CHAPTERS.length };
     if (w !== 'moat') {
       const m = tierMult(worldTier());
+      PR.points++;
       reward(500 * m, 350 * m, player.position.clone().add(new THREE.Vector3(0, 3.4, 0)));
-      PR.points++; renderHero();
     }
-    ST.pending = { t: w === 'moat' ? 10 : 6, w, to: next || null, shown: false, whole: shardCount() === CHAPTERS.length };
+    saveGame();
   }
   function storyBanner(p) {
     const n = shardCount();
     if (p.whole) {
-      const m = tierMult(worldTier());
       showBanner('The World Heart is whole', `All four shards are back together and the Sundering is mended. The worlds keep drifting, though: tiers rise, the Warden hunts and rifts still open. Keep going.`, 'title'); bannerTimer = 7;
-      reward(2500 * m, 1500 * m, player.position.clone().add(new THREE.Vector3(0, 3.6, 0)));
-      PR.points += 3; if (PR.flaskMax < 6) PR.flaskMax++; recalc(); P.hp = P.max; P.mana = P.manaMax; P.armor = P.armorMax; P.flasks = PR.flaskMax;
+      if (!G.story.heartRewarded) {
+        const m = tierMult(worldTier());
+        // reward() can save on level-up, so record the whole milestone before calling it.
+        G.story.heartRewarded = true;
+        PR.points += 3;
+        if (PR.flaskMax < 6) PR.flaskMax++;
+        reward(2500 * m, 1500 * m, player.position.clone().add(new THREE.Vector3(0, 3.6, 0)));
+        recalc(); P.hp = P.max; P.mana = P.manaMax; P.armor = P.armorMax; P.flasks = PR.flaskMax;
+        saveGame();
+      }
       for (let i = 0; i < 4; i++) launchFirework(player.position.clone().add(new THREE.Vector3((Math.random() - 0.5) * 6, 1, (Math.random() - 0.5) * 6)));
       return;
     }

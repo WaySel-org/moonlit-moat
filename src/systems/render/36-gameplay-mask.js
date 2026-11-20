@@ -1,10 +1,55 @@
   // ---------- Readability: tag what matters so the ASCII pass can make it stand out ----------
   const maskFriend = new THREE.MeshBasicMaterial({ color: 0xff0000, depthTest: false, depthWrite: false, transparent: true, blending: THREE.AdditiveBlending });
   const maskFoe = new THREE.MeshBasicMaterial({ color: 0x00ff00, depthTest: false, depthWrite: false, transparent: true, blending: THREE.AdditiveBlending });
-  // three r128 compiles one shader per material on first use, so a skinned mesh drawn with maskFriend (first used on
-  // plain meshes) drops out of the mask. Skinned friends (the animated hero) sit on layer 3 with their own material.
-  const maskFriendSkinned = new THREE.MeshBasicMaterial({ color: 0xff0000, depthTest: false, depthWrite: false, transparent: true, blending: THREE.AdditiveBlending, skinning: true });
-  const tag = (o, L) => { if (o && !o.userData['mk' + L]) { o.userData['mk' + L] = true; o.traverse(c => { if (!c.isPoints && !c.isSprite) c.layers.enable(L); }); } };
+  // Three r128 caches the skinning variant per material. Keep a separate pass for rigs
+  // and set the mask color per mesh so both sides can share that pass.
+  const maskSkinned = new THREE.ShaderMaterial({
+    depthTest: false, depthWrite: false, transparent: true, blending: THREE.AdditiveBlending, skinning: true, fog: true,
+    uniforms: THREE.UniformsUtils.merge([THREE.UniformsLib.fog, { uMaskColor: { value: new THREE.Color() } }]),
+    vertexShader: `
+      #include <common>
+      #include <skinning_pars_vertex>
+      #include <fog_pars_vertex>
+      void main() {
+        #include <begin_vertex>
+        #include <skinbase_vertex>
+        #include <skinning_vertex>
+        vec4 mvPosition = modelViewMatrix * vec4(transformed, 1.0);
+        gl_Position = projectionMatrix * mvPosition;
+        #include <fog_vertex>
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uMaskColor;
+      #include <fog_pars_fragment>
+      void main() {
+        gl_FragColor = vec4(uMaskColor, 1.0);
+        #include <fog_fragment>
+      }
+    `
+  });
+  let hasSkinnedMask = false;
+  function tag(o, L) {
+    if (!o || o.userData['mk' + L]) return;
+    o.userData['mk' + L] = true;
+    o.traverse(c => {
+      if (c.isPoints || c.isSprite) return;
+      if (!c.isSkinnedMesh) { c.layers.enable(L); return; }
+      c.layers.enable(3);
+      hasSkinnedMask = true;
+      const roles = c.userData.maskRoles || 0;
+      c.userData.maskRoles = roles | L;
+      if (roles) return;
+      const beforeRender = c.onBeforeRender;
+      c.onBeforeRender = function (renderer, scene, camera, geometry, material, group) {
+        beforeRender.call(this, renderer, scene, camera, geometry, material, group);
+        if (material !== maskSkinned) return;
+        const role = this.userData.maskRoles;
+        maskSkinned.uniforms.uMaskColor.value.setRGB(role & 1, (role >> 1) & 1, 0);
+        maskSkinned.uniformsNeedUpdate = true;
+      };
+    });
+  }
   tag(player, 1);
   beasts.forEach(b => tag(b.g, 1));
   chests.forEach(c => tag(c.g, 1));

@@ -42,7 +42,6 @@
     root.scale.setScalar(GB_SCALE);
     let mat = null;
     root.traverse(o => {
-      o.layers.enable(2);   // hostile in the gameplay mask, like the block bloater
       if (o.isMesh) {
         o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false;
         const map = o.material.map;
@@ -56,6 +55,7 @@
     gbTemplate.animations.forEach(k => { M.actions[k.name] = M.mixer.clipAction(k); });
     if (c.body) c.body.visible = false;   // the block body (and its pulsing core) stays for the brain, unseen
     c.g.add(root);
+    tag(root, 2);
     if (mat) c.mat = mat;
     c.model = M;
     gbPlay(M, 'idle', 1, true);

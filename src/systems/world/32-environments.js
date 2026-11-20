@@ -13,9 +13,10 @@
     const tier = worldTier();
     if (tier !== G.lastTier) {
       G.lastTier = tier; G.env = ENVS[(tier - 1) % ENVS.length];
-      genMaze();
-      if (G.world === 'moat' && P.y < 1 && groundAt(player.position.x, player.position.z) >= 99) {
-        const c = MAZE.cell; player.position.x = MAZE.x0 + (Math.floor((player.position.x - MAZE.x0) / c) + 0.5) * c; player.position.z = MAZE.z0 + (Math.floor((player.position.z - MAZE.z0) / c) + 0.5) * c;
+      genMaze(tier);
+      if (G.world === 'moat' && G.realm !== 'spirit' && P.y < 1 && mazeSolid(player.position.x, player.position.z)) {
+        const p = mazeCellCenter(player.position.x, player.position.z);
+        player.position.x = p.x; player.position.z = p.z;
       }
       // Standing on a hedge that just moved away: she drops
       const hg = G.world === 'moat' && P.jh <= 0 ? heroGround(player.position.x, player.position.z) : null;

@@ -5,7 +5,7 @@
   // hurt when struck, flee when driven off. Every clip is in place: updateDragon flies it, the clips only animate it.
   // The clips were keyed by hand in Blender (anim_quadruped.py --set dragon); the rig has no jaw bone, so the
   // fire still leaves from the old jaw marker, now carried at the model's snout.
-  const CW = { ready: false, root: null, mixer: null, actions: {}, cur: null, curName: '', mats: [], tagged: false,
+  const CW = { ready: false, mixer: null, actions: {}, cur: null, curName: '', mats: [],
     one: null, oneT: 0, angry: 0, atk: null, hp: 0, glideT: 0 };
   const CW_SCALE = 1.2;          // 7.45 m snout to tail in the model; about the block dragon's length inside D.g (x1.5)
   const CW_LIFT = 1.0;           // the flight clips carry the body 1 m above the model's origin
@@ -53,7 +53,8 @@
       [D.jaw, D.light].forEach(o => { o.parent.remove(o); snout.add(o); o.position.set(0, 0, 0); });
       D.jaw.visible = false;
     }
-    CW.root = root;
+    // The block dragon may already be hostile by the time the rig arrives.
+    if (D.g.userData.mk2) tag(root, 2);
     CW.mixer = new THREE.AnimationMixer(root);
     gltf.animations.forEach(c => { CW.actions[c.name] = CW.mixer.clipAction(c); });
     CW.angry = D.angry; CW.hp = D.hp;
@@ -85,9 +86,6 @@
     D.body.position.y = 0;   // the clips bob the body; the block figure's flap bob would double it
     // Hit flash, from the block dragon's material
     CW.mats.forEach(m => m.emissive.copy(dScale.emissive));
-    // Hostile in the gameplay mask once the block dragon has been tagged (when it first turns angry)
-    if (!CW.tagged && D.g.userData.mk2) { CW.root.traverse(o => o.layers.enable(2)); CW.tagged = true; }
-
     if (D.state === 'flee') { cwPlay('flee', 0); CW.one = null; }
     else if (A) {
       // A new attack restarts its clip; the fireball's thrust lands on the moment it fires
