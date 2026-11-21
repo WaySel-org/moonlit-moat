@@ -22,7 +22,7 @@
     const at = t.pos.clone().add(new THREE.Vector3(0, t.hitY + 1.1, 0));
     if (!opts.spell && t.isCreep && behindTarget(t)) { mult *= 1.35 + relicBonus('backstab'); words.push(['backstab', '#ffd36a']); }
     if (P.riposte > 0 && !opts.spell) { P.riposte = 0; mult *= 2; words.push(['RIPOSTE', '#ff9a4a']); }
-    const crit = P.flow > 0 || Math.random() < critChance();
+    const crit = !opts.noCrit && (P.flow > 0 || Math.random() < critChance());
     if (crit) { mult *= 1.6; words.push(['CRIT', '#ffe03a']); }
     const out = dmg * mult;
     damageEnemy(t, out, poise, heavy || crit);
@@ -59,7 +59,7 @@
   function updateRend(dt) {
     if (dt <= 0) return;
     const rk = realmKey();
-    creeps.forEach(c => { if (c.alive && c.realm === rk) tickRendOn(c, dt, () => c.hp, v => { c.hp = v; }, () => killCreep(c)); });
+    creeps.forEach(c => { if (c.alive && c.realm === rk) { tickRendOn(c, dt, () => c.hp, v => { c.hp = v; }, () => killCreep(c)); if (c.alive) tickVenom(c, dt); } });
     if (G.world === 'moat' && HITTABLE.includes(B.state)) tickRendOn(WARDEN, dt, () => B.hp, v => { B.hp = v; B.flash = Math.max(B.flash, 0.5); }, () => killBoss());
   }
   // The hero's own timers: Flow, Riposte, poison, and the calm that lets Stone Skin regrow armour

@@ -160,7 +160,7 @@
     if (dd < r && dd > 1e-4) movePlayer(dx / dd * (r - dd), dz / dd * (r - dd));
   }
   // Haste: 1 is normal. A Cyclops's rally adds half again; raptor packs and an enraged Oni carry their own.
-  function hasteOf(c) { return (c.haste || 1) * (c.rallyT > 0 ? 1.5 : 1); }
+  function hasteOf(c) { return (c.haste || 1) * (c.rallyT > 0 ? 1.5 : 1) * (c.slowT > 0 ? 0.55 : 1); }
   // Fen Stalker: keeps five to seven metres away, circling, then lunges nine metres down a telegraphed lane
   function updateStalker(c, dt, d, groundY, aggro) {
     const tt = uTime.value, h = hasteOf(c);
@@ -271,7 +271,7 @@
     if (c.lvOf) c.lv = c.lvOf(c);
     creepStats(c);
     c.alive = true; c.g.visible = c.realm === realmKey(); c.pos.copy(p); c.home.copy(p); c.wander.copy(p);
-    c.atk = null; c.cool = 1; c.stun = 0; c.leash = false; c.rend = 0; c.orbit = Math.random() < 0.5 ? 1 : -1;
+    c.atk = null; c.cool = 1; c.stun = 0; c.leash = false; c.rend = 0; c.venom = 0; c.slowT = 0; c.maimT = 0; c.orbit = Math.random() < 0.5 ? 1 : -1;
     c.haste = 1; c.commandT = 0; c.rallyT = 0;
     c.g.scale.setScalar(c.mythic ? c.size : (c.ancient ? 1.8 : 1) * (c.type === 'crawler' || c.type === 'thornback' ? 1 + (c.lv - 1) * 0.08 : 1));
     if (c.onSpawn) c.onSpawn(c);

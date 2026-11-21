@@ -102,10 +102,48 @@
     const r = abilityRank(), n = 3 + 2 * r, step = Math.min(0.2, 1.7 / (n - 1));
     for (let i = 0; i < n; i++) spawnBolt({ angle: P.facing + (i - (n - 1) / 2) * step, dmg: 26 * PR.spell * abilityScale(), home: 2.2, poise: 12, color: 0xc8a9ff, heavy: false, pierce: r >= 3 ? 1 : 0 });
   }
-  // Dagger: II throws a fan of three, III daggers pierce one foe and Rend, IV throws five
+  // Dagger: a venom blade, not a damage dealer. It never crits; every hit poisons (stacking to 4), II throws a fan of
+  // three that also slows, III daggers pierce one foe and maim (the foe hits 40% softer), IV throws five.
+  // Four throws empty the belt and it takes DAG.lockout seconds to refill; a partly used belt regains one every DAG.regen.
+  const DAG = { stack: 4, lockout: 10, regen: 4, gap: 0.45, dmg: 11, poisonT: 5, slowT: 3, maimT: 5 };
+  Object.assign(P, { daggers: DAG.stack, dagLock: false, dagT: 0 });
   function throwDaggers() {
     const r = abilityRank(), n = r >= 4 ? 5 : r >= 2 ? 3 : 1;
-    for (let i = 0; i < n; i++) spawnBolt({ angle: P.facing + (i - (n - 1) / 2) * 0.16, dmg: 20 * PR.dmg * abilityScale(), speed: 26, home: 0, life: 0.9, poise: 8, color: 0xe8eef2, geo: daggerGeo, heavy: false, trail: false, pierce: r >= 3 ? 1 : 0, rend: r >= 3 });
+    for (let i = 0; i < n; i++) spawnBolt({ angle: P.facing + (i - (n - 1) / 2) * 0.16, dmg: DAG.dmg * PR.dmg * abilityScale(), speed: 26, home: 0, life: 0.9, poise: 6, color: 0xb8f0a0, geo: daggerGeo, heavy: false, trail: false, pierce: r >= 3 ? 1 : 0, venom: r });
+  }
+  // startAct('throw') spends one dagger; the last one locks the belt
+  function spendDagger() {
+    P.daggers = Math.max(0, P.daggers - 1); P.dagT = 0;
+    if (P.daggers === 0) { P.dagLock = true; P.cd.z = DAG.lockout; heroWord('Daggers spent', '#b8f0a0', 2.8); }
+    else P.cd.z = DAG.gap;
+  }
+  function daggerTick(dt) {
+    if (P.dagLock) { if (P.cd.z <= 0) { P.dagLock = false; P.daggers = DAG.stack; } return; }
+    if (P.daggers < DAG.stack && (P.dagT += dt) >= DAG.regen) { P.dagT = 0; P.daggers++; }
+  }
+  // A dagger hit: poison stacks, and by rank a slow and a maim, all living on the creep
+  function envenom(t, r) {
+    if (!t.isCreep) return;
+    const had = t.venom || 0;
+    t.venom = Math.min(4, had + 1); t.venomT = DAG.poisonT; if (t.venomTick === undefined) t.venomTick = 0;
+    if (!had) floatText('POISONED', t.pos.clone().add(new THREE.Vector3(0, t.hitY + 0.6, 0)), 'word', '#7fdc5a');
+    if (r >= 2) { if (!(t.slowT > 0)) floatText('SLOWED', t.pos.clone().add(new THREE.Vector3(0, t.hitY + 1.1, 0)), 'word', '#9fd8ff'); t.slowT = DAG.slowT; }
+    if (r >= 3) { if (!(t.maimT > 0)) floatText('MAIMED', t.pos.clone().add(new THREE.Vector3(0, t.hitY + 1.6, 0)), 'word', '#ff9a6a'); t.maimT = DAG.maimT; }
+  }
+  function tickVenom(c, dt) {
+    if (c.slowT > 0) c.slowT -= dt;
+    if (c.maimT > 0) c.maimT -= dt;
+    if (!c.venom) return;
+    c.venomT -= dt; c.venomTick += dt;
+    if (Math.random() < 0.15) { fwColor.setHSL(0.3, 0.7, 0.6); fwParticle(c.pos.x, c.pos.y + c.hitY, c.pos.z, 0, 0.8, 0, fwColor, 0.6, false); }
+    if (c.venomTick >= 0.5) {
+      c.venomTick -= 0.5;
+      const d = Math.max(1, Math.round(2.5 * PR.dmg * abilityScale() * c.venom));
+      c.hp = Math.max(0, c.hp - d);
+      floatText(String(d), c.pos.clone().add(new THREE.Vector3((Math.random() - 0.5) * 1.2, c.hitY + 0.4, 0)), '', '#7fdc5a');
+      if (c.hp <= 0) { c.venom = 0; killCreep(c); return; }
+    }
+    if (c.venomT <= 0) c.venom = 0;
   }
   // A bolt with a blast radius splashes half its damage on everyone else nearby
   function boltBlast(b, hit, live) {
@@ -114,8 +152,8 @@
     live.forEach(t => { if (t !== hit && t.alive !== false && Math.abs(t.pos.y - hit.pos.y) < 3 && flatDist(p, t.pos) < b.blast + t.radius) strike(t, b.dmg * 0.5, b.poise * 0.5, false, { spell: true }); });
   }
   // What each level-up unlocks, gathered into one tip card
-  const RANK_NEWS = [[6, 'Moon Bolt II: pierces', 'Arc Volley II: 7 bolts', 'Dagger II: fan of three'],
-    [12, 'Moon Bolt III: bursts on impact', 'Arc Volley III: 9 piercing bolts', 'Dagger III: pierces and Rends'],
+  const RANK_NEWS = [[6, 'Moon Bolt II: pierces', 'Arc Volley II: 7 bolts', 'Dagger II: fan of three that slows'],
+    [12, 'Moon Bolt III: bursts on impact', 'Arc Volley III: 9 piercing bolts', 'Dagger III: pierces and maims'],
     [18, 'Moon Bolt IV: two side bolts', 'Arc Volley IV: 11 bolts, 3 s cooldown', 'Dagger IV: fan of five']];
   function heroNews(was) {
     const lines = [];

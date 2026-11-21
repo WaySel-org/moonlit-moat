@@ -85,6 +85,7 @@
   // Runs first in updatePlayer (from heroKitFrame): ticks the slide window, drops a tether something else interrupted
   function herFrame(dt) {
     P.slideWin = Math.max(0, P.slideWin - dt);
+    daggerTick(dt);
     if (P.hook && !(P.act && P.act.startsWith('hook'))) { P.hook = null; hideTether(); }
   }
   function herTick(dt, k) {
