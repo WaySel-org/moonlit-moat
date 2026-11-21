@@ -67,6 +67,8 @@
   "world/veyra/42v-veyra-bestiary.js",
   "world/neon-verge/42n-neon-bestiary.js",
   "world/titan/42t-titan-world.js",
+  "world/titan/42t2-titan-giants.js",
+  "world/titan/42t3-titan-story.js",
   "world/43-world-system.js",
   "ui/44-world-select.js",
   "world/45-rift-storms.js",
