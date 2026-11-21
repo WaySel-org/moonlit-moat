@@ -12,9 +12,18 @@
     scene.add(g); r.g = g; r.ring = ring; r.disc = disc;
     tag(ring, 1);
   });
+  // Rifts the stirring Veil has closed (spirit realm only; all reopen when you leave)
+  const riftDarkMat = new THREE.MeshBasicMaterial({ color: 0x3a2458 });
+  function darkenRift() {
+    const open = RIFTS.filter(r => !r.dark).sort((a, b) => Math.hypot(player.position.x - a.x, player.position.z - a.z) - Math.hypot(player.position.x - b.x, player.position.z - b.z));
+    if (open.length <= 4) return;
+    const r = open[Math.floor(Math.random() * 3)];
+    r.dark = true; r.ring.material = riftDarkMat; r.disc.visible = false;
+  }
+  function clearDarkRifts() { RIFTS.forEach(r => { r.dark = false; r.ring.material = riftMat; r.disc.visible = true; }); }
   function nearestRift() {
     let best = RIFTS[0], bd = Infinity;
-    RIFTS.forEach(r => { const d = Math.hypot(player.position.x - r.x, player.position.z - r.z); if (d < bd) { bd = d; best = r; } });
+    RIFTS.forEach(r => { if (r.dark) return; const d = Math.hypot(player.position.x - r.x, player.position.z - r.z); if (d < bd) { bd = d; best = r; } });
     return { r: best, d: bd };
   }
   function updateRifts(real) {
@@ -22,7 +31,7 @@
     RIFTS.forEach((r, i) => {
       r.g.rotation.y += real * 0.6; r.ring.rotation.z += real * 1.5;
       r.disc.scale.setScalar(0.85 + 0.15 * Math.sin(tt * 3 + i));
-      if (Math.random() < 0.25 && Math.hypot(player.position.x - r.x, player.position.z - r.z) < 40) { fwColor.setHSL(0.75, 0.7, 0.75); fwParticle(r.x + (Math.random() - 0.5) * 2, 0.3, r.z + (Math.random() - 0.5) * 2, 0, 1.5 + Math.random() * 2, 0, fwColor, 1.4, true); }
+      if (!r.dark && Math.random() < 0.25 && Math.hypot(player.position.x - r.x, player.position.z - r.z) < 40) { fwColor.setHSL(0.75, 0.7, 0.75); fwParticle(r.x + (Math.random() - 0.5) * 2, 0.3, r.z + (Math.random() - 0.5) * 2, 0, 1.5 + Math.random() * 2, 0, fwColor, 1.4, true); }
     });
   }
   // Glowing spirit-trees that only exist in the spirit realm, mostly out in the wider wilds
@@ -53,7 +62,7 @@
     for (let i = 0; i < 80; i++) { fwColor.setHSL(0.72 + Math.random() * 0.1, 0.7, 0.75); const a = Math.random() * TAU, sp = 2 + Math.random() * 5; fwParticle(player.position.x, player.position.y + 1, player.position.z, Math.cos(a) * sp, 1 + Math.random() * 4, Math.sin(a) * sp, fwColor, 1.2, true); }
     showBanner(r === 'spirit' ? 'Spirit Realm' : 'Material Realm', r === 'spirit' ? 'A hunting ground. Souls are food.' : 'Back among the living.', 'title');
     bannerTimer = r === 'spirit' ? 3 : 2.5;
-    if (r === 'spirit') showTip('Spirit Realm', ['Spirits match your level: \u00d71.75 XP.', 'Soul hunger drains life: devour souls.', 'You drift through hedges; walls still hold.', `Leave at a violet rift (${tipKey('KeyQ', 'Veil')}).`], 8);
+    if (r === 'spirit') showTip('Spirit Realm', ['Spirits match your level: \u00d71.75 XP, rising the longer you stay.', 'Soul hunger drains life: devour souls.', 'A violet ring on the ground means lightning. Move.', `Leave at a violet rift (${tipKey('KeyQ', 'Veil')}). If the Veil drags you out, it keeps a quarter of the trip\u2019s XP.`], 9);
   }
   function toggleRealm() {
     if (G.paused || G.shop || P.act === 'dead') return;
@@ -65,15 +74,18 @@
     } else {
       const nr = nearestRift();
       if (nr.d > 4) { floatText('Find a violet Veil Rift to return', at, 'word', '#c8a0ff'); return; }
+      const kept = P.veilXp;
       setRealm('material');
+      if (kept > 0) floatText(`Trip banked: +${kept} XP`, player.position.clone().add(new THREE.Vector3(0, 3.2, 0)), 'word', '#ffd36a');
     }
   }
   function forceReturn() {
-    const nr = nearestRift();
+    const nr = nearestRift(), lost = veilToll();
     setRealm('material');
     player.position.set(nr.r.x + 2.5, 0, nr.r.z); P.y = 0;
     P.hp = Math.max(P.hp, Math.round(P.max * 0.3)); P.act = null; P.kb.set(0, 0, 0);
     floatText('Your soul is pulled back to the living world', player.position.clone().add(new THREE.Vector3(0, 2.8, 0)), 'word', '#c8a0ff');
+    if (lost > 0) floatText(`The Veil keeps ${lost} XP`, player.position.clone().add(new THREE.Vector3(0, 3.4, 0)), 'word', '#ff6a8a');
   }
   // Souls: every fallen foe leaves one. Devour it to restore your life (and, in the spirit realm, to stay sated).
   const souls = [], soulGeo = new THREE.SphereGeometry(0.2, 8, 6), soulMat = new THREE.MeshBasicMaterial({ color: 0xbff6ff });
@@ -89,7 +101,7 @@
       if (Math.random() < 0.3) { fwColor.setHSL(0.52, 0.6, 0.8); fwParticle(s.m.position.x, s.m.position.y, s.m.position.z, 0, 0.6, 0, fwColor, 0.5, true); }
       let done = s.t <= 0;
       if (d < 1.1 && P.act !== 'dead') {
-        const heal = Math.round(P.max * s.heal); P.hp = Math.min(P.max, P.hp + heal); done = true; feedSoul();
+        const heal = Math.round(P.max * s.heal * soulScale()); P.hp = Math.min(P.max, P.hp + heal); done = true; feedSoul();
         sfx('pickup'); floatText(`+${heal} soul`, player.position.clone().add(new THREE.Vector3(0, 2.4, 0)), 'word', '#bff6ff');
       }
       if (done) { scene.remove(s.m); souls.splice(i, 1); }
