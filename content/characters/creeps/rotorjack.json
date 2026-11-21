@@ -1,0 +1,14 @@
+{
+  "gameId": "gyro",
+  "name": "Rotorjack",
+  "kind": "creep",
+  "world": "neon-verge",
+  "stats": {
+    "baseHealth": 62
+  },
+  "ai": "gyro",
+  "behaviour": "Hovers four metres up, out of reach from the ground until it dives or the hero jumps. Strafes down a telegraphed lane dropping proximity mines (and drops low and exposed as it pulls up), calls a searchlight that marks the hero and rallies and commands every machine nearby, and rakes a lit hero with its cannon. Rare patrol sweeps bring extra gyrocopters in from the edge of the grid.",
+  "look": "Orange-hulled gyrocopter with a glass cockpit, a spinning rotor, a tail boom and a searchlight under the nose.",
+  "id": "rotorjack",
+  "originality": "original"
+}

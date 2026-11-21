@@ -1,0 +1,14 @@
+{
+  "gameId": "walker",
+  "name": "Gantry Walker",
+  "kind": "creep",
+  "world": "neon-verge",
+  "stats": {
+    "baseHealth": 420
+  },
+  "ai": "walker",
+  "behaviour": "Slow neon-city mini-boss that respawns 110 s after it falls. Stomps up close, fires a four-rocket salvo down a wide telegraphed lane at range, and at 60% health sounds a siren that sends every machine hunting and calls two gyrocopters. Scavengers attack it too. Drops boosts and gear.",
+  "look": "Four-metre bipedal cargo walker with a plated cab, twin rocket pods, a grabbing arm and a red siren beacon.",
+  "id": "gantry-walker",
+  "originality": "original"
+}
