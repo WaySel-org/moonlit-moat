@@ -1,6 +1,10 @@
   // ---------- Creeps: mire crawlers (melee) and ash wisps (ranged) ----------
   const creeps = [];
   const creepEyeMat = new THREE.MeshBasicMaterial({ color: 0xff5a3a });
+  // Extension hooks so new systems don't have to edit this file or the loop:
+  // CREEP_AI_FN[ai] = (c, dt, d, groundY, aggro) => {} runs a creep brain for a new ai name (checked before the built-ins);
+  // WORLD_TICKS.push(dt => {}) runs once per simulated frame, right after every creep has updated.
+  const CREEP_AI_FN = {}, WORLD_TICKS = [];
   function buildCrawler() {
     const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
     const mat = new THREE.MeshLambertMaterial({ color: 0x3d5a2e, flatShading: true, emissive: 0x000000 });
@@ -313,6 +317,7 @@
     const busy = c.mythic && mythKit(c, dt, d);
     const groundY = Math.min(0, groundAt(c.pos.x, c.pos.z));
     if (busy) { /* the kit moves it */ }
+    else if (CREEP_AI_FN[c.ai]) CREEP_AI_FN[c.ai](c, dt, d, groundY, aggro);
     else if (c.ai === 'godling') { updateGodling(c, dt, d, groundY); }
     else if (c.ai === 'stalker') updateStalker(c, dt, d, groundY, aggro);
     else if (c.ai === 'guard') updateGuard(c, dt, d, groundY, aggro);
