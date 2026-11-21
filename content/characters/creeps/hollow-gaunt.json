@@ -1,0 +1,13 @@
+{
+  "id": "hollow-gaunt",
+  "gameId": "gaunt",
+  "name": "Hollow Gaunt",
+  "kind": "creep",
+  "world": "titan",
+  "stats": { "baseHealth": 700 },
+  "ai": "gaunt",
+  "respawn": "12 to 22 s after it falls",
+  "behaviour": "Ten metres tall and slow to turn. Presses against the wall or hunts the hero in the fields. Stomp (ground shockwave, a jump or rooftop avoids it), sweep (an arm lane at body height), grab (a lane that flings the hero, cannot be parried) and swat (reaches onto roofs and the wall). Ground blades do 6% damage; the glowing nape-knot at the back of its neck takes 3 times damage and a heavy hit there topples it.",
+  "look": "A tall pale figure with an open rib cage and nothing in it, arms down to its knees, a blank face with two dark sockets.",
+  "originality": "original"
+}
