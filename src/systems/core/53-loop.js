@@ -27,7 +27,7 @@
     if (inMoat) { updateDragon(dt); cinderwingModelUpdate(dt); }
     updateFireworks(dt);
     updatePatches(dt);
-    creeps.forEach(c => updateCreep(c, dt)); WORLD_TICKS.forEach(f => f(dt)); crawlerModelUpdate(dt); wispCageUpdate(dt); gravebellyUpdate(dt); godlingModelUpdate(dt); oniModelUpdate(dt); minotaurModelUpdate(dt);
+    creeps.forEach(c => updateCreep(c, dt)); WORLD_TICKS.forEach(f => f(dt)); crawlerModelUpdate(dt); wispCageUpdate(dt); gravebellyUpdate(dt); shamblerUpdate(dt); godlingModelUpdate(dt); rotModelUpdate(dt); oniModelUpdate(dt); minotaurModelUpdate(dt);
     updateCreepShots(dt);
     if (inMoat) updateChests(dt);
     updateLoot(dt); updateRelics(dt, real);

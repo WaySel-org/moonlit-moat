@@ -133,7 +133,9 @@ def build():
             'drake': emit('drake.glb', (ROOT / 'assets' / 'mounts' / 'drake.glb').read_bytes()),
             'crawler': emit('crawler.glb', (ROOT / 'assets' / 'creeps' / 'crawler.glb').read_bytes()),
             'wispCage': emit('ash-wisp-cage.glb', (ROOT / 'assets' / 'creeps' / 'ash-wisp-cage.glb').read_bytes()),
-            'gravebelly': emit('gravebelly.glb', (ROOT / 'assets' / 'creeps' / 'gravebelly.glb').read_bytes())}
+            'gravebelly': emit('gravebelly.glb', (ROOT / 'assets' / 'creeps' / 'gravebelly.glb').read_bytes()),
+            'shambler': emit('shambler.glb', (ROOT / 'assets' / 'creeps' / 'shambler.glb').read_bytes()),
+            'rotSovereign': emit('rot-sovereign.glb', (ROOT / 'assets' / 'bosses' / 'rot-sovereign.glb').read_bytes())}
     game_js = ('window.MM_CONTENT = ' + json.dumps(content, separators=(',', ':')) + ';\n'
                'window.MM_ASSETS = ' + json.dumps(lazy) + ';\n'
                '(function () {\n' + '\n'.join(parts) + '})();\n')
