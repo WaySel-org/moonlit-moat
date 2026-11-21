@@ -1,5 +1,5 @@
   // ---------- World system: story progression and travel ----------
-  function freshStory() { return { unlocked: { moat: true }, shards: {}, step: { moat: 0, veyra: 0, neon: 0, ash: 0 }, prog: { veyra: [0, 0, 0], neon: [0, 0, 0], ash: [0, 0, 0] }, stage: { veyra: 1, neon: 1, ash: 1 }, nextStage: {}, lastEvent: null, pending: null, heartRewarded: false }; }
+  function freshStory() { return { unlocked: { moat: true, titan: true }, shards: {}, step: { moat: 0, veyra: 0, neon: 0, ash: 0 }, prog: { veyra: [0, 0, 0], neon: [0, 0, 0], ash: [0, 0, 0] }, stage: { veyra: 1, neon: 1, ash: 1 }, nextStage: {}, lastEvent: null, pending: null, heartRewarded: false }; }
   G.story = freshStory(); G.lastPos = {}; G.storm = null; G.stormClock = 0;
   const hudTitle = $('#hud h1');
   function resetStory() {
@@ -12,6 +12,7 @@
   const shardCount = () => CHAPTERS.filter(w => G.story.shards[w]).length;
 
   function chapterText(w) {
+    if (SIDE_WORLDS.includes(w)) return titanText();
     const ST = G.story, n = CHAPTERS.indexOf(w) + 1, W = WORLDS[w], next = CHAPTERS[n];
     if (w === 'moat') {
       const base = ascensionText() || (G.wardenDown ? OBJ_CLIMB : OBJ_START);
@@ -65,6 +66,7 @@
   }
   // A shard is taken: open the next world and, after a banner, carry the hero there
   function completeChapter(w) {
+    if (SIDE_WORLDS.includes(w)) { titanChapterDone(w); return; }
     const ST = G.story; if (ST.shards[w]) { stageClear(w); return; }
     ST.shards[w] = true; ST.step[w] = 2;
     const next = CHAPTERS[CHAPTERS.indexOf(w) + 1];
@@ -103,6 +105,7 @@
     if (G.hunt) return 'Not while the Warden hunts you';
     if (G.state === 'fight' || G.state === 'intro' || G.state === 'royal') return 'Not in the middle of a boss fight';
     if (storyBossEngaged()) return 'Not while a shard guardian is on you';
+    if (titanEngaged()) return 'Not while the Bellringer is on you';
     if (G.storm && !ignoreStorm) return 'The rift storm holds you here';
     if (P.act === 'leap') return 'Land first';
     return null;

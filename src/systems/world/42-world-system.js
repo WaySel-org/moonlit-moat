@@ -115,7 +115,7 @@
     const parts = WORLD_BUILD[type]();
     parts.g.visible = false; scene.add(parts.g); tag(parts.g, 2);
     const bar = document.createElement('div'); bar.className = 'cbar'; bar.hidden = true; bar.innerHTML = '<span></span><div class="ct"><i></i></div>'; $('#cbars').appendChild(bar);
-    const c = Object.assign(parts, { type, realm: world, ai, float: 0, speed: 1, isCreep: true, alive: false, respawn: 3 + creeps.length * 0.25, pos: parts.g.position, radius: 0.6, hitY: 0.7, markY: 1.8,
+    const c = Object.assign(parts, { type, realm: world, ai, float: 0, speed: 1, isCreep: true, alive: false, respawn: 1 + Math.random() * 6, pos: parts.g.position, radius: 0.6, hitY: 0.7, markY: 1.8,
       hp: 1, max: 1, mult: 1, lv: 1, facing: 0, cool: 1, atk: null, stun: 0, flash: 0, leash: false,
       wander: new THREE.Vector3(), home: new THREE.Vector3(), tele: makeTele(), bar, barFill: bar.querySelector('i'), barLabel: bar.querySelector('span'),
       ancient: false, camp: null, age: 0 }, o);

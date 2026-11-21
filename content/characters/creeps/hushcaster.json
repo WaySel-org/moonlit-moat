@@ -1,0 +1,14 @@
+{
+  "gameId": "jammer",
+  "name": "Hushcaster",
+  "kind": "creep",
+  "world": "neon-verge",
+  "stats": {
+    "baseHealth": 44
+  },
+  "ai": "jammer",
+  "behaviour": "Stays ten to fourteen metres back and opens a signal link to the hero. If the link holds for 1.3 s it locks one hero skill for 7 s and drains 30 mana. A wall in the way, a heavy hit, a parry or distance breaks the link. Blinks away when the hero closes in.",
+  "look": "Tall, thin signal engineer in a violet suit with a satellite dish for a head and magenta-tipped antennae.",
+  "id": "hushcaster",
+  "originality": "original"
+}

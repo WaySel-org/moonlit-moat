@@ -60,8 +60,9 @@
       if (!done) {
         const hit = live.find(t => !b.hits.has(t) && flatDist(b.m.position, t.pos) < t.radius + 0.3 && b.m.position.y > t.pos.y - 0.5 && b.m.position.y < t.pos.y + t.hitY * 2);
         if (hit) {
-          strike(hit, b.dmg, b.poise, b.heavy, { spell: b.geo !== daggerGeo });
+          strike(hit, b.dmg, b.poise, b.heavy, { spell: b.geo !== daggerGeo, noCrit: !!b.venom });
           if (b.rend) applyRend(hit, 1);
+          if (b.venom) envenom(hit, b.venom);
           if (b.blast) boltBlast(b, hit, live);
           if (b.pierce > 0) { b.pierce--; b.hits.add(hit); } else done = true;
         }

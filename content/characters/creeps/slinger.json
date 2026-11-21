@@ -1,0 +1,14 @@
+{
+  "gameId": "slinger",
+  "name": "Slinger",
+  "kind": "creep",
+  "world": "neon-verge",
+  "stats": {
+    "baseHealth": 44
+  },
+  "ai": "slinger",
+  "behaviour": "Human survivor who keeps seven to eleven metres back, flings scrap at the hero or at machines, and lobs a firebomb onto the spot where its target stands. The fire burns the hero and any machine inside it.",
+  "look": "Hooded survivor with a sling, a satchel of stones and a green glass firebomb at the hip.",
+  "id": "slinger",
+  "originality": "original"
+}

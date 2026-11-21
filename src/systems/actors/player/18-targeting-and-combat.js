@@ -135,7 +135,7 @@
   // Returns true if the hit connected
   function hitPlayer(dmg, src, kbStrength, parryable, attacker) {
     if (G.state === 'dead' || G.state === 'won' || G.state === 'intro' || G.shop) return false;
-    dmg *= (attacker && attacker.isCreep) ? attacker.mult * G.env.creepDmg * (attacker.rallyT > 0 ? 1.35 : 1) : (attacker && attacker.pow) ? attacker.pow : G.dmgMult;
+    dmg *= (attacker && attacker.isCreep) ? attacker.mult * G.env.creepDmg * (attacker.rallyT > 0 ? 1.35 : 1) * (attacker.maimT > 0 ? 0.6 : 1) : (attacker && attacker.pow) ? attacker.pow : G.dmgMult;
     // Blade Spin: 40% less damage, no flinch, no knockback
     const spin = heroUnstoppable();
     if (spin) dmg *= 0.6;

@@ -1,0 +1,15 @@
+{
+  "gameId": "vgloam",
+  "name": "Gloamveil",
+  "kind": "creep",
+  "world": "veyra",
+  "stats": {
+    "baseHealth": 30
+  },
+  "ai": "vgloam",
+  "respawn": "13-20 s after it falls, from its nest",
+  "behaviour": "Floats five to seven metres from the hero. Every five to seven seconds it swells, marks a 6 m ring for 1.25 s, and pulses: a hit dazes the hero (40% slower for 2.8 s) and dims the screen for about three seconds; a roll dodges it all. Fragile, never shoots.",
+  "look": "Glassy teal bell on a block stalk, six hanging threads and one bright core.",
+  "id": "veyra-gloamveil",
+  "originality": "original"
+}

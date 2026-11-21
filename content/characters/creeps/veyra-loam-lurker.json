@@ -1,0 +1,15 @@
+{
+  "gameId": "vlurker",
+  "name": "Loam Lurker",
+  "kind": "creep",
+  "world": "veyra",
+  "stats": {
+    "baseHealth": 54
+  },
+  "ai": "vlurk",
+  "respawn": "13-20 s after it falls, from its nest",
+  "behaviour": "Hides underground as a moving ripple of dirt and tracks the hero. Close in, it marks a 2.6 m circle for one second, then bursts up under it for 15 damage and heavy knockback; a roll or a step away avoids it. It is stunned for 0.9 s on surfacing, bites for 9, then dives again after about six seconds. Cannot be targeted while buried.",
+  "look": "Squat blocky digger with two shovel claws, a plated back and a ripple of violet dirt when buried.",
+  "id": "veyra-loam-lurker",
+  "originality": "original"
+}

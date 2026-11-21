@@ -1,0 +1,15 @@
+{
+  "gameId": "vdam",
+  "name": "Brood Dam",
+  "kind": "creep",
+  "world": "veyra",
+  "stats": {
+    "baseHealth": 170
+  },
+  "ai": "vdam",
+  "respawn": "75-95 s after it falls",
+  "behaviour": "Nest-mother that holds her nest. Every seven to nine seconds she swells for 1.6 s and hatches two Brood Hatchlings, up to three alive. While she lives every creep of her nest within 12 m moves faster and hits harder and the nest restocks quicker; killing her scatters the brood. Up close she slams a 3 m circle for 16.",
+  "look": "Armoured, horned nest-mother with a huge glowing egg-sac slung behind her.",
+  "id": "veyra-brood-dam",
+  "originality": "original"
+}

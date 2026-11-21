@@ -1,0 +1,14 @@
+{
+  "id": "bellringer",
+  "gameId": "bellringer",
+  "name": "The Bellringer",
+  "kind": "boss",
+  "world": "titan",
+  "chapter": 0,
+  "lore": "A giant with a cracked bronze bell grown through its ribs. It tolls to call the Gaunts and walks to the Great Gate to break it.",
+  "look": "Fourteen metres of pale hollow giant, a bell hanging in its open chest, bone spurs on its shoulders.",
+  "stats": { "baseHealth": 1500 },
+  "abilities": ["Gate pound (three blows breach the Great Gate)", "Stomp", "Sweep", "Toll (shockwave that calls Runts)", "Swat"],
+  "originality": "original",
+  "dataDriven": false
+}

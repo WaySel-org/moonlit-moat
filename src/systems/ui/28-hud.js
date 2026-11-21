@@ -48,8 +48,8 @@
     // Riding, Y U I O show the beast's skills; on foot, the spells and their rank
     if (mpw) mountSkillSlots.forEach(([id, s]) => { const w = mpw[s]; labelSkill(id, w.short); showSkill(id, false, P.cd[s] / w.cd, P.mana < w.mana); });
     else {
-      labelSkill('z', rankName('Dagger')); labelSkill('c', rankName('Bolt')); labelSkill('v', rankName('Volley')); labelSkill('x', 'Leap');
-      showSkill('z', false, P.cd.z / 0.45, P.st < 6);
+      labelSkill('z', `${rankName('Dagger')} \u00d7${P.daggers}`); labelSkill('c', rankName('Bolt')); labelSkill('v', rankName('Volley')); labelSkill('x', 'Leap');
+      showSkill('z', false, P.cd.z / (P.dagLock ? DAG.lockout : DAG.gap), P.st < 6);
       showSkill('c', false, 0, P.mana < boltCost());
       showSkill('v', PR.level < 3, P.cd.v / volleyCd(), P.mana < 50);
       showSkill('x', !PR.warden, P.cd.x / 6, P.mana < 25);

@@ -5,6 +5,21 @@
   const HUNGER = { enter: 12, soul: 8, cap: 24, start: 0.02, ramp: 0.004, top: 0.06 };
   Object.assign(P, { sated: 0, hungerT: 0 });
   const hungerRate = () => Math.min(HUNGER.top, HUNGER.start + HUNGER.ramp * P.hungerT);
+  // The Veil stirs: every VEIL.step seconds in the realm it rises a tier (up to VEIL.max). Spirits quicken, souls feed
+  // less, lightning comes faster and some rifts go dark, but experience grows from x1.75 to x2.5. If the Veil drags you
+  // out (hunger or a fatal blow) it keeps VEIL.toll of the experience earned on that trip.
+  const VEIL = { step: 60, max: 4, toll: 0.25 };
+  Object.assign(P, { veilT: 0, veilTier: 0, veilXp: 0 });
+  const spiritXpMult = () => 1.75 + 0.1875 * P.veilTier;
+  const soulScale = () => G.realm === 'spirit' ? 1 - 0.15 * P.veilTier : 1;
+  function veilStir(tier) {
+    sfx('portal'); G.shake = Math.max(G.shake, 0.35);
+    showBanner(`The Veil stirs \u00b7 ${tier}/${VEIL.max}`, `Spirits quicken, souls feed less. Experience \u00d7${spiritXpMult().toFixed(2)}.${tier >= 2 ? ' A rift has gone dark.' : ''}`, 'title');
+    bannerTimer = 2.5;
+    if (tier >= 2) darkenRift();
+    // The realm surges: everything waiting to rise rises now
+    spirits.forEach(c => { if (!c.alive && c.ai !== 'godling') c.respawn = Math.min(c.respawn, 0.3 + Math.random() * 2); });
+  }
 
   // Veil Moth: a small, quick flutterer of pale dust on two see-through wings; it dives at the hero in swarms
   Object.assign(CREEP_NAME, { moth: 'Veil Moth' }); Object.assign(CREEP_BASE, { moth: 26 }); Object.assign(CREEP_XP, { moth: 16 });
@@ -31,7 +46,7 @@
   }
 
   // More spirits to hunt, built exactly like the spirit roster in 25-creeps, topped up to these totals
-  const SPIRIT_TOTALS = [['lantern', 12], ['tide', 7], ['ember', 6], ['moth', 10]];
+  const SPIRIT_TOTALS = [['lantern', 20], ['tide', 12], ['ember', 12], ['moth', 24]];
   const SPIRIT_FLOAT = { lantern: 0.9, ember: 0.5, moth: 1.1 }, SPIRIT_SPEED = { lantern: 1.15, ember: 1.35, moth: 1.5 };
   const moths = [];
   SPIRIT_TOTALS.forEach(([type, total]) => {
@@ -53,13 +68,14 @@
   spirits.forEach(c => {
     const god = c.ai === 'godling';
     c.lvOf = god ? () => Math.max(worldTier(), PR.level) + 3 : () => Math.max(worldTier(), PR.level - 2) + Math.floor(Math.random() * 3);
-    c.respawnAfter = god ? () => 120 : () => 4 + Math.random() * 3;
+    c.respawnAfter = god ? () => 120 : () => 15 + Math.random() * 10;
   });
 
   // setRealm runs this on every realm change, including death, respawn, restart and leaving for another world
   function hungerReset(r) {
     const on = r === 'spirit';
     P.sated = on ? HUNGER.enter : 0; P.hungerT = 0;
+    P.veilT = 0; P.veilTier = 0; P.veilXp = 0; clearDarkRifts(); hideStrikes();
     ghostHedges(on);
     // The hunting ground wakes as you cross: spirits still queued from a fresh start or restart rise within a few seconds
     if (on) spirits.forEach(c => { if (!c.alive && c.ai !== 'godling' && c.respawn > 6) c.respawn = 0.5 + Math.random() * 4; });
@@ -83,7 +99,13 @@
       c.body.rotation.x = dive ? 0.55 : 0.12; c.body.position.y = 0.05 * Math.sin(t * 22 + i);
       if (Math.random() < 0.12) { fwColor.setHSL(0.74, 0.5, 0.85); fwParticle(c.pos.x, c.pos.y, c.pos.z, 0, -0.5, 0, fwColor, 0.7, true); }
     });
+    soulRivalsTick(real);
     if (G.state !== 'dead' && P.act !== 'dead') {
+      P.veilT += real;
+      const tier = Math.min(VEIL.max, Math.floor(P.veilT / VEIL.step));
+      if (tier > P.veilTier) { P.veilTier = tier; veilStir(tier); }
+      const haste = 1 + 0.1 * P.veilTier;
+      spirits.forEach(c => { if (c.alive) c.haste = haste; });
       if (P.sated > 0) {
         P.sated = Math.max(0, P.sated - real); P.hungerT = 0;
         if (P.sated <= 0) { heroWord('Soul hunger', '#ff6a8a'); sfx('hurt'); }
@@ -92,4 +114,10 @@
         if (P.hp <= 0) { forceReturn(); return; }
       }
     }
+  }
+  // The Veil's toll when it drags you out; returns the experience taken (never below the current level's floor)
+  function veilToll() {
+    const lost = Math.min(PR.xp, Math.round(P.veilXp * VEIL.toll));
+    if (lost > 0) { PR.xp -= lost; renderHero(); }
+    return lost;
   }
