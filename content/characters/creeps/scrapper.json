@@ -1,0 +1,14 @@
+{
+  "gameId": "scrapper",
+  "name": "Scrapper",
+  "kind": "creep",
+  "world": "neon-verge",
+  "stats": {
+    "baseHealth": 74
+  },
+  "ai": "scrapper",
+  "behaviour": "Human survivor who holds a camp and fights both the machines and the hero. Swings a pipe, lunges behind a plank shield down a telegraphed lane, and shouts to hasten the whole band when it spots the hero.",
+  "look": "Survivor in patched rags with a goggled mask, a pipe in one hand and a scrap-plank shield on the other arm.",
+  "id": "scrapper",
+  "originality": "original"
+}
