@@ -62,7 +62,7 @@
     for (let i = 0; i < 80; i++) { fwColor.setHSL(0.72 + Math.random() * 0.1, 0.7, 0.75); const a = Math.random() * TAU, sp = 2 + Math.random() * 5; fwParticle(player.position.x, player.position.y + 1, player.position.z, Math.cos(a) * sp, 1 + Math.random() * 4, Math.sin(a) * sp, fwColor, 1.2, true); }
     showBanner(r === 'spirit' ? 'Spirit Realm' : 'Material Realm', r === 'spirit' ? 'A hunting ground. Souls are food.' : 'Back among the living.', 'title');
     bannerTimer = r === 'spirit' ? 3 : 2.5;
-    if (r === 'spirit') showTip('Spirit Realm', ['Spirits match your level: \u00d71.75 XP, rising the longer you stay.', 'Soul hunger drains life: devour souls.', 'A violet ring on the ground means lightning. Move.', `Leave at a violet rift (${tipKey('KeyQ', 'Veil')}). If the Veil drags you out, it keeps a quarter of the trip\u2019s XP.`], 9);
+    if (r === 'spirit') showTip('Spirit Realm', ['Spirits match your level: \u00d71.75 XP, rising the longer you stay.', 'Soul hunger drains life: devour souls before the Gleaners do.', 'A violet ring on the ground means lightning. Move.', `Leave at a violet rift (${tipKey('KeyQ', 'Veil')}). If the Veil drags you out, it keeps a quarter of the trip\u2019s XP.`], 9);
   }
   function toggleRealm() {
     if (G.paused || G.shop || P.act === 'dead') return;

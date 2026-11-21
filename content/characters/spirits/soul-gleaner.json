@@ -1,0 +1,15 @@
+{
+  "gameId": "gleaner",
+  "name": "Soul Gleaner",
+  "ai": "melee",
+  "stats": {
+    "baseHealth": 70
+  },
+  "behaviour": "Roams the spirit realm hunting souls rather than the hero. Each soul it devours heals it, raises its level and makes it bigger; at three it is Gorged and faster. Up close it fights. Killing one frees every soul it ate.",
+  "look": "A hunched dark-violet robe with a pale skull, long bone arms tipped with cyan claws and a ring-shaped glowing maw.",
+  "lore": "Scavengers of the Veil. Where a soul falls, a Gleaner is already drifting toward it.",
+  "id": "soul-gleaner",
+  "kind": "spirit",
+  "world": "spirit",
+  "originality": "original"
+}

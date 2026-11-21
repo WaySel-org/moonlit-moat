@@ -1,0 +1,16 @@
+{
+  "gameId": "shepherd",
+  "uniqueName": true,
+  "name": "Ysmeral, the Soul Shepherd",
+  "ai": "godling",
+  "stats": {
+    "baseHealth": 2200
+  },
+  "behaviour": "Guards the Soul Spring and will not stray far from it. Calls down strikes like a godling, and every 14 s calls every loose soul nearby to herself; each one that reaches her heals her. Summons the realm's spirits at 70% and 35% life and casts faster below half. Her fall leaves a Grand Soul and 90 s without hunger. Rises again after five minutes.",
+  "look": "A tall veiled figure in a pale-blue robe with a halo and a shepherd's crook, six captive souls circling her.",
+  "lore": "She tends the souls that fall in the Veil, and none of them are meant for you.",
+  "id": "ysmeral",
+  "kind": "spirit",
+  "world": "spirit",
+  "originality": "original"
+}

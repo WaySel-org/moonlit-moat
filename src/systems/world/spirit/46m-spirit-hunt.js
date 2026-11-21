@@ -46,7 +46,7 @@
   }
 
   // More spirits to hunt, built exactly like the spirit roster in 25-creeps, topped up to these totals
-  const SPIRIT_TOTALS = [['lantern', 12], ['tide', 7], ['ember', 6], ['moth', 10]];
+  const SPIRIT_TOTALS = [['lantern', 20], ['tide', 12], ['ember', 12], ['moth', 24]];
   const SPIRIT_FLOAT = { lantern: 0.9, ember: 0.5, moth: 1.1 }, SPIRIT_SPEED = { lantern: 1.15, ember: 1.35, moth: 1.5 };
   const moths = [];
   SPIRIT_TOTALS.forEach(([type, total]) => {
@@ -99,6 +99,7 @@
       c.body.rotation.x = dive ? 0.55 : 0.12; c.body.position.y = 0.05 * Math.sin(t * 22 + i);
       if (Math.random() < 0.12) { fwColor.setHSL(0.74, 0.5, 0.85); fwParticle(c.pos.x, c.pos.y, c.pos.z, 0, -0.5, 0, fwColor, 0.7, true); }
     });
+    soulRivalsTick(real);
     if (G.state !== 'dead' && P.act !== 'dead') {
       P.veilT += real;
       const tier = Math.min(VEIL.max, Math.floor(P.veilT / VEIL.step));
