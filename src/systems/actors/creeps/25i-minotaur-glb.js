@@ -19,7 +19,6 @@
     root.scale.setScalar(MT_SCALE);
     let mat = null, hand = null, arm = null;
     root.traverse(o => {
-      o.layers.enable(2);   // hostile in the gameplay mask, like the block figure
       if (o.isMesh) {
         o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false;
         const map = o.material.map;
@@ -34,6 +33,7 @@
     const grip = new THREE.Group();
     if (pole) { c.body.remove(pole); pole.position.set(0, -0.25, 0); pole.rotation.set(0, 0, 0); grip.add(pole); }
     grip.traverse(o => o.layers.enable(2));
+    tag(root, 2);   // hostile in the gameplay mask; tag() sends the rigged mesh to the skinned mask pass
     c.body.visible = false;   // the block body and legs stay for the brain, unseen
     c.g.add(root); c.g.add(grip);
     if (mat) c.mat = mat;

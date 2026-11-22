@@ -230,12 +230,13 @@
     c.sweepCd = 3.5; mkWord(c, 'Tail sweep', '#c8b060');
     groundStrike({ at: c.pos.clone().addScaledVector(fwdOf(c.facing), -1.6 * c.size), r: 3, wind: 0.75, dmg: 22, kb: 13, src: c, y: c.pos.y });
     mkStand(c, 0.75, (c, k) => { c.body.rotation.y = Math.sin(k * TAU) * 0.35; }, c => { c.body.rotation.y = 0; });
+    c.kact.sweep = true;   // the model plays its coil
   }
   // Petrifying Gaze: a wide lane from its eyes. It only petrifies a hero who is looking at it when it lands.
   function basGaze(c) {
     mkWord(c, 'Look away!', '#ffe04a'); sfx('cast');
     const f = yawTo(c.pos, player.position), at = c.pos.clone().addScaledVector(fwdOf(f), 1.4 * c.size);
-    c.kact = { t: 0, step(c, A) {
+    c.kact = { t: 0, gaze: true, step(c, A) {   // gaze: the model plays its stare (25k-basilisk-glb.js)
       const k = Math.min(1, A.t / 1.4); c.facing = f;
       c.tele.lane(at, f, 18, 5, k, c.pos.y); c.eyeMat.color.setRGB(1, 0.88 - 0.6 * k, 0.29 + 0.7 * k);
       if (k < 1) return false;
@@ -352,7 +353,7 @@
         c.sweepCd -= dt;
         if (c.sweepCd <= 0 && d < 5.5 && !c.kact && !c.atk && c.stun <= 0 && Math.abs(angDiff(c.facing, yawTo(c.pos, player.position))) > 2.2) basSweep(c);
       },
-      abil: [basGaze, basSweep, c => { mkWord(c, 'Venom spit', '#9aff4a'); fanShots(c, 3, 0.5, 11, mkGlob); }]
+      abil: [basGaze, basSweep, c => { c.spitN = (c.spitN || 0) + 1; mkWord(c, 'Venom spit', '#9aff4a'); fanShots(c, 3, 0.5, 11, mkGlob); }]
     },
     minotaur: {
       cd: 6.5,
