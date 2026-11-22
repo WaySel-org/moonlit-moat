@@ -7,6 +7,7 @@
     royals.forEach(r => { if (r.field ? r.alive && r.g.visible && flatDist(r.pos, player.position) < 30 : inMoat && r.active && r.alive) out.push(r); });
     raiders.forEach(r => { if (r.alive && r.g.visible && flatDist(r.pos, player.position) < 40) out.push(r); });
     creeps.forEach(c => { if (c.alive && c.realm === rk && flatDist(c.pos, player.position) < (c.ai === 'godling' || c.mythic ? 40 : 26)) out.push(c); });
+    if (inMoat) out.push(...ubTargets());
     return out;
   }
   function nearestTarget(list, from) {
@@ -23,7 +24,7 @@
     }
     return G.target;
   }
-  function damageEnemy(t, dmg, poiseDmg, heavy) { if (t.isWarden) damageBoss(dmg, poiseDmg, heavy); else if (t.isCreep) damageCreep(t, dmg, poiseDmg, heavy); else if (t.isRaider) damageRaider(t, dmg, poiseDmg, heavy); else damageRoyal(t, dmg, poiseDmg, heavy); }
+  function damageEnemy(t, dmg, poiseDmg, heavy) { if (t.isEye) damageEye(t, dmg, poiseDmg, heavy); else if (t.isWarden) damageBoss(dmg, poiseDmg, heavy); else if (t.isCreep) damageCreep(t, dmg, poiseDmg, heavy); else if (t.isRaider) damageRaider(t, dmg, poiseDmg, heavy); else damageRoyal(t, dmg, poiseDmg, heavy); }
 
   // Moves the player, sliding along walls and refusing ledges taller than a step
   // What the hero stands on at (x, z): the walkable height, the top of a solid she can get onto, or null for a wall.
@@ -154,6 +155,7 @@
         if (relicHas('ward')) { P.mana = Math.min(P.manaMax, P.mana + 25); P.st = P.stMax; floatText('Wardstone', player.position.clone().add(new THREE.Vector3(0, 2.9, 0)), 'word', '#bff6ff'); }
         if (attacker && attacker.isCreep) { attacker.stun = 1.3; attacker.atk = null; attacker.tele.hide(); }
         else if (attacker && attacker.isRaider) { attacker.state = 'rest'; attacker.t = 0; attacker.tele.hide(); }
+        else if (attacker && attacker.isEye) eyeParried();
         else if (attacker) staggerRoyal(attacker, 1.3, 'STUNNED'); else staggerBoss(1.3, 'STUNNED');
         return false;
       }

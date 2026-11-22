@@ -8,7 +8,7 @@
   //  - The ending beat: after the brides first fall on the throne, the eye opens and the Warden speaks.
   // Flags live in G.story.prog (s1open, s1end, lucid) so they save and a new game clears them.
   const STORY_SEASON = 1;
-  const S1 = { open: 0, want: 0, wait: 0, blink: 0, glance: 0, gz: 0 };
+  const S1 = { open: 0, want: 0, wait: 0, blink: 0, glance: 0, gz: 0, mend: 0 }; // mend: the moon whole again (the ending)
   const s1Prog = () => G.story.prog;
 
   // The cracked moon: faces the moat from the moon's position, drawn over the sphere
@@ -79,7 +79,7 @@
     const p = player.position;
     pupil.position.x = clamp(p.x / 70, -1, 1) * 2.4; pupil.position.y = clamp(-p.z / 140, -1, 1) * 0.8;
     // The moon gives way to the eye
-    const moonGone = o > 0.35; moon.visible = !moonGone; darkHalf.visible = !moonGone && G.world === 'moat'; cracks.forEach(s => { s.visible = !moonGone; });
+    const moonGone = o > 0.35; moon.visible = !moonGone; darkHalf.visible = !moonGone && !S1.mend && G.world === 'moat'; cracks.forEach(s => { s.visible = !moonGone && !S1.mend; });
     // ...but stays behind it broken in two, the halves drifting apart, with the fault running through the eye
     halfL.visible = halfR.visible = moonGone; halfL.position.x = -4.2 * o; halfR.position.x = 4.2 * o; halfL.rotation.z = 0.12 * o; halfR.rotation.z = -0.12 * o;
     fault.visible = o > 0.02; fault.scale.y = o; faultGlow.opacity = (0.65 + 0.35 * Math.sin(uTime.value * 7)) * o;
@@ -101,7 +101,7 @@
     postU.uEye.value = o;
     if (o > 0.02) { skyU.uHor.value.lerp(SKY_HOR, o * 0.08); skyU.uZen.value.lerp(SKY_ZEN, o * 0.08); }
 
-    updatePreface(real);
+    updatePreface(real); updateUnblinking(real);
     // The wedding preface plays once per save, after any banner already up has gone
     const pr = s1Prog();
     if (pr.s1open || PF.on || G.paused || G.state !== 'explore' || G.world !== 'moat') return;

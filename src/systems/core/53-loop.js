@@ -27,7 +27,7 @@
     const inMoat = G.world === 'moat';
     if (inMoat) { updateBoss(dt); wardenModelUpdate(dt); updatePods(dt); }
     updateBolts(dt);
-    royals.forEach(r => updateRoyal(r, dt)); updateShots(dt);
+    royals.forEach(r => updateRoyal(r, dt)); ubPoseBrides(); updateShots(dt);
     if (inMoat) updateDragon(dt);
     updateFireworks(dt);
     updatePatches(dt);
@@ -40,7 +40,7 @@
     if (inMoat) updatePuzzles(dt);
     updateSwooshes(dt);
     if (inMoat) { updateBeasts(dt); mountModelUpdate(dt); if (!G.storm) updateHunt(dt); }
-    if (inMoat && !G.storm && G.state === 'interlude' && !(G.royalLull > 0) && player.position.y > ROOF.y - 0.5 && Math.abs(player.position.z) > 20) startRoyal();
+    if (inMoat && !G.storm && G.state === 'interlude' && !(G.royalLull > 0) && !ubGateOpen() && !UB.on && !EN.on && player.position.y > ROOF.y - 0.5 && Math.abs(player.position.z) > 20) startRoyal();
     if (!G.shop && !G.paused) { updateWorlds(dt, real); updateAscension(dt, real); updateMythics(dt, real); }
     if (G.wardenDown) wards.forEach(w => { if (w.visible) { w.material.opacity -= real * 0.6; if (w.material.opacity <= 0) w.visible = false; } });
     else wards.forEach(w => { w.material.opacity = 0.55 + 0.2 * Math.sin(t * 6); });
@@ -123,7 +123,7 @@
     if (gz > 0) wantLook.lerp(camPos.clone().add(moon.position.clone().setY(moon.position.y - 45).sub(camPos).normalize().multiplyScalar(20)), gz);
     const k = first ? 1 : 1 - Math.pow(0.0004, real);
     camPos.lerp(wantPos, k); camLook.lerp(wantLook, k); first = false;
-    seasonCutCam(camPos, camLook);
+    seasonCutCam(camPos, camLook); endingCutCam(camPos, camLook);
     // Shake: G.shake is trauma (0..1) that decays; the camera moves trauma squared times smooth noise (a few
     // incommensurate sines per axis) plus a small roll, instead of a fresh random jolt every frame
     G.shake = Math.max(0, G.shake - real * 1.8);
