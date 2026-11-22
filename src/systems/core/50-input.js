@@ -48,14 +48,23 @@
   window.addEventListener('keyup', ev => { const c = keyAct(ev.code); if (c) keys.delete(c); });
   window.addEventListener('blur', () => keys.clear());
 
-  // Drag sideways to turn the camera; drag up to look up at the sky (pitch 0..1), down to come back.
-  // The look-up eases back down once she moves or a fight starts (see the camera in core/53-loop).
+  // Drag sideways (or hold Left/Right) to turn the camera; drag up (or hold Up) to look up at the sky (pitch 0..1),
+  // drag down (or hold Down) to tilt the camera over her head (pitch down to -1). The sky look eases back down once
+  // she moves or a fight starts, unless Up is still held (see the camera in core/53-loop).
   let yaw = 0, pitch = 0, drag = null;
+  const CAM_TURN = 2.4, CAM_TILT = 1.3; // radians per second, pitch units per second
+  function camKeys(real) {
+    const turn = (keys.has('ArrowLeft') ? 1 : 0) - (keys.has('ArrowRight') ? 1 : 0);
+    if (turn && !G.lock) yaw += turn * CAM_TURN * real;
+    const tilt = (keys.has('ArrowUp') ? 1 : 0) - (keys.has('ArrowDown') ? 1 : 0);
+    if (tilt) pitch = clamp(pitch + tilt * CAM_TILT * real, -1, G.state === 'explore' || G.state === 'interlude' ? 1 : 0);
+    return tilt;
+  }
   const cv = renderer.domElement;
   cv.addEventListener('pointerdown', ev => { drag = { x: ev.clientX, y: ev.clientY, x0: ev.clientX, y0: ev.clientY, t: performance.now() }; cv.setPointerCapture(ev.pointerId); audio(); });
   cv.addEventListener('pointermove', ev => {
     if (!drag) return;
-    if (!G.lock) { yaw -= (ev.clientX - drag.x) * 0.006; if (G.state === 'explore' || G.state === 'interlude') pitch = clamp(pitch + (drag.y - ev.clientY) * 0.004, 0, 1); }
+    if (!G.lock) { yaw -= (ev.clientX - drag.x) * 0.006; if (G.state === 'explore' || G.state === 'interlude') pitch = clamp(pitch + (drag.y - ev.clientY) * 0.004, -1, 1); }
     drag.x = ev.clientX; drag.y = ev.clientY;
   });
   cv.addEventListener('pointerup', ev => {
@@ -72,8 +81,8 @@
 
   function moveInput() {
     const J = P.joy && Math.hypot(P.joy.x, P.joy.y) > 0.18 ? P.joy : null;
-    const f = (keys.has('KeyW') || keys.has('ArrowUp') ? 1 : 0) - (keys.has('KeyS') || keys.has('ArrowDown') ? 1 : 0) - (J ? J.y : 0);
-    const r = (keys.has('KeyD') || keys.has('ArrowRight') ? 1 : 0) - (keys.has('KeyA') || keys.has('ArrowLeft') ? 1 : 0) + (J ? J.x : 0);
+    const f = (keys.has('KeyW') ? 1 : 0) - (keys.has('KeyS') ? 1 : 0) - (J ? J.y : 0);
+    const r = (keys.has('KeyD') ? 1 : 0) - (keys.has('KeyA') ? 1 : 0) + (J ? J.x : 0);
     const cf = new THREE.Vector3(-Math.sin(yaw), 0, -Math.cos(yaw)), cr = new THREE.Vector3(Math.cos(yaw), 0, -Math.sin(yaw));
     return new THREE.Vector3().addScaledVector(cf, f).addScaledVector(cr, r);
   }

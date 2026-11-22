@@ -18,7 +18,7 @@
   let slideTap = true, tapCode = '', tapAt = 0;
   try { slideTap = localStorage.getItem('mm-dtap') !== '0'; } catch (e) { /* storage blocked: on */ }
   function setSlideTap(on) { slideTap = on; try { localStorage.setItem('mm-dtap', on ? '1' : '0'); } catch (e) { /* private mode */ } }
-  const TAP_DIR = { KeyW: [0, 1], ArrowUp: [0, 1], KeyS: [0, -1], ArrowDown: [0, -1], KeyA: [-1, 0], ArrowLeft: [-1, 0], KeyD: [1, 0], ArrowRight: [1, 0] };
+  const TAP_DIR = { KeyW: [0, 1], KeyS: [0, -1], KeyA: [-1, 0], KeyD: [1, 0] };
   function dirTap(code) {
     if (!TAP_DIR[code] || !slideTap || P.mount) return;
     const now = performance.now();

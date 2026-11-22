@@ -8,7 +8,7 @@
     ['World', [['KeyE', 'Use / ride'], ['KeyQ', 'Spirit realm'], ['KeyB', 'Bag'], ['KeyN', 'Upgrade sword'], ['KeyP', 'Hero sheet'], ['KeyM', 'Map']]]
   ];
   const ACT_IDS = ACTIONS.flatMap(g => g[1].map(a => a[0]));
-  const FIXED = /^(Arrow|Escape$|Tab$|Meta|OS|ContextMenu$|F\d)/; // never bindable: arrows stay movement, Esc stays pause
+  const FIXED = /^(Arrow|Escape$|Tab$|Meta|OS|ContextMenu$|F\d)/; // never bindable: arrows stay camera, Esc stays pause
   const BIND_KEY = 'mm-keys';
   let BIND = {}, REV = {}, capAct = null;
   function rebuildKeys() {
@@ -30,7 +30,7 @@
     rebuildKeys();
   }
   function saveKeys() { try { localStorage.setItem(BIND_KEY, JSON.stringify(BIND)); } catch (e) { /* private mode */ } }
-  // Physical key -> action id (default code); arrows pass through as fixed movement; anything else is unbound
+  // Physical key -> action id (default code); arrows pass through as the fixed camera keys; anything else is unbound
   function keyAct(code) { return REV[code] || (/^Arrow/.test(code) ? code : undefined); }
   // Bind an action to a physical key; a key already in use swaps over to the action's old key
   function setBind(act, code) {
@@ -108,7 +108,7 @@
       ACTIONS.map(([g, list]) => `<div class="cgrp"><h4>${g}</h4>` + list.map(([id, name]) =>
         `<div class="crow"><span>${esc(name)}</span><button type="button" data-act="${id}" class="ckey${capAct === id ? ' cap' : ''}"${capAct === id ? ' aria-pressed="true"' : ''} aria-label="${esc(name)}: ${esc(keyLabel(id))}. Change key">${capAct === id ? '…' : esc(keyLabel(id))}</button></div>`).join('') + '</div>').join('') +
       '<label class="chk"><input type="checkbox" id="cktap"' + (slideTap ? ' checked' : '') + '> Double-tap a direction to slide</label>' +
-      '<p class="cnote">Arrow keys always move. X also rolls. Esc pauses.</p><button type="button" id="ckreset">Reset to defaults</button>';
+      '<p class="cnote">Arrow keys turn and tilt the camera. X also rolls. Esc pauses.</p><button type="button" id="ckreset">Reset to defaults</button>';
     if (capAct) { const b = ctlBox.querySelector('.cap'); if (b) b.focus(); }
   }
   // Refresh every place that names keys

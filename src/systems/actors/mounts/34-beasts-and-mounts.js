@@ -193,7 +193,7 @@
         if (flatDist(player.position, b.home) < 60) showTip(`The ${BEAST_TYPES[b.type].name} is back`, ['It has returned to its sanctuary.', 'Find it there to ride again.'], 5);
       }
       let moving = false;
-      if (b.state === 'ridden') moving = keys.has('KeyW') || keys.has('KeyA') || keys.has('KeyS') || keys.has('KeyD') || keys.has('ArrowUp') || keys.has('ArrowDown') || keys.has('ArrowLeft') || keys.has('ArrowRight');
+      if (b.state === 'ridden') moving = keys.has('KeyW') || keys.has('KeyA') || keys.has('KeyS') || keys.has('KeyD');
       else {
         if (flatDist(b.g.position, b.wander) < 0.8) b.wander.set(b.home.x + (Math.random() - 0.5) * 8, 0, b.home.z + (Math.random() - 0.5) * 8);
         const want = yawTo(b.g.position, b.wander);
