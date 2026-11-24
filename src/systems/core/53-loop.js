@@ -86,6 +86,7 @@
     ffGeo.attributes.position.needsUpdate = true;
 
     // Camera: free while exploring, locked onto the Warden in a fight
+    const tiltHeld = camKeys(real);
     const camTarget = G.lock ? lockTarget() : null;
     if (camTarget) {
       const want = Math.atan2(-(camTarget.pos.x - player.position.x), -(camTarget.pos.z - player.position.z));
@@ -98,7 +99,9 @@
     const body = (P.act === 'leap' ? P.leapY : P.y + Math.max(0, P.jh)) + (P.mount ? 1 : 0);
     const levelY = P.jh > 0 && P.act !== 'leap' ? Math.min(camBase, body) : body;
     camBase = first ? levelY : camBase + (levelY - camBase) * (1 - Math.pow(levelY < camBase ? 0.004 : 0.03, real));
-    const back = inFight ? 9.5 : 8, up = inFight ? 8.2 : 7.2;
+    // Negative pitch (Down / drag down) lifts the camera over her head and closer in, up to a near top-down view
+    const over = Math.max(0, -pitch);
+    const back = (inFight ? 9.5 : 8) - over * 3.5, up = (inFight ? 8.2 : 7.2) + over * 6;
     // Pull-in: walk the line from her head to where the camera wants to be; the first spot where a solid stands
     // taller than the line is where the camera must stay in front of. Snaps in fast, eases back out slowly.
     const head = player.position.clone().setY(body + 1.5), ideal = player.position.clone().addScaledVector(cf, -back).setY(camBase + up);
@@ -114,7 +117,7 @@
     // Story glances (Season 1): turn the view up toward the moon for a moment
     // Free look: the player dragged the view up toward the sky; it eases down once she moves or fights
     if (pitch > 0) {
-      if (inFight || moveInput().lengthSq() > 0.01) pitch = Math.max(0, pitch - real * 0.8);
+      if (tiltHeld <= 0 && (inFight || moveInput().lengthSq() > 0.01)) pitch = Math.max(0, pitch - real * 0.8);
       const e = 0.12 + 0.75 * pitch, up = camPos.clone().add(cf.clone().multiplyScalar(Math.cos(e) * 20)).add(new THREE.Vector3(0, Math.sin(e) * 20, 0));
       wantLook.lerp(up, Math.min(1, pitch * 1.4));
     }

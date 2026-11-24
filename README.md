@@ -38,7 +38,8 @@ A normal 3D scene renders every frame, then a shader replaces each screen cell w
 ## Controls
 | Key | Action |
 |---|---|
-| WASD / arrows | Move |
+| WASD | Move |
+| Arrow keys / drag | Turn and tilt the camera |
 | J or click / K | Light combo / heavy attack |
 | Space | Roll |
 | Shift | Block (tap just before a hit to parry) |
