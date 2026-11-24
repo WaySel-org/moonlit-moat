@@ -47,7 +47,7 @@
     raiders.forEach(r => { if (r.alive && r.g.visible) dot(r.pos.x, r.pos.z, big ? 7 : 5, '#ff9a3a'); });
     royals.forEach(r => { if (r.field && r.alive && r.g.visible) dot(r.pos.x, r.pos.z, big ? 6.5 : 4.5, '#ff7ad8'); });
     const rk = realmKey();
-    creeps.forEach(cr => { if (cr.alive && cr.realm === rk) dot(cr.pos.x, cr.pos.z, cr.ai === 'godling' ? (big ? 5 : 3.5) : cr.ancient ? (big ? 3.5 : 2.5) : (big ? 2 : 1.3), cr.ai === 'godling' ? '#e0a0ff' : cr.ancient ? '#ff9a4a' : '#ff5a4a'); });
+    creeps.forEach(cr => { if (cr.alive && cr.realm === rk && !cr.napeOf) dot(cr.pos.x, cr.pos.z, cr.isGiant ? (big ? 5 : 3.5) : cr.ai === 'godling' ? (big ? 5 : 3.5) : cr.ancient ? (big ? 3.5 : 2.5) : (big ? 2 : 1.3), cr.ai === 'godling' ? '#e0a0ff' : cr.ancient ? '#ff9a4a' : '#ff5a4a'); });
     if (!W && G.realm === 'material') drawMythics(c, X, Z, big);
     if (!W && big && G.realm === 'material') {
       // Region names on the big map; ones you have not set foot in yet are dimmer

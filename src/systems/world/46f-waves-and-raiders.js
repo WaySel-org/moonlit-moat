@@ -135,13 +135,14 @@
       showBanner('Raptors!', `A Razorclaw pack of ${mobs.length} has your scent. They are fast and grow faster the longer the hunt runs. Stand your ground or jump over them.`, 'title');
     } else {
       const r = raiders.find(x => x.type === pick), p = ringSpot(20, 26); if (!p) return;
+      loadRaidModel(r);
       r.lv = lvOfHero(r.fly ? 2 : 1); r.max = Math.round(r.base * (1 + 0.3 * (r.lv - 1))); r.hp = r.max; r.pow = 1.1 + 0.15 * (r.lv - 1);
       Object.assign(r, { alive: true, where: realmKey(), state: r.fly ? 'circle' : 'chase', t: 0, cool: 2.5, ang: Math.atan2(p.z - player.position.z, p.x - player.position.x) });
       r.pos.set(p.x, r.fly ? 12 : 0, p.z); r.g.visible = true; r.body.rotation.set(0, 0, 0);
       G.raid = { r, t: 75 };
       showBanner(r.name, RAIDER[pick].line, 'title');
     }
-    bannerTimer = 3.5; sfx('boss', pick === 'pack' ? 'raptors' : pick); G.shake = Math.max(G.shake, 0.5);
+    bannerTimer = 3.5; sfx('bossintro', pick === 'pack' ? 'raptors' : pick); G.shake = Math.max(G.shake, 0.5);
   }
   function endRaid(msg) {
     const R = G.raid; if (!R) return;
@@ -215,18 +216,20 @@
       // The tyrant: chase, bite up close, charge from range, roar to knock back
       const step = sp => { const f = fwdOf(r.facing), nx = r.pos.x + f.x * sp * dt, nz = r.pos.z + f.z * sp * dt; if (groundAt(nx, nz) < 0.6) { r.pos.x = nx; r.pos.z = nz; } };
       if (r.legs) r.legs.forEach((l, i) => { l.rotation.x = r.state === 'chase' || r.state === 'charge' ? Math.sin(tt * 8 + i * Math.PI) * 0.5 : 0; });
+      // Footfalls you can hear coming: one every stride while it walks, faster in a charge, only when it is near
+      if ((r.state === 'chase' && d > 3.2) || (r.state === 'charge' && r.t >= 0.8)) { r.stepT = (r.stepT || 0) - dt; if (r.stepT <= 0) { r.stepT = r.state === 'charge' ? 0.22 : 0.42; if (d < 40) sfx('rexstep'); } }
       if (r.state === 'chase') {
         r.facing += clamp(angDiff(r.facing, yawTo(r.pos, pp)), -2.5 * dt, 2.5 * dt); if (d > 3.2) step(4.6);
         if (r.cool <= 0) {
           r.t = 0;
           if (d < 4.5) { r.state = 'bite'; }
-          else if (d < 24 && Math.random() < 0.6) { r.state = 'charge'; r.facing = yawTo(r.pos, pp); }
+          else if (d < 24 && Math.random() < 0.6) { r.state = 'charge'; r.facing = yawTo(r.pos, pp); sfx('rexcharge'); }
           else { r.state = 'roar'; }
         }
       } else if (r.state === 'bite') {
         r.jaw.rotation.x = r.t < 0.6 ? 0.5 * r.t / 0.6 : 0; const front = r.pos.clone().addScaledVector(fwdOf(r.facing), 3);
         r.tele.circle(front.x, 0, front.z, 2.2, r.t / 0.6);
-        if (r.t >= 0.6 && !r.hitDone) { r.hitDone = true; r.tele.hide(); sfx('heavyhit'); if (flatDist(pp, front) < 2.5 && pp.y < 2.5) hitPlayer(34, front, 12, true, r); }
+        if (r.t >= 0.6 && !r.hitDone) { r.hitDone = true; r.tele.hide(); sfx('rexbite'); if (flatDist(pp, front) < 2.5 && pp.y < 2.5) hitPlayer(34, front, 12, true, r); }
         if (r.t > 1.3) { r.state = 'chase'; r.cool = 1.4; r.hitDone = false; }
       } else if (r.state === 'charge') {
         if (r.t < 0.8) r.tele.lane(r.pos, r.facing, 22, 3, r.t / 0.8, 0);
@@ -298,7 +301,7 @@
     }
     if (G.raid) {
       G.raid.t -= real;
-      if (G.raid.r) { updateRaider(G.raid.r, dt); if (G.raid && G.raid.t <= 0) endRaid(`${G.raid.r.name} loses interest and leaves.`); }
+      if (G.raid.r) { updateRaider(G.raid.r, dt); raidDragonModelUpdate(G.raid.r, dt); if (G.raid && G.raid.t <= 0) endRaid(`${G.raid.r.name} loses interest and leaves.`); }
       else if (!G.raid.pack.some(c => c.alive)) { dropGear(player.position, 1, 0.5); endRaid('The pack is dead.'); }
       else if (G.raid.t <= 0) endRaid('The raptors scatter.');
       else if ((G.raid.frenzy -= dt) <= 0) {

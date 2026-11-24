@@ -3,8 +3,9 @@
   // One clip per player state (named after P.act); moonlitHerUpdate(), called at the end of updatePlayer,
   // picks the clip, stretches one-shot clips to the game's P.actDur and keeps the sword in her right hand.
   // Every clip is in place: the game moves the player, the clips only animate her.
-  const HER = { ready: false, mixer: null, actions: {}, cur: null, curName: '', lastActT: 0, wasAir: false, parryT: 0, lastRiposte: 0, mats: [], hand: null, swing: 0 };
+  const HER = { ready: false, mixer: null, actions: {}, cur: null, curName: '', blendFrom: new Map(), blendT: 0, lastActT: 0, wasAir: false, parryT: 0, lastRiposte: 0, mats: [], hand: null, swing: 0 };
   const HER_SCALE = 0.9;      // the block figure is about 1.8 m tall; her model is 2.0 m
+  const HER_FADE = 0.1;
   const HER_LOOPS = new Set(['idle', 'run', 'block', 'spin', 'sneak', 'ride']);
   // The sword in her fist: the grip runs across the palm, the blade out past the thumb
   const HER_GRIP_POS = new THREE.Vector3(0, 0.08, 0.03);
@@ -15,20 +16,8 @@
   const HER_CARRY = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(-0.45, -0.35, -0.8).normalize());
 
   function loadMoonlitHer() {
-    const A = window.MM_ASSETS;
-    if (!A || !A.hero || !A.gltfLoader) return;
-    const s = document.createElement('script');
-    s.src = A.gltfLoader;
-    s.onload = () => {
-      // The loader's default image path fetch()es the textures' blob: URLs, which the CSP's
-      // connect-src 'self' blocks. Plain <img> loading falls under img-src, which allows blob:.
-      const loader = new THREE.GLTFLoader().register(parser => {
-        parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
-        return { name: 'mm_img_textures' };
-      });
-      loader.load(A.hero, setupMoonlitHer, undefined, e => console.warn('Moonlit Her did not load; keeping the block figure', e));
-    };
-    document.head.appendChild(s);
+    loadModel('hero', setupMoonlitHer, 'Moonlit Her did not load; keeping the block figure');
+
   }
 
   function setupMoonlitHer(gltf) {
@@ -43,7 +32,6 @@
         if (map) { map.encoding = THREE.LinearEncoding; map.needsUpdate = true; }
         o.material = new THREE.MeshLambertMaterial({ map, skinning: true });
         HER.mats.push(o.material);
-        o.layers.enable(3); // readability mask: skinned friends have their own pass (render/36-gameplay-mask.js)
       }
       if (o.isBone && /RightHand$/.test(o.name)) HER.hand = o;
     });
@@ -52,6 +40,7 @@
     // Swap: hide the block figure's shapes but keep the sword, the lantern light and every hook other files use
     pBody.children.forEach(c => { if (c !== swordPivot && !c.isLight) c.visible = false; });
     pBody.add(root);
+    tag(root, 1);
     HER.ready = true;
   }
 
@@ -78,17 +67,39 @@
 
   function play(name, dur, restart) {
     const next = HER.actions[name] || HER.actions.idle;
-    if (!next || (next === HER.cur && !restart)) return;
-    next.reset();
+    const prev = HER.cur;
+    if (!next || (next === prev && !restart)) return;
+    const wasBlending = HER.blendFrom.has(next);
+    const weight = next === prev || wasBlending ? next.getEffectiveWeight() : prev ? 0 : 1;
+    // An interrupted fade starts from the visible pose, including any clips still fading out.
+    if (prev && next !== prev) {
+      for (const action of HER.blendFrom.keys()) HER.blendFrom.set(action, action.getEffectiveWeight());
+      HER.blendFrom.set(prev, prev.getEffectiveWeight());
+      HER.blendFrom.set(next, weight);
+      HER.blendT = 0;
+    }
+    // Returning to a loop mid-fade keeps its phase. New one-shots still start on frame zero.
+    if (!wasBlending || restart || !HER_LOOPS.has(name)) next.reset();
     if (dur > 0 && !HER_LOOPS.has(name)) {
       next.setLoop(THREE.LoopOnce, 1); next.clampWhenFinished = true;
       next.timeScale = next.getClip().duration / dur;
     } else if (name === 'dead') {
       next.setLoop(THREE.LoopOnce, 1); next.clampWhenFinished = true; next.timeScale = 1;
     } else { next.setLoop(THREE.LoopRepeat, Infinity); next.timeScale = 1; }
-    if (HER.cur && HER.cur !== next) next.crossFadeFrom(HER.cur, 0.1, false);
-    next.play();
+    next.setEffectiveWeight(weight).play();
     HER.cur = next; HER.curName = name;
+  }
+
+  function updateHerBlend(dt) {
+    if (!HER.blendFrom.size) return;
+    HER.blendT = Math.min(1, HER.blendT + dt / HER_FADE);
+    const t = HER.blendT, mix = t * t * (3 - 2 * t);
+    for (const [action, weight] of HER.blendFrom) {
+      if (action === HER.cur) action.setEffectiveWeight(weight + (1 - weight) * mix);
+      else if (t < 1) action.setEffectiveWeight(weight * (1 - mix));
+      else action.stop();
+    }
+    if (t === 1) HER.blendFrom.clear();
   }
 
   const _hw = new THREE.Vector3(), _hq = new THREE.Quaternion(), _bq = new THREE.Quaternion(), _hs = new THREE.Vector3();
@@ -104,6 +115,7 @@
     const restart = (name === HER.curName && dur > 0 && P.actT < HER.lastActT) || (name === 'jump' && air && !HER.wasAir);
     play(name, dur, restart);
     HER.lastActT = P.actT; HER.wasAir = air;
+    updateHerBlend(dt);
     HER.mixer.update(dt);
 
     // Her clips animate rolls, leaps and the fall, so cancel the block figure's whole-body flips

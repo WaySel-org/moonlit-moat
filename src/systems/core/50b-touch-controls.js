@@ -28,6 +28,7 @@
 
   // Prompts and objectives speak in buttons, not keys, while touch is in use. Tapping a prompt uses it.
   function touchSay(t) {
+    if (padOn()) return padSay(t);
     if (!isTouch()) return t;
     return t.replace(/^E · /, 'Tap Use · ').replace(/^Q · /, 'Tap Veil · ').replace(/press E/g, 'tap Use').replace(/\(Q works anywhere\)/, '(Veil works anywhere)')
       .replace(/ \(N\)/g, ' (tap Bag)').replace(/ \(B\)/g, '').replace(/\(O\)/g, '(Leap)');
@@ -37,7 +38,8 @@
     if (/^Tap Use/.test(t)) press('KeyE'); else if (/^Tap Veil/.test(t)) press('KeyQ');
   });
   // Mirror the skill bar's cooldowns and labels onto the touch skill buttons
-  function touchSkill(id, locked, frac) {
-    const b = document.getElementById(id); if (!b) return;
-    b.classList.toggle('locked', locked); b.style.setProperty('--cd', Math.round(clamp(frac, 0, 1) * 100) + '%');
+  function touchSkill(b, locked, percent) {
+    if (!b) return;
+    b.classList.toggle('locked', locked);
+    if (b.style.getPropertyValue('--cd') !== percent) b.style.setProperty('--cd', percent);
   }

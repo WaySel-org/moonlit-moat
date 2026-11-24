@@ -1,0 +1,14 @@
+{
+  "gameId": "aegis",
+  "name": "Aegis Drone",
+  "kind": "creep",
+  "world": "neon-verge",
+  "stats": {
+    "baseHealth": 38
+  },
+  "ai": "aegis",
+  "behaviour": "Hovers beside the machine nearest the fight and wraps it in a shield worth half its hp for 7 s, every 9 s or so. Never attacks and runs from the hero. Its shield collapses when it is killed.",
+  "look": "Hexagonal hovering disc with a glowing teal core and a spinning ring.",
+  "id": "aegis-drone",
+  "originality": "original"
+}

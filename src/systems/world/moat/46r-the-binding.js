@@ -66,6 +66,7 @@
   // Raises up to n of the dead in a ring around a point; with a goal they march on it instead of on her.
   // from: the landmark whose rift they came through, so sealing it can take them back.
   function lmSummon(at, n, r0, r1, goal, lvBonus, from) {
+    loadShamblerModels(); // the modelled Shambler (25j) normally loads on entry to Ashfall; the Binding needs it here
     const out = [];
     for (const c of lmDead) {
       if (out.length >= n) break; if (c.alive) continue;
@@ -119,6 +120,7 @@
     const pr = lmProg(), tt = uTime.value;
     if (BD.pr !== pr) { BD.pr = pr; LM.forEach(L => { const h = !!pr.lmHeld[L.i]; L.ctl = h ? 1 : 0; L.seal = h ? 1 : 0; L.challenged = false; L.spawnT = 0; }); }
     lmCheckStart();
+    if (storyOn() && pr.bindOn && !pr.eyeDone) loadShamblerModels();
     const show = storyOn() && G.world === 'moat' && !!(pr.bindOn || pr.eyeDone);
     LM.forEach(L => { L.g.visible = show; L.rift.visible = show && L.seal < 1 && !pr.eyeDone; });
     lmThreads.forEach(ln => { ln.visible = show && !!pr.eyeBound && !pr.eyeDone; });

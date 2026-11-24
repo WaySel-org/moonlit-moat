@@ -3,7 +3,7 @@
   // (or one waiting) replaces it; others queue, at most three, and a waiting tip cuts the current one to 3 s.
   // tipKey(code, touchWord) names a control: the player's bound key, or the on-screen button on touch.
   const tip = { el: document.getElementById('tipcard'), cur: null, left: 0, shown: 0, queue: [] };
-  const tipKey = (code, touchWord) => isTouch() ? touchWord : keyLabel(code);
+  const tipKey = (code, touchWord) => isTouch() ? touchWord : padOn() ? padName(code) : keyLabel(code);
   function tipRender(t) {
     const el = tip.el; if (!el) return;
     el.textContent = '';

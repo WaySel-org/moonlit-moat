@@ -22,6 +22,7 @@ and browsers can keep it for a year without asking again.
 dist/ is build output and is never committed. A dist/.vercel link, if present, is kept.
 """
 import gzip, hashlib, json, pathlib, shutil, subprocess, sys
+from urllib.parse import quote
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC, CONTENT, DIST = ROOT / 'src', ROOT / 'content', ROOT / 'dist'
@@ -45,7 +46,7 @@ def fail(msg):
 def load_content():
     characters, worlds, ids = [], [], set()
     for path in sorted((CONTENT / 'characters').rglob('*.json')):
-        d = json.loads(path.read_text())
+        d = json.loads(path.read_text(encoding='utf-8'))
         for k in REQUIRED['character']:
             if k not in d: fail(f'{path.relative_to(ROOT)} is missing "{k}"')
         if d['kind'] not in KINDS: fail(f'{path.relative_to(ROOT)} has unknown kind "{d["kind"]}"')
@@ -53,13 +54,13 @@ def load_content():
         if d['id'] in ids: fail(f'duplicate character id "{d["id"]}"')
         ids.add(d['id']); characters.append(d)
     for path in sorted((CONTENT / 'worlds').rglob('world.json')):
-        d = json.loads(path.read_text())
+        d = json.loads(path.read_text(encoding='utf-8'))
         for k in REQUIRED['world']:
             if k not in d: fail(f'{path.relative_to(ROOT)} is missing "{k}"')
         if d['originality'] != 'original': fail(f'{path.relative_to(ROOT)}: all worlds must be original')
         worlds.append(d)
     env_path = CONTENT / 'environments.json'
-    environments = json.loads(env_path.read_text()) if env_path.exists() else []
+    environments = json.loads(env_path.read_text(encoding='utf-8')) if env_path.exists() else []
     for e in environments:
         if 'name' not in e: fail('every environment needs a "name"')
     return {'characters': characters, 'worlds': worlds, 'environments': environments}
@@ -111,30 +112,45 @@ def build():
     content = load_content()
     clean_dist()
 
-    manifest = json.loads((SRC / 'systems' / 'manifest.json').read_text())
+    manifest = json.loads((SRC / 'systems' / 'manifest.json').read_text(encoding='utf-8'))
     parts = []
     for rel in manifest:
-        code = strip_line_comments((SRC / 'systems' / rel).read_text(), rel)
+        code = strip_line_comments((SRC / 'systems' / rel).read_text(encoding='utf-8'), rel)
         parts.append(f'  // ===== src/systems/{rel} =====\n{code}')
     # Lazy assets: fetched after the game starts, so they sit outside the first-load budget
     lazy = {'gltfLoader': emit('gltf-loader.js', (ROOT / 'vendor' / 'three-r128-GLTFLoader.js').read_bytes()),
             'hero': emit('moonlit-her.glb', (ROOT / 'assets' / 'hero' / 'moonlit-her.glb').read_bytes()),
             'warden': emit('warden.glb', (ROOT / 'assets' / 'bosses' / 'warden.glb').read_bytes()),
+            'nyxara': emit('nyxara.glb', (ROOT / 'assets' / 'bosses' / 'nyxara.glb').read_bytes()),
+            'vesthra': emit('vesthra.glb', (ROOT / 'assets' / 'bosses' / 'vesthra.glb').read_bytes()),
             'moonstag': emit('moonstag.glb', (ROOT / 'assets' / 'mounts' / 'moonstag.glb').read_bytes()),
             'gryphon': emit('gryphon.glb', (ROOT / 'assets' / 'mounts' / 'gryphon.glb').read_bytes()),
+            'godling': emit('godling.glb', (ROOT / 'assets' / 'creeps' / 'godling.glb').read_bytes()),
+            'oni': emit('oni.glb', (ROOT / 'assets' / 'mythics' / 'oni.glb').read_bytes()),
+            'minotaur': emit('minotaur.glb', (ROOT / 'assets' / 'mythics' / 'minotaur.glb').read_bytes()),
+            'cinderwing': emit('cinderwing.glb', (ROOT / 'assets' / 'bosses' / 'cinderwing.glb').read_bytes()),
+            'rex': emit('tyrant-rex.glb', (ROOT / 'assets' / 'bosses' / 'tyrant-rex.glb').read_bytes()),
             'drake': emit('drake.glb', (ROOT / 'assets' / 'mounts' / 'drake.glb').read_bytes()),
             'crawler': emit('crawler.glb', (ROOT / 'assets' / 'creeps' / 'crawler.glb').read_bytes()),
-            'wispCage': emit('ash-wisp-cage.glb', (ROOT / 'assets' / 'creeps' / 'ash-wisp-cage.glb').read_bytes())}
+            'wispCage': emit('ash-wisp-cage.glb', (ROOT / 'assets' / 'creeps' / 'ash-wisp-cage.glb').read_bytes()),
+            'gravebelly': emit('gravebelly.glb', (ROOT / 'assets' / 'creeps' / 'gravebelly.glb').read_bytes()),
+            'shambler': emit('shambler.glb', (ROOT / 'assets' / 'creeps' / 'shambler.glb').read_bytes()),
+            'rotSovereign': emit('rot-sovereign.glb', (ROOT / 'assets' / 'bosses' / 'rot-sovereign.glb').read_bytes())}
     game_js = ('window.MM_CONTENT = ' + json.dumps(content, separators=(',', ':')) + ';\n'
                'window.MM_ASSETS = ' + json.dumps(lazy) + ';\n'
                '(function () {\n' + '\n'.join(parts) + '})();\n')
     game = emit('game.js', game_js)
     three = emit('three.js', (ROOT / 'vendor' / 'three.min.js').read_bytes())
     faces, fonts = font_faces()
-    styles = emit('styles.css', '[hidden]{display:none!important}\n' + faces + (SRC / 'styles' / 'game.css').read_text())
-    (DIST / 'healthz').write_text('ok\n')
+    styles = emit('styles.css', '[hidden]{display:none!important}\n' + faces + (SRC / 'styles' / 'game.css').read_text(encoding='utf-8'))
+    (DIST / 'healthz').write_text('ok\n', encoding='utf-8')
 
-    markup = (SRC / 'index.html').read_text()
+    markup = (SRC / 'index.html').read_text(encoding='utf-8')
+    icon = quote(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">'
+        '<rect width="32" height="32" rx="6" fill="#0a1418"/>'
+        '<path d="M20 5a11 11 0 1 0 7 16A11 11 0 0 1 20 5Z" fill="#ffe6a8"/>'
+        '</svg>', safe='')
     (DIST / 'index.html').write_text(
         '<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
@@ -142,20 +158,21 @@ def build():
         '<meta name="mobile-web-app-capable" content="yes">\n'
         '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">\n'
         '<meta name="referrer" content="no-referrer">\n<title>Moonlit Moat</title>\n'
+        f'<link rel="icon" href="data:image/svg+xml,{icon}">\n'
         f'<link rel="preload" href="{fonts["400"]}" as="font" type="font/woff2" crossorigin>\n'
         f'<link rel="stylesheet" href="{styles}">\n</head>\n<body>\n' + markup +
         f'<script src="{three}"></script>\n<script src="{game}"></script>\n'
-        '</body>\n</html>\n')
+        '</body>\n</html>\n', encoding='utf-8')
 
-    headers = json.loads((ROOT / 'deploy' / 'headers.json').read_text())
-    cache = json.loads((ROOT / 'deploy' / 'cache.json').read_text())
+    headers = json.loads((ROOT / 'deploy' / 'headers.json').read_text(encoding='utf-8'))
+    cache = json.loads((ROOT / 'deploy' / 'cache.json').read_text(encoding='utf-8'))
     prefix = cache['assets']['path'].strip('/')
     vercel = {"cleanUrls": True, "headers": [
         {"source": "/(.*)", "headers": [{"key": k, "value": v} for k, v in headers.items()]},
         {"source": f"/{prefix}/(.*)", "headers": [{"key": "Cache-Control", "value": cache['assets']['cache-control']}]},
         {"source": f"/((?!{prefix}/).*)", "headers": [{"key": "Cache-Control", "value": cache['default']['cache-control']}]},
     ]}
-    (DIST / 'vercel.json').write_text(json.dumps(vercel, indent=2) + '\n')
+    (DIST / 'vercel.json').write_text(json.dumps(vercel, indent=2) + '\n', encoding='utf-8')
 
     for f in [DIST / 'index.html', *ASSETS.glob('*.js'), *ASSETS.glob('*.css'), *ASSETS.glob('*.glb')]:
         f.with_name(f.name + '.gz').write_bytes(gzip.compress(f.read_bytes(), 9, mtime=0))
@@ -166,7 +183,7 @@ def build():
         raise SystemExit(f'first load is {size:.1f} KB gzip, over the {BUDGET_KB} KB budget (tools/build.py BUDGET_KB)')
 
     if shutil.which('node'):
-        r = subprocess.run(['node', '--check', str(DIST / game)], capture_output=True, text=True)
+        r = subprocess.run(['node', '--check', str(DIST / game)], capture_output=True, encoding='utf-8')
         if r.returncode != 0:
             sys.stderr.write(r.stderr); raise SystemExit('game.js failed the syntax check')
     print(f'built dist/ from {len(manifest)} systems, {len(content["characters"])} characters, '

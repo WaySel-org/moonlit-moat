@@ -7,7 +7,7 @@
       const here = w === G.world, open = ST.unlocked[w];
       const sub = !open ? UNLOCK_HINT[w] : ST.shards[w] ? (i && stageOf(w) > 1 ? `Stage ${stageOf(w)}: ${ST.step[w] === 1 ? `defeat ${WORLDS[w].bossName}` : ST.step[w] === 2 ? 'cleared, the next stage is coming' : WORLDS[w].task}` : `${cap(SHARD[w])} recovered`) : i === 0 ? 'Chapter 1: the Gate Warden holds the Moon Shard' : ST.step[w] === 1 ? `Chapter ${i + 1}: defeat ${WORLDS[w].bossName}` : `Chapter ${i + 1}: ${WORLDS[w].task}`;
       return `<button type="button" class="shopbtn" data-w="${w}"${here || !open ? ' disabled' : ''}><span>${WNAME[w]}<small>${sub}</small></span><span class="gold">${here ? 'You are here' : open ? 'Travel' : 'Sealed'}</span></button>`;
-    }).join('');
+    }).join('') + titanSelectButtons();
   }
   function openWorlds() {
     const why = travelBlock();

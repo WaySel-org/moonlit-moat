@@ -1,0 +1,30 @@
+{
+  "id": "titan",
+  "name": "Lanternreach",
+  "theme": "walled city under siege",
+  "status": "live",
+  "originality": "original",
+  "dataDriven": false,
+  "bounds": 70,
+  "objective": "Fell five Gaunts at the wall, then defeat the Bellringer",
+  "boss": "The Bellringer",
+  "shard": "Shard of the World Heart (Lanternreach)",
+  "spawn": [0, 56],
+  "worldGate": [-5, 61],
+  "bossBaseHealth": 1500,
+  "gameId": "titan",
+  "bossAt": [0, -52],
+  "lore": "When the World Heart broke, the plateau of Lanternreach fell into a long dusk, and the Gaunts walked out of the marsh mist: hollow giants with nothing inside them but a single coal of stolen light, the nape-knot, burning at the back of the neck. The lantern-city behind its great wall has held ever since. It is the one place in the sundered worlds where a tether and a quick blade matter more than a strong arm.",
+  "mechanics": [
+    "Gaunts and the Bellringer take almost nothing from blows to the body (6% for a Gaunt, 12% for a Runt, 5% for the Bellringer) and a body hit can never kill.",
+    "Each giant carries a nape-knot, a separate hittable target at the back of the neck. Hits to it deal 3.0 to 3.5 times damage (1.25 times more from a hooked flurry or a plunge, 1.2 times only for bolts and daggers).",
+    "Moonhook on any part of a giant carries the hero up behind the neck for the three-slash flurry; the last slash topples it.",
+    "Rooftops, the watchtowers and the wall top are real heights the hero can jump onto; shed 2.4 m, house 4.4 m, balcony 6.2 m, tower 8.5 m, wall 9.5 m."
+  ],
+  "roster": [
+    { "name": "Hollow Gaunt", "ai": "gaunt", "count": 3, "baseHealth": 700 },
+    { "name": "Husk Runt", "ai": "runt", "count": 4, "baseHealth": 220 }
+  ],
+  "solids": "a 9.5 m wall with a Great Gate and two posterns, 18 house blocks with sheds, balconies and watchtowers, ruined walls and dead trees in the fields",
+  "unlockedBy": "open from the start through any World Gate (a side world, not one of the four shards)"
+}

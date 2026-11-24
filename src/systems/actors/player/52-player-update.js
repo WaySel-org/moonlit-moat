@@ -55,21 +55,23 @@
     for (const c in P.cd) P.cd[c] = Math.max(0, P.cd[c] - dt);
 
     const mv = moveInput();
-    let speed = 0;
+    let speed = 0, moved = false;
     // The beast keeps running (at 85%) through its own attacks and skills
     const ride = rideAct();
     if (P.act === null || ride) {
       speed = (P.block ? 2.4 : 6.8) * (P.mount ? BEAST_TYPES[P.mount.type].speed : 1) * PR.speed * (agi ? 1.4 : 1) * (wading ? 0.6 : 1) * (P.stone > 0 ? 0 : 1) * heroSlow() * (ride ? 0.85 : 1);
-      if (mv.lengthSq() > 0) {
-        mv.normalize();
+      const inputLength = mv.length();
+      if (inputLength > 0) {
+        if (inputLength > 1) mv.divideScalar(inputLength);
         movePlayer(mv.x * speed * dt, mv.z * speed * dt);
-        if (!(G.lock && lockTarget())) P.facing = Math.atan2(mv.x, mv.z);
-        walk += dt * (P.block ? 6 : 12);
+        moved = true;
+        walk += dt * (P.block ? 6 : 12) * Math.min(inputLength, 1);
       }
       if (!ride && P.combo && P.actT > 0.5) P.combo = 0;
     }
     const lt = G.lock && P.act !== 'roll' && P.act !== 'leap' ? lockTarget() : null;
     if (lt) P.facing += angDiff(P.facing, yawTo(player.position, lt.pos)) * Math.min(1, dt * 12);
+    else if (moved) P.facing = Math.atan2(mv.x, mv.z);
 
     if (P.act) {
       P.actT += dt;

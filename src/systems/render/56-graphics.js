@@ -52,7 +52,6 @@
       }`
   })));
   postU.tBloom = { value: bloomB.texture }; postU.uBloom = { value: GFX_HIGH ? 1 : 0 };
-  let bloomW = 0;
   function blurPass(src, dst, dx, dy, bright) {
     blurU.tSrc.value = src.texture; blurU.uDir.value.set(dx, dy); blurU.uBright.value = bright;
     renderer.setRenderTarget(dst); renderer.render(blurScene, postCam);
@@ -62,14 +61,24 @@
     if (!GFX_HIGH) return;
     moonLight.position.copy(player.position).addScaledVector(MOON_DIR, 70);
     moonLight.target.position.copy(player.position);
+    // Reflection and the mask already used this frame's scene matrices.
+    moonLight.updateMatrixWorld();
+    moonLight.target.updateMatrixWorld();
     renderer.shadowMap.needsUpdate = true;
     const t = uTime.value;
-    TORCHES.forEach(o => { const k = 0.85 + Math.sin(t * 13 + o.ph) * 0.08 + Math.sin(t * 7.3 + o.ph) * 0.07; o.l.intensity = 1.6 * k; o.f.scale.setScalar(k); });
+    TORCHES.forEach(o => {
+      const k = 0.85 + Math.sin(t * 13 + o.ph) * 0.08 + Math.sin(t * 7.3 + o.ph) * 0.07;
+      o.l.intensity = 1.6 * k;
+      o.f.scale.setScalar(k);
+      o.f.updateMatrixWorld();
+    });
   }
   function gfxAfterScene() {
-    if (!GFX_HIGH) return;
+    if (!GFX_HIGH || S.mode === 0) return; // Only Raw and the Raw half of Split sample bloom.
     const w = Math.max(1, sceneRT.width >> 2), h = Math.max(1, sceneRT.height >> 2);
-    if (w !== bloomW) { bloomW = w; bloomA.setSize(w, h); bloomB.setSize(w, h); blurU.uRes.value.set(w, h); }
+    if (w !== blurU.uRes.value.x || h !== blurU.uRes.value.y) {
+      bloomA.setSize(w, h); bloomB.setSize(w, h); blurU.uRes.value.set(w, h);
+    }
     blurPass(sceneRT, bloomA, 1, 0, 1); blurPass(bloomA, bloomB, 0, 1, 0);
     blurPass(bloomB, bloomA, 2, 0, 0); blurPass(bloomA, bloomB, 0, 2, 0);
   }

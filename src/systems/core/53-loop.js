@@ -1,5 +1,6 @@
   // ---------- Loop ----------
   const camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
+  const reflectionFrustum = new THREE.Frustum(), viewProjection = new THREE.Matrix4();
   let camBase = 0, camPull = 1; // camera height track and pull-in fraction (1 = full distance)
   const label = $('#label'), proj = new THREE.Vector3();
   let last = performance.now(), nextFish = 1.5, lastSplash = 0, walk = 0, first = true;
@@ -9,29 +10,24 @@
     return { x: (proj.x + 1) / 2 * window.innerWidth, y: (1 - proj.y) / 2 * window.innerHeight, ok: proj.z < 1 && Math.abs(proj.x) < 1.2 && Math.abs(proj.y) < 1.2 };
   }
 
-  function frame(now) {
-    // Schedule the next frame first, so one bad frame can never stop the game
-    requestAnimationFrame(frame);
-    const real = Math.min(0.05, (now - last) / 1000); last = now;
+  function stepGame(real) {
     let dt = real;
-    if (!G.shop && !G.paused && !G.menu) worldTick(real);
-    if (G.shop || G.paused || G.menu) dt = 0;
-    else if (G.hitstop > 0) { G.hitstop -= real; dt = 0; }
+    worldTick(real);
+    if (G.hitstop > 0) { G.hitstop -= real; dt = 0; }
     else if (G.slow > 0) { G.slow -= real; dt = real * 0.3; }
     uTime.value += dt;
     const t = uTime.value;
-
 
     const pr = updatePlayer(dt);
     updateStatus(dt); updateRend(dt);
     const inMoat = G.world === 'moat';
     if (inMoat) { updateBoss(dt); wardenModelUpdate(dt); updatePods(dt); }
     updateBolts(dt);
-    royals.forEach(r => updateRoyal(r, dt)); ubPoseBrides(); updateShots(dt);
-    if (inMoat) updateDragon(dt);
+    royals.forEach(r => updateRoyal(r, dt)); ubPoseBrides(); nyxaraModelUpdate(dt); vesthraModelUpdate(dt); updateShots(dt);
+    if (inMoat) { updateDragon(dt); cinderwingModelUpdate(dt); }
     updateFireworks(dt);
     updatePatches(dt);
-    creeps.forEach(c => updateCreep(c, dt)); crawlerModelUpdate(dt); wispCageUpdate(dt);
+    creeps.forEach(c => updateCreep(c, dt)); WORLD_TICKS.forEach(f => f(dt)); crawlerModelUpdate(dt); wispCageUpdate(dt); gravebellyUpdate(dt); shamblerUpdate(dt); godlingModelUpdate(dt); rotModelUpdate(dt); oniModelUpdate(dt); minotaurModelUpdate(dt);
     updateCreepShots(dt);
     if (inMoat) updateChests(dt);
     updateLoot(dt); updateRelics(dt, real);
@@ -41,7 +37,7 @@
     updateSwooshes(dt);
     if (inMoat) { updateBeasts(dt); mountModelUpdate(dt); if (!G.storm) updateHunt(dt); }
     if (inMoat && !G.storm && G.state === 'interlude' && !(G.royalLull > 0) && !UB.on && !EN.on && player.position.y > ROOF.y - 0.5 && Math.abs(player.position.z) > 20) startRoyal();
-    if (!G.shop && !G.paused) { updateWorlds(dt, real); updateAscension(dt, real); updateMythics(dt, real); }
+    updateWorlds(dt, real); updateAscension(dt, real); updateMythics(dt, real);
     if (G.wardenDown) wards.forEach(w => { if (w.visible) { w.material.opacity -= real * 0.6; if (w.material.opacity <= 0) w.visible = false; } });
     else wards.forEach(w => { w.material.opacity = 0.55 + 0.2 * Math.sin(t * 6); });
 
@@ -55,14 +51,18 @@
     }
 
     // Sparks
-    for (let i = 0; i < SP; i++) {
-      if (spLife[i] <= 0) continue;
-      spLife[i] -= dt;
-      if (spLife[i] <= 0) { spPos[i * 3 + 1] = -999; continue; }
-      spVel[i * 3 + 1] -= 14 * dt;
-      spPos[i * 3] += spVel[i * 3] * dt; spPos[i * 3 + 1] = Math.max(0.03, spPos[i * 3 + 1] + spVel[i * 3 + 1] * dt); spPos[i * 3 + 2] += spVel[i * 3 + 2] * dt;
+    if (sparks.visible) {
+      sparks.visible = false;
+      for (let i = 0; i < SP; i++) {
+        if (spLife[i] <= 0) continue;
+        spLife[i] -= dt;
+        if (spLife[i] <= 0) { spPos[i * 3 + 1] = -999; continue; }
+        sparks.visible = true;
+        spVel[i * 3 + 1] -= 14 * dt;
+        spPos[i * 3] += spVel[i * 3] * dt; spPos[i * 3 + 1] = Math.max(0.03, spPos[i * 3 + 1] + spVel[i * 3 + 1] * dt); spPos[i * 3 + 2] += spVel[i * 3 + 2] * dt;
+      }
+      if (sparks.visible) spGeo.attributes.position.needsUpdate = true;
     }
-    spGeo.attributes.position.needsUpdate = true;
 
     // Ripples
     const inLake = pr.dl < LAKE.r - 0.2;
@@ -75,6 +75,15 @@
       }
     }
     if (t > nextFish) { nextFish = t + (reduce ? 4 : 1.2 + Math.random() * 1.8); const a = Math.random() * TAU, rr = Math.random() * (LAKE.r - 1.5); spawnDrop(LAKE.x + Math.cos(a) * rr, LAKE.z + Math.sin(a) * rr, 0.6); }
+  }
+
+  function frame(now) {
+    // Schedule the next frame first, so one bad frame can never stop the game
+    requestAnimationFrame(frame);
+    const real = Math.min(0.05, (now - last) / 1000); last = now;
+    // A zero delta still lets contact checks resolve. Keep simulation out of paused/menu frames.
+    if (!G.shop && !G.paused && !G.menu) stepGame(real);
+    const t = uTime.value;
 
     torches.forEach(tc => { const k = 0.85 + 0.15 * Math.sin(t * 13 + tc.phase) * Math.sin(t * 7.3 + tc.phase * 2); tc.light.intensity = 2.2 * k; tc.flame.scale.set(1, k, 1); });
     grassU.uTorchI.value = 0.9 + 0.1 * Math.sin(t * 11);
@@ -147,25 +156,44 @@
       });
     }
     sky.position.copy(camera.position);
-
-    // Pass 1: reflection from a camera mirrored below the water line
-    if (S.reflect && G.world === 'moat' && Math.hypot(player.position.x - LAKE.x, player.position.z - LAKE.z) < 45) {
-      mirrorCam.position.set(camera.position.x, -camera.position.y, camera.position.z);
-      mirrorCam.lookAt(camLook.x, -camLook.y, camLook.z);
-      water.visible = false;
-      sky.position.copy(mirrorCam.position);
-      renderer.setRenderTarget(reflRT); renderer.render(scene, mirrorCam);
-      sky.position.copy(camera.position);
-      water.visible = true;
+    // Three still updates hidden branches in updateMatrixWorld(). The renderer skips them.
+    scene.updateWorldMatrix(false, false);
+    for (const child of scene.children) {
+      if (child.visible) child.updateMatrixWorld(true);
     }
-    // Pass 2: the normal scene into a texture. Pass 3: turn it into characters.
-    markDynamic();
-    scene.overrideMaterial = maskFriend; camera.layers.set(1);
-    renderer.setRenderTarget(maskRT); renderer.render(scene, camera);
-    renderer.autoClear = false; scene.overrideMaterial = maskFoe; camera.layers.set(2);
-    renderer.render(scene, camera);
-    if (HER.ready) { scene.overrideMaterial = maskFriendSkinned; camera.layers.set(3); renderer.render(scene, camera); }
-    renderer.autoClear = true; scene.overrideMaterial = null; camera.layers.set(0);
+
+    // Reflect the scene only when the main camera can see the water.
+    if (S.reflect && G.world === 'moat' && water.visible && Math.hypot(player.position.x - LAKE.x, player.position.z - LAKE.z) < 45) {
+      camera.updateMatrixWorld();
+      reflectionFrustum.setFromProjectionMatrix(viewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
+      if (reflectionFrustum.intersectsObject(water)) {
+        mirrorCam.position.set(camera.position.x, -camera.position.y, camera.position.z);
+        mirrorCam.lookAt(camLook.x, -camLook.y, camLook.z);
+        water.visible = false;
+        try {
+          sky.position.copy(mirrorCam.position);
+          sky.updateMatrixWorld();
+          renderer.setRenderTarget(reflRT); renderer.render(scene, mirrorCam);
+        } finally {
+          water.visible = true;
+          sky.position.copy(camera.position);
+          sky.updateMatrixWorld();
+        }
+      }
+    }
+    // Only ASCII and Split sample the gameplay mask.
+    if (S.mode !== 2) {
+      markDynamic();
+      try {
+        scene.overrideMaterial = maskFriend; camera.layers.set(1);
+        renderer.setRenderTarget(maskRT); renderer.render(scene, camera);
+        renderer.autoClear = false; scene.overrideMaterial = maskFoe; camera.layers.set(2);
+        renderer.render(scene, camera);
+        if (hasSkinnedMask) { scene.overrideMaterial = maskSkinned; camera.layers.set(3); renderer.render(scene, camera); }
+      } finally {
+        renderer.autoClear = true; scene.overrideMaterial = null; camera.layers.set(0);
+      }
+    }
     gfxBeforeScene();
     renderer.setRenderTarget(sceneRT); renderer.render(scene, camera);
     gfxAfterScene();
@@ -185,7 +213,7 @@
     if (G.state !== 'explore') {
       ui.bfill.style.width = (B.hp / B.max * 100) + '%'; ui.bghost.style.width = (B.hp / B.max * 100) + '%';
       ui.pfill.style.width = (B.state === 'stagger' ? 0 : B.poise) + '%';
-      ui.btag.textContent = B.state === 'stagger' ? 'Staggered' : G.hunt ? `Hunting \u00b7 ${Math.ceil(Math.max(0, G.hunt.t))}s` : (B.phase === 2 ? 'Enraged' : '');
+      setHudText(ui.btag, B.state === 'stagger' ? 'Staggered' : G.hunt ? `Hunting \u00b7 ${Math.ceil(Math.max(0, G.hunt.t))}s` : (B.phase === 2 ? 'Enraged' : ''));
     }
     const hpPct = P.hp / P.max * 100, mPct = P.mana / P.manaMax;
     ui.coilFill.style.strokeDashoffset = String(100 - hpPct);
@@ -193,13 +221,13 @@
     ui.arRing.style.strokeDasharray = `${P.armor / P.armorMax * 100} 100`;
     ui.orbFill.setAttribute('y', String(68 - 16 * mPct)); ui.orbFill.setAttribute('height', String(16 * mPct));
     ui.sfill.style.width = (Math.max(0, P.st) / P.stMax * 100) + '%';
-    ui.hnum.textContent = Math.ceil(P.hp); ui.anum.textContent = Math.ceil(P.armor); ui.mnum.textContent = Math.floor(P.mana);
-    ui.flasks.textContent = '◆'.repeat(Math.max(0, P.flasks)) + '◇'.repeat(Math.max(0, PR.flaskMax - P.flasks));
+    setHudText(ui.hnum, String(Math.ceil(P.hp))); setHudText(ui.anum, String(Math.ceil(P.armor))); setHudText(ui.mnum, String(Math.floor(P.mana)));
+    setHudText(ui.flasks, '◆'.repeat(Math.max(0, P.flasks)) + '◇'.repeat(Math.max(0, PR.flaskMax - P.flasks)));
     if (!ui.royalbars.hidden) {
       royals.forEach((r, i) => {
         const w = (r.hp / r.max * 100) + '%', b = ui.rb[i];
         b.fill.style.width = w; b.ghost.style.width = w;
-        b.tag.textContent = !r.alive ? 'Fallen' : r.state === 'stagger' ? 'Staggered' : (r.enraged ? 'Enraged' : '');
+        setHudText(b.tag, !r.alive ? 'Fallen' : r.state === 'stagger' ? 'Staggered' : (r.enraged ? 'Enraged' : ''));
         b.row.classList.toggle('dead', !r.alive);
       });
     }

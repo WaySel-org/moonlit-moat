@@ -1,12 +1,21 @@
   // ---------- Targets: the Warden and the royals share one interface ----------
   const WARDEN = { get pos() { return boss.position; }, radius: 1.3, hitY: 2.6, markY: 6.3, isWarden: true };
+  function isLiveTarget(t, realm, inMoat) {
+    if (t.isWarden) return inMoat && HITTABLE.includes(B.state);
+    if (t.isEye) return inMoat && UB.on && t.alive;
+    if (!t.alive) return false;
+    if (t.isCreep) return t.realm === realm && flatDist(t.pos, player.position) < (t.ai === 'godling' || t.mythic ? 40 : 26);
+    if (t.isRaider) return t.g.visible && flatDist(t.pos, player.position) < 40;
+    return t.field ? t.g.visible && flatDist(t.pos, player.position) < 30 : inMoat && t.active;
+  }
   function liveTargets() {
     const out = [];
     const rk = realmKey(), inMoat = G.world === 'moat';
-    if (inMoat && HITTABLE.includes(B.state)) out.push(WARDEN);
-    royals.forEach(r => { if (r.field ? r.alive && r.g.visible && flatDist(r.pos, player.position) < 30 : inMoat && r.active && r.alive) out.push(r); });
-    raiders.forEach(r => { if (r.alive && r.g.visible && flatDist(r.pos, player.position) < 40) out.push(r); });
-    creeps.forEach(c => { if (c.alive && c.realm === rk && flatDist(c.pos, player.position) < (c.ai === 'godling' || c.mythic ? 40 : 26)) out.push(c); });
+    const add = t => { if (isLiveTarget(t, rk, inMoat)) out.push(t); };
+    add(WARDEN);
+    royals.forEach(add);
+    raiders.forEach(add);
+    creeps.forEach(add);
     if (inMoat) out.push(...ubTargets());
     return out;
   }
@@ -16,12 +25,11 @@
     return best;
   }
   function lockTarget() {
+    if (G.target && isLiveTarget(G.target, realmKey(), G.world === 'moat')) return G.target;
     const live = liveTargets();
     if (!live.length) return null;
-    if (!G.target || !live.includes(G.target)) {
-      const bosses = live.filter(t => !t.isCreep && !(t.field && !G.royalHunt && !(t.provoked > 0)));
-      G.target = nearestTarget(bosses.length ? bosses : live, player.position);
-    }
+    const bosses = live.filter(t => !t.isCreep && !(t.field && !G.royalHunt && !(t.provoked > 0)));
+    G.target = nearestTarget(bosses.length ? bosses : live, player.position);
     return G.target;
   }
   function damageEnemy(t, dmg, poiseDmg, heavy) { if (t.isEye) damageEye(t, dmg, poiseDmg, heavy); else if (t.isWarden) damageBoss(dmg, poiseDmg, heavy); else if (t.isCreep) damageCreep(t, dmg, poiseDmg, heavy); else if (t.isRaider) damageRaider(t, dmg, poiseDmg, heavy); else damageRoyal(t, dmg, poiseDmg, heavy); }
@@ -85,7 +93,6 @@
       if (name === 'slide' && (P.mount || P.st < 4)) { P.buffer = null; return; }
       if (name === 'hook') { if (PR.level < HOOK_LV) return say(`Moonhook unlocks at level ${HOOK_LV}`, '#ffd36a'); if (P.mount) return say('Not while riding', '#ffd36a'); if (P.cd.g > 0) { P.buffer = null; return; } if (P.mana < HOOK_MANA) return say('not enough mana'); }
       if (name === 'leap') { if (!PR.warden) return say("Beat the Warden to learn this", '#ffd36a'); if (P.cd.x > 0) { P.buffer = null; return; } if (P.mana < 25) return say('not enough mana'); }
-      if (name === 'drink') { P.flasks--; }
       if (name !== 'light') P.combo = 0;
       if (startAct(name)) P.buffer = null;
     } else if (P.act === 'light' && name === 'light' && P.combo < 2 && P.actT > P.actDur * 0.55) {
@@ -130,7 +137,7 @@
   // Returns true if the hit connected
   function hitPlayer(dmg, src, kbStrength, parryable, attacker) {
     if (G.state === 'dead' || G.state === 'won' || G.state === 'intro' || G.shop) return false;
-    dmg *= (attacker && attacker.isCreep) ? attacker.mult * G.env.creepDmg * (attacker.rallyT > 0 ? 1.35 : 1) : (attacker && attacker.pow) ? attacker.pow : G.dmgMult;
+    dmg *= (attacker && attacker.isCreep) ? attacker.mult * G.env.creepDmg * (attacker.rallyT > 0 ? 1.35 : 1) * (attacker.maimT > 0 ? 0.6 : 1) : (attacker && attacker.pow) ? attacker.pow : G.dmgMult;
     // Blade Spin: 40% less damage, no flinch, no knockback
     const spin = heroUnstoppable();
     if (spin) dmg *= 0.6;

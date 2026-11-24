@@ -1,0 +1,15 @@
+{
+  "gameId": "vhatch",
+  "name": "Brood Hatchling",
+  "kind": "creep",
+  "world": "veyra",
+  "stats": {
+    "baseHealth": 20
+  },
+  "ai": "melee",
+  "respawn": "Only when its Brood Dam hatches it",
+  "behaviour": "A weak amber Skitterling that bites for 10; three wait in each Brood Dam's pool and give almost no experience.",
+  "look": "Small amber Skitterling.",
+  "id": "veyra-brood-hatchling",
+  "originality": "original"
+}

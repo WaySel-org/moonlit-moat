@@ -19,7 +19,7 @@
   const SP = 160, spPos = new Float32Array(SP * 3).fill(-999), spVel = new Float32Array(SP * 3), spLife = new Float32Array(SP);
   const spGeo = new THREE.BufferGeometry(); spGeo.setAttribute('position', new THREE.BufferAttribute(spPos, 3));
   const sparks = new THREE.Points(spGeo, new THREE.PointsMaterial({ color: 0xffd28a, size: 0.14 }));
-  sparks.frustumCulled = false; scene.add(sparks);
+  sparks.frustumCulled = false; sparks.visible = false; scene.add(sparks);
   let spIdx = 0;
   function burst(x, y, z, n, speed) {
     for (let i = 0; i < n; i++) {
@@ -28,5 +28,6 @@
       const a = Math.random() * TAU, u = Math.random() * 0.9 + 0.1, s = speed * (0.4 + Math.random() * 0.8);
       spVel[j * 3] = Math.cos(a) * s * (1 - u * 0.5); spVel[j * 3 + 1] = u * s * 1.2; spVel[j * 3 + 2] = Math.sin(a) * s * (1 - u * 0.5);
       spLife[j] = 0.35 + Math.random() * 0.4;
+      sparks.visible = true;
     }
   }

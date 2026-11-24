@@ -3,14 +3,15 @@
   const fwGeo = new THREE.BufferGeometry();
   fwGeo.setAttribute('position', new THREE.BufferAttribute(fwPos, 3)); fwGeo.setAttribute('color', new THREE.BufferAttribute(fwCol, 3));
   const fireworks = new THREE.Points(fwGeo, new THREE.PointsMaterial({ size: 0.7, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
-  fireworks.frustumCulled = false; scene.add(fireworks);
-  let fwIdx = 0; const rockets = [], fwColor = new THREE.Color();
+  fireworks.frustumCulled = false; fireworks.visible = false; scene.add(fireworks);
+  let fwIdx = 0, fwActive = false; const rockets = [], fwColor = new THREE.Color();
   function fwParticle(x, y, z, vx, vy, vz, col, life, glitter) {
     const j = fwIdx; fwIdx = (fwIdx + 1) % FW;
     fwPos[j * 3] = x; fwPos[j * 3 + 1] = y; fwPos[j * 3 + 2] = z;
     fwVel[j * 3] = vx; fwVel[j * 3 + 1] = vy; fwVel[j * 3 + 2] = vz;
     fwBase[j * 3] = col.r; fwBase[j * 3 + 1] = col.g; fwBase[j * 3 + 2] = col.b;
     fwLife[j] = fwMax[j] = life; fwGlit[j] = glitter ? 1 : 0;
+    fwActive = true;
   }
   function launchFirework(from) {
     rockets.push({ p: from.clone(), v: new THREE.Vector3((Math.random() - 0.5) * 5, 9 + Math.random() * 4, (Math.random() - 0.5) * 5), t: 0, fuse: 0.7 + Math.random() * 0.5, hue: Math.random(), shape: Math.floor(Math.random() * 3) });
@@ -35,17 +36,23 @@
         rockets.splice(i, 1);
       }
     }
+    if (!fwActive) return;
+    fwActive = false;
     for (let j = 0; j < FW; j++) {
       if (fwLife[j] <= 0) continue;
       fwLife[j] -= dt;
       if (fwLife[j] <= 0) { fwPos[j * 3 + 1] = -999; fwCol[j * 3] = fwCol[j * 3 + 1] = fwCol[j * 3 + 2] = 0; continue; }
+      fwActive = true;
       const drag = Math.max(0, 1 - 1.4 * dt);
       fwVel[j * 3] *= drag; fwVel[j * 3 + 1] = fwVel[j * 3 + 1] * drag - 2.6 * dt; fwVel[j * 3 + 2] *= drag;
       fwPos[j * 3] += fwVel[j * 3] * dt; fwPos[j * 3 + 1] += fwVel[j * 3 + 1] * dt; fwPos[j * 3 + 2] += fwVel[j * 3 + 2] * dt;
       let f = fwLife[j] / fwMax[j]; if (fwGlit[j]) f *= Math.random() < 0.5 ? 1.4 : 0.2;
       fwCol[j * 3] = fwBase[j * 3] * f; fwCol[j * 3 + 1] = fwBase[j * 3 + 1] * f; fwCol[j * 3 + 2] = fwBase[j * 3 + 2] * f;
     }
-    fwGeo.attributes.position.needsUpdate = true; fwGeo.attributes.color.needsUpdate = true;
+    fireworks.visible = fwActive;
+    if (fireworks.visible) {
+      fwGeo.attributes.position.needsUpdate = true; fwGeo.attributes.color.needsUpdate = true;
+    }
   }
 
   function addPatch(x, y, z, r, friendly, life) {
@@ -141,7 +148,11 @@
       if (G.hunt && G.hunt.echo) { B.state = 'dead'; boss.visible = false; hideTele(); ui.bossbar.hidden = true; }
       Object.assign(G, { hitstop: 0, slow: 0, shake: 0, lock: false, target: null, shop: false, hunt: null, huntClock: 0 });
       if (G.wardenDown) {
-        resetRoyals(); if (royals.some(r => !r.field)) royalsToField(false); G.state = 'interlude'; player.position.set(1.5, 0, -16); ui.obj.textContent = OBJ_CLIMB;
+        if (!(G.royalLull > 0)) {
+          resetRoyals();
+          if (royals.some(r => !r.field)) royalsToField(false);
+        }
+        G.state = 'interlude'; player.position.set(1.5, 0, -16); ui.obj.textContent = OBJ_CLIMB;
       } else {
         resetWarden(); G.state = 'explore'; player.position.copy(SPAWN); ui.obj.textContent = OBJ_START;
       }

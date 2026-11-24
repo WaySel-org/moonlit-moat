@@ -3,7 +3,7 @@
   Object.values(WORLDS).forEach(W => W.keys.forEach(p => { if (W.ground(p.x, p.z) !== 0) console.warn(`${W.name}: key point ${p.x},${p.z} is blocked`); }));
 
   // They reuse the melee, ranged and godling brains
-  Object.assign(CREEP_NAME, { skitter: 'Skitterling', spore: 'Spore Drifter', runner: 'Chrome Runner', drone: 'Patrol Drone', shambler: 'Shambler', bloater: 'Bloater', matron: 'The Hive Matron', halvane: 'Director Halvane', rot: 'The Rot Sovereign' });
+  Object.assign(CREEP_NAME, { skitter: 'Skitterling', spore: 'Spore Drifter', runner: 'Chrome Runner', drone: 'Patrol Drone', shambler: 'Shambler', bloater: 'Gravebelly', matron: 'The Hive Matron', halvane: 'Director Halvane', rot: 'The Rot Sovereign' });
   Object.assign(CREEP_BASE, { skitter: 34, spore: 40, runner: 46, drone: 42, shambler: 72, bloater: 56, matron: 2200, halvane: 2200, rot: 2200 });
   const WORLD_BUILD = {
     skitter() {
@@ -115,7 +115,7 @@
     const parts = WORLD_BUILD[type]();
     parts.g.visible = false; scene.add(parts.g); tag(parts.g, 2);
     const bar = document.createElement('div'); bar.className = 'cbar'; bar.hidden = true; bar.innerHTML = '<span></span><div class="ct"><i></i></div>'; $('#cbars').appendChild(bar);
-    const c = Object.assign(parts, { type, realm: world, ai, float: 0, speed: 1, isCreep: true, alive: false, respawn: 3 + creeps.length * 0.25, pos: parts.g.position, radius: 0.6, hitY: 0.7, markY: 1.8,
+    const c = Object.assign(parts, { type, realm: world, ai, float: 0, speed: 1, isCreep: true, alive: false, respawn: 1 + Math.random() * 6, pos: parts.g.position, radius: 0.6, hitY: 0.7, markY: 1.8,
       hp: 1, max: 1, mult: 1, lv: 1, facing: 0, cool: 1, atk: null, stun: 0, flash: 0, leash: false,
       wander: new THREE.Vector3(), home: new THREE.Vector3(), tele: makeTele(), bar, barFill: bar.querySelector('i'), barLabel: bar.querySelector('span'),
       ancient: false, camp: null, age: 0 }, o);

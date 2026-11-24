@@ -80,6 +80,7 @@
     PR.points += 2; renderHero();
     const m = tierMult(worldTier());
     reward(400 * m * a, 300 * m * a, player.position.clone().add(new THREE.Vector3(0, 3.4, 0)));
+    saveGame();
     dropRelic(player.position.x + 2, player.position.z + 1);
     for (let i = 0; i < 6; i++) launchFirework(player.position.clone().add(new THREE.Vector3((Math.random() - 0.5) * 10, 1, (Math.random() - 0.5) * 10)));
     G.mythClock = Math.max(G.mythClock, mythInterval() - 20);
@@ -96,6 +97,7 @@
     if (G.royalLull > 0) return;
     G.royalLull = 0;
     royals.forEach(r => { r.lv += 2; }); royalsToField(false);
+    saveGame();
     showBanner('The queens rise again', `Vesthra and Nyxara walk the land again, two levels stronger. Climb the roof to call them to the throne for Ascension ${G.ascension + 1}.`, 'title'); bannerTimer = 4; sfx('horn'); moonEyeOpen(6);
   }
 

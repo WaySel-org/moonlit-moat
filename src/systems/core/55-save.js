@@ -1,6 +1,6 @@
   // ---------- Save state and the death penalty ----------
   // Progress is kept in this browser's localStorage: level, gold, attributes, gear, relics, story and stages, the Warden,
-  // Ascension, the royals' levels and the world clock. It saves every ten seconds, on level-ups, travel and death, and
+  // Ascension, royal revivals and the world clock. It saves every ten seconds, on level-ups, travel and death, and
   // when the tab closes; opening the game again picks up where you left off. "New game" on the pause screen erases it.
   // Dying costs a fifth of your gold and one point from every attribute that has one.
   // Two modes, two saves: Free play keeps the original key, so saves from before the modes carry straight on; Story mode
@@ -12,13 +12,16 @@
     if (!G.mode || G.state === 'won') return;
     const dead = G.state === 'dead', w = G.storm ? G.storm.from : G.world;
     const at = dead || G.storm ? spawnOf(w) : player.position;
+    const ST = G.story;
     const s = {
       v: 1, at: Date.now(),
       pr: Object.fromEntries(SAVED_PR.map(k => [k, PR[k]])), relics: PR.relics.slice(), inv: PR.inv,
-      story: { unlocked: G.story.unlocked, shards: G.story.shards, step: G.story.step, prog: G.story.prog, stage: G.story.stage, nextStage: G.story.nextStage },
+      story: { unlocked: ST.unlocked, shards: ST.shards, step: ST.step, prog: ST.prog, stage: ST.stage, nextStage: ST.nextStage, pending: ST.pending, heartRewarded: ST.heartRewarded },
       objs: Object.fromEntries(Object.values(WORLDS).map(W => [W.id, W.objs.map(o => [o.p.x, o.p.z])])),
       wardenDown: G.wardenDown, wardenRevives: G.wardenRevives || 0, ascension: G.ascension || 0, deaths: G.deaths || 0,
-      royals: royals.map(r => r.lv), waveN: G.waveN, elapsed: uTime.value - G.runStart,
+      royals: royals.map(r => r.lv), royalLull: G.royalLull,
+      royalReviveTimers: royals.map(r => r.field && !r.alive ? r.revive : 0),
+      waveN: G.waveN, elapsed: uTime.value - G.runStart, mazeSeed,
       world: w, pos: [at.x, at.z], lastPos: G.lastPos
     };
     try { localStorage.setItem(saveKey(), JSON.stringify(s)); } catch (e) { /* private mode or storage full: play on unsaved */ }
@@ -33,6 +36,9 @@
       if (s.inv && s.inv.sword && Array.isArray(s.inv.bag)) PR.inv = { sword: s.inv.sword, charms: (s.inv.charms || [null, null]).slice(0, 2), bag: s.inv.bag.slice(0, 8).concat(Array(8).fill(null)).slice(0, 8) };
       const ST = G.story;
       ['unlocked', 'shards', 'step', 'prog', 'stage', 'nextStage'].forEach(k => { if (s.story && s.story[k]) ST[k] = Object.assign(ST[k] || {}, s.story[k]); });
+      ST.pending = s.story?.pending || null;
+      // All-shard saves from before this flag cannot distinguish a paid finale from a missed one.
+      ST.heartRewarded = s.story?.heartRewarded ?? (shardCount() === CHAPTERS.length);
       Object.values(WORLDS).forEach(W => {
         const pts = s.objs && s.objs[W.id];
         W.objs.forEach((o, i) => {
@@ -43,16 +49,30 @@
       G.wardenRevives = s.wardenRevives || 0; G.deaths = s.deaths || 0; G.waveN = s.waveN || {};
       if (s.wardenDown) { G.wardenDown = true; PR.warden = true; B.state = 'dead'; boss.visible = false; G.state = 'interlude'; }
       if (s.ascension) { G.ascension = s.ascension; applyEdge(); }
-      (s.royals || []).forEach((lv, i) => { const r = royals[i]; if (r && lv) { r.lv = lv; r.max = 0; royalStats(r); r.hp = r.max; } });
+      G.royalLull = Math.max(0, s.royalLull || 0);
+      royals.forEach((r, i) => {
+        const lv = s.royals?.[i], revive = Math.max(0, s.royalReviveTimers?.[i] || 0);
+        if (lv) { r.lv = lv; r.max = 0; royalStats(r); r.hp = r.max; }
+        if (G.royalLull > 0 || revive > 0) {
+          Object.assign(r, { alive: false, active: false, state: 'dead', field: G.royalLull === 0, hp: 0, t: 0, revive });
+          r.g.visible = false;
+        }
+      });
       G.runStart = uTime.value - Math.max(0, s.elapsed || 0);
       G.lastTier = worldTier(); G.env = ENVS[(G.lastTier - 1) % ENVS.length]; G.envSnap = true;
+      if (Number.isInteger(s.mazeSeed)) mazeSeed = s.mazeSeed >>> 0;
+      genMaze(G.lastTier);
       G.lastPos = s.lastPos || {};
       recalc(); resetVitals(); renderHero(); renderGear(); renderRelics();
       const w = s.world, pos = s.pos || [0, 0];
       if (w && w !== 'moat' && WORLDS[w] && ST.unlocked[w]) enterWorld(w, { x: pos[0], z: pos[1] }, 'respawn');
       else {
-        const h = groundAt(pos[0], pos[1]);
-        if (h < 50) { player.position.set(pos[0], h, pos[1]); P.y = h; } else player.position.copy(SPAWN);
+        let [x, z] = pos, h = groundAt(x, z);
+        if (h >= 50 && mazeSolid(x, z)) {
+          const cell = mazeCellCenter(x, z);
+          x = cell.x; z = cell.z; h = groundAt(x, z);
+        }
+        if (h < 50) { player.position.set(x, h, z); P.y = h; } else player.position.copy(SPAWN);
       }
       const shards = CHAPTERS.filter(c => ST.shards[c]).length;
       if (PR.level > 1 || PR.gold > 0 || shards) showBanner('Welcome back', `Level ${PR.level}, ${PR.gold} gold, ${shards} of 4 shards${G.ascension ? `, Ascension ${G.ascension}` : ''}. Your progress saves automatically in this browser. New game is on the pause screen.`, 'title');

@@ -1,0 +1,13 @@
+{
+  "id": "husk-runt",
+  "gameId": "runt",
+  "name": "Husk Runt",
+  "kind": "creep",
+  "world": "titan",
+  "stats": { "baseHealth": 220 },
+  "ai": "runt",
+  "respawn": "12 to 22 s after it falls",
+  "behaviour": "A small, fast Gaunt that lunges down a lane or claws. Its nape-knot hangs low enough to reach with a jump attack from behind.",
+  "look": "A short, hunched, big-headed copy of a Gaunt.",
+  "originality": "original"
+}

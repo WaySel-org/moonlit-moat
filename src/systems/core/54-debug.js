@@ -4,14 +4,14 @@
     window.MM_DEBUG = { G, P, PR, B, creeps, groundRelics, RELICS, dropRelic, takeRelic, spawnCreep, worldTier, player, recalc, renderHero, strike, poisonHero, applyRend, WARDEN,
       royals, startRoyalHunt, startHunt, enterWorld, WORLDS, raiders, startRaid, startWave, wavePool, KITS, dropGear, swordFeed, upgradeSword, openInv, jump, startEvent, startStage, NEUTRAL_CAMPS, damageRaider, damageRoyal,
       ascend, wakeMythic, saveGame, loadGame, deathPenalty, killPlayer, respawn, takeRelic, WORLDS, mythics, killCreep, killRoyal, startRoyal, groundAt, chests, RINGS, beasts, beginTame, camera, frame,
-      sfx, SFX, sfxMeter, moonEyeOpen, moonGlance, playPreface, skipPreface, prefaceTime: () => PF.on ? +PF.t.toFixed(1) : -1, brideLucid, seasonOneEnd, fieldRoyalDown,
+      sfx, SFX, sfxMeter, pollPad, moonEyeOpen, moonGlance, playPreface, skipPreface, prefaceTime: () => PF.on ? +PF.t.toFixed(1) : -1, brideLucid, seasonOneEnd, fieldRoyalDown,
       UB, ubTargets, startUnblinking, ubSetPhase, LM, lmDead, lmRaise, lmProg, lmSummon, BD, playEnding, skipEnding, endingTime: () => EN.on ? +EN.t.toFixed(1) : -1 };
   }
   // Renders one sound effect offline and reports its length, peak and loudness, for tuning levels without listening
   async function sfxMeter(kind, beast) {
     const keep = { ac, bus, wet, noiseBuf };
     if (!audio()) return null;
-    const o = new OfflineAudioContext(1, 44100 * 2.5, 44100), real = { noiseBuf };
+    const o = new OfflineAudioContext(1, 44100 * 5, 44100), real = { noiseBuf };
     bus = o.createGain(); bus.connect(o.destination); wet = o.createGain(); wet.gain.value = 0.22; wet.connect(bus);
     noiseBuf = o.createBuffer(1, real.noiseBuf.length, real.noiseBuf.sampleRate); noiseBuf.copyToChannel(real.noiseBuf.getChannelData(0), 0);
     ac = o; vary = 1;

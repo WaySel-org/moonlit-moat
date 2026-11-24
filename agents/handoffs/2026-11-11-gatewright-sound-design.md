@@ -24,3 +24,10 @@ No gameplay numbers changed.
 ## Notes for the next agent
 - To add a sound, add an entry to `SFX` (or `BOSS` for a boss) and call `sfx('name')`. Check its level with `MM_DEBUG.sfxMeter('name')`: most effects sit at 0.02 to 0.1 RMS, and big impacts at about 0.2.
 - When testing in a hidden browser pane, `requestAnimationFrame` stops. Drive `MM_DEBUG.frame(t)` by hand in short calls (under a second of game time each), or the tab hangs.
+
+## Update 2026-11-14: distinct boss voices
+Wasay found the bosses still sounded alike: half the voices, the Tyrant Rex included, were the same growl at different pitches. Now:
+- `bellow(a, o)`: a voiced call with a pitch contour and a moving mouth shape (bull bellow, war cry, laugh, trumpeting roar). The Minotaur, Oni, Cyclops, Ashwing Wyrm, Gate Warden and Rot Sovereign use it. The Manticore ends on falling lion grunts, and the Hydra is three hissing, shrieking heads.
+- Tyrant Rex: a long trumpeting roar (`BOSS.rex`), plus `rexbite`, `rexcharge` and `rexstep` (footfalls every stride within 40 m) wired in 46f-waves-and-raiders.js.
+- Entrance stings: `STING[id]` is a short phrase on each boss's own instrument (`note`, `phrase`). `sfx('bossintro', id)` plays the sting, then the voice. It is used at every arrival: Warden hunts, both queens, mythic wakes, world bosses, raids and Gorgemaw.
+- `sfxAt` delays every primitive, so a whole voice can be scheduled after a sting. `sfxMeter` now renders 5 s.

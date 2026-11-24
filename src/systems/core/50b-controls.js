@@ -60,6 +60,7 @@
     return k.every(x => x.length === 1) ? `<kbd>${esc(k.join(''))}</kbd>` : k.map(x => `<kbd>${esc(x)}</kbd>`).join('');
   }
   function keyHelpHtml() {
+    if (padOn()) return padHelpHtml();
     const inv = PR.inv, sw = inv && inv.sword;
     if (P.hp < P.max) seen.hurt = 1;
     if (inv && (inv.bag.some(Boolean) || inv.charms.some(Boolean))) seen.bag = 1;
@@ -104,7 +105,7 @@
   let ctlNote = '';
   function renderControls() {
     if (!ctlBox) return;
-    ctlBox.innerHTML = '<h3>Controls</h3><p class="cnote" aria-live="polite">' + esc(ctlNote || (capAct ? 'Press a key for this action. Esc cancels.' : 'Click a key to change it.')) + '</p>' +
+    ctlBox.innerHTML = (padOn() ? padControlsHtml() : '') + '<h3>Controls</h3><p class="cnote" aria-live="polite">' + esc(ctlNote || (capAct ? 'Press a key for this action. Esc cancels.' : 'Click a key to change it.')) + '</p>' +
       ACTIONS.map(([g, list]) => `<div class="cgrp"><h4>${g}</h4>` + list.map(([id, name]) =>
         `<div class="crow"><span>${esc(name)}</span><button type="button" data-act="${id}" class="ckey${capAct === id ? ' cap' : ''}"${capAct === id ? ' aria-pressed="true"' : ''} aria-label="${esc(name)}: ${esc(keyLabel(id))}. Change key">${capAct === id ? '…' : esc(keyLabel(id))}</button></div>`).join('') + '</div>').join('') +
       '<label class="chk"><input type="checkbox" id="cktap"' + (slideTap ? ' checked' : '') + '> Double-tap a direction to slide</label>' +

@@ -11,23 +11,10 @@
   let crawlerTemplate = null;
 
   function loadCrawlerModels() {
-    const A = window.MM_ASSETS;
-    if (!A || !A.crawler || !A.gltfLoader) return;
-    const go = () => {
-      // Textures load as <img> (img-src allows blob:); the default fetch() path is blocked by connect-src 'self'
-      const loader = new THREE.GLTFLoader().register(parser => {
-        parser.textureLoader = new THREE.TextureLoader(parser.options.manager);
-        return { name: 'mm_img_textures' };
-      });
-      loader.load(A.crawler, gltf => {
-        crawlerTemplate = gltf;
-        creeps.forEach(c => { if (c.type === 'crawler') setupCrawler(c); });
-      }, undefined, e => console.warn('The Mire Crawler model did not load; keeping the block crawler', e));
-    };
-    if (THREE.GLTFLoader) { go(); return; }
-    const s = document.createElement('script');
-    s.src = A.gltfLoader; s.onload = go;
-    document.head.appendChild(s);
+    loadModel('crawler', gltf => {
+      crawlerTemplate = gltf;
+      creeps.forEach(c => { if (c.type === 'crawler') setupCrawler(c); });
+    }, 'The Mire Crawler model did not load; keeping the block crawler');
   }
 
   // A copy of the template with its own skeleton (three r128 has no SkeletonUtils in the vendored build)
@@ -46,7 +33,6 @@
     root.scale.setScalar(CR_SCALE);
     let mat = null;
     root.traverse(o => {
-      o.layers.enable(2);   // hostile in the gameplay mask, like the block crawler
       if (o.isMesh) {
         o.castShadow = true; o.receiveShadow = true; o.frustumCulled = false;
         const map = o.material.map;
@@ -60,6 +46,7 @@
     crawlerTemplate.animations.forEach(k => { M.actions[k.name] = M.mixer.clipAction(k); });
     c.body.children.forEach(o => { o.visible = false; });
     c.body.add(root);
+    tag(root, 2);
     if (mat) c.mat = mat;
     c.model = M;
     crawlerPlay(M, 'idle', 1, true);
@@ -82,7 +69,7 @@
     if (!crawlerTemplate) return;
     creeps.forEach(c => {
       const M = c.model;
-      if (!M) return;
+      if (!M || c.type !== 'crawler') return;   // other creeps (godlings, the Oni) have models and updates of their own
       // Died this frame (hp ran out, not a wave clean-up or a reset): keep the body up for the roll
       if (M.alive && !c.alive && c.hp <= 0 && c.realm === realmKey()) {
         M.corpseT = CR_CORPSE; c.g.visible = true;

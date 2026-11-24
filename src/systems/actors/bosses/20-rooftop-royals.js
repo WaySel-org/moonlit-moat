@@ -297,6 +297,8 @@
     else winGame();
   }
   function startRoyal() {
+    loadVesthraModel();
+    loadNyxaraModel();
     const tier = worldTier(), m = tierMult(tier);
     G.dmgMult = (1 + 0.2 * (tier - 1)) * (1 + 0.25 * G.ascension); G.bossTier = tier;
     // Wherever they were feeding, they answer the throne at their full farmed strength
@@ -309,5 +311,5 @@
     G.state = 'royal'; G.lock = true; G.target = null;
     royals.forEach(r => { r.active = true; r.state = 'chase'; r.cool = 1.2 + Math.random(); });
     showBanner('The Gorgon and the Empress', '', 'title'); bannerTimer = 2.2;
-    ui.hud.hidden = true; ui.royalbars.hidden = false; sfx('boss', 'royals');
+    ui.hud.hidden = true; ui.royalbars.hidden = false; sfx('bossintro', 'royals');
   }

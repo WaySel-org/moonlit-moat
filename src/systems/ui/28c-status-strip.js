@@ -12,6 +12,8 @@
     beasts.forEach(x => { if ((x.state === 'away' || x.state === 'leaving') && x.returnAt) out.push(stripChip('away', '↺', `${BEAST_TYPES[x.type].name} ${stripTime(Math.max(0, x.returnAt - now))}`, `The ${BEAST_TYPES[x.type].name} returns to its sanctuary`)); });
     if (G.realm === 'spirit') out.push(P.sated > 0 ? stripChip('soul', '◈', `Sated ${stripTime(P.sated)}`, 'Souls sated: no hunger yet')
       : stripChip('soul hungry', '◈', `Hunger −${Math.round(hungerRate() * 100)}%/s`, 'Soul hunger drains your life: devour souls'));
+    if (G.realm === 'spirit') { const vt = P.veilTier, nx = vt < VEIL.max ? ` \u00b7 next ${stripTime(VEIL.step * (vt + 1) - P.veilT)}` : '';
+      out.push(stripChip(`veil t${vt}`, '\u2726', `Veil ${vt}/${VEIL.max} \u00b7 XP \u00d7${spiritXpMult().toFixed(2)}${nx}`, 'The Veil stirs the longer you stay: harder spirits, richer experience')); }
     if (P.spinOn && P.act === 'spin') out.push(stripChip('spin', '✸', stripTime(Math.max(0, P.actDur - P.actT)), 'Blade Spin: resists chill and stone'));
     if (P.stone > 0) out.push(stripChip('stone', '▣', stripTime(P.stone), 'Held fast: no actions'));
     if (P.chill > 0) out.push(stripChip('chill', '❄', stripTime(P.chill), `Chilled: ${Math.round(P.chillK * 100)}% slower`));

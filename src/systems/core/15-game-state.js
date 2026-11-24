@@ -43,7 +43,7 @@
   function showBanner(title, text, kind, button) {
     ui.banner.className = kind || '';
     ui.bh.textContent = title; ui.bp.textContent = text || ''; ui.bp.hidden = !text;
-    ui.bbtn.hidden = !button; if (button) ui.bbtn.textContent = button + ' (Enter)';
+    ui.bbtn.hidden = !button; if (button) ui.bbtn.textContent = button + (padOn() ? ` (${padBtn(0)})` : ' (Enter)');
     ui.banner.hidden = false;
   }
 
