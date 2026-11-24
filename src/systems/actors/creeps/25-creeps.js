@@ -332,8 +332,10 @@
         } else if (A.t >= 0.6) { c.atk = null; c.cool = 0.9 + Math.random() * 0.6; }
       } else if (c.stun <= 0) {
         if (aggro) {
-          c.facing += clamp(angDiff(c.facing, yawTo(c.pos, player.position)), -6 * dt, 6 * dt);
-          if (d > 1.6) creepMove(c, fwdOf(c.facing), 3.7 * (c.speed || 1) * h * dt);
+          // A creep with a goal (the dead marching on a banner, 46r-the-binding) heads there unless she is close
+          const goal = c.goal && d > 7 ? c.goal : null, gd = goal ? flatDist(c.pos, goal) : d;
+          c.facing += clamp(angDiff(c.facing, yawTo(c.pos, goal || player.position)), -6 * dt, 6 * dt);
+          if (gd > (goal ? 1.4 : 1.6)) creepMove(c, fwdOf(c.facing), 3.7 * (c.speed || 1) * h * dt);
           c.cool -= dt * h;
           if (d < 2.0 && c.cool <= 0) c.atk = { t: 0, stage: 'wind' };
         } else creepWander(c, dt, 1.3);
@@ -351,7 +353,8 @@
         if (aggro) {
           c.facing += clamp(angDiff(c.facing, yawTo(c.pos, player.position)), -5 * dt, 5 * dt);
           const away = new THREE.Vector3(c.pos.x - player.position.x, 0, c.pos.z - player.position.z).normalize();
-          if (d < 6) creepMove(c, away, 2.6 * dt); else if (d > 9) creepMove(c, away.negate(), 2.4 * dt);
+          if (c.goal && d > 12) { if (flatDist(c.pos, c.goal) > 2.5) creepMove(c, new THREE.Vector3(c.goal.x - c.pos.x, 0, c.goal.z - c.pos.z).normalize(), 2.4 * dt); }
+          else if (d < 6) creepMove(c, away, 2.6 * dt); else if (d > 9) creepMove(c, away.negate(), 2.4 * dt);
           c.cool -= dt * hasteOf(c);
           if (c.cool <= 0) { c.cool = 2.2 + Math.random(); spawnCreepShot(c); }
         } else creepWander(c, dt, 1.0);

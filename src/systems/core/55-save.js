@@ -3,10 +3,13 @@
   // Ascension, the royals' levels and the world clock. It saves every ten seconds, on level-ups, travel and death, and
   // when the tab closes; opening the game again picks up where you left off. "New game" on the pause screen erases it.
   // Dying costs a fifth of your gold and one point from every attribute that has one.
-  const SAVE_KEY = 'moonlit-moat.save.v1';
+  // Two modes, two saves: Free play keeps the original key, so saves from before the modes carry straight on; Story mode
+  // (Season 1 and on) has its own. G.mode is unset until the player picks one, and nothing saves until then.
+  const SAVE_KEYS = { free: 'moonlit-moat.save.v1', story: 'moonlit-moat.story.v1' };
+  const saveKey = () => SAVE_KEYS[G.mode];
   const SAVED_PR = ['level', 'xp', 'gold', 'points', 'str', 'vit', 'agi', 'spi', 'weapon', 'armorLv', 'flaskMax', 'warden'];
   function saveGame() {
-    if (G.state === 'won') return;
+    if (!G.mode || G.state === 'won') return;
     const dead = G.state === 'dead', w = G.storm ? G.storm.from : G.world;
     const at = dead || G.storm ? spawnOf(w) : player.position;
     const s = {
@@ -18,11 +21,11 @@
       royals: royals.map(r => r.lv), waveN: G.waveN, elapsed: uTime.value - G.runStart,
       world: w, pos: [at.x, at.z], lastPos: G.lastPos
     };
-    try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); } catch (e) { /* private mode or storage full: play on unsaved */ }
+    try { localStorage.setItem(saveKey(), JSON.stringify(s)); } catch (e) { /* private mode or storage full: play on unsaved */ }
   }
   function loadGame() {
     let s = null;
-    try { s = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) { return false; }
+    try { s = JSON.parse(localStorage.getItem(saveKey()) || 'null'); } catch (e) { return false; }
     if (!s || s.v !== 1 || !s.pr) return false;
     try {
       SAVED_PR.forEach(k => { if (s.pr[k] !== undefined) PR[k] = s.pr[k]; });
@@ -75,12 +78,56 @@
   newBtn.addEventListener('click', () => {
     if (newBtn.dataset.armed !== '1') { newBtn.dataset.armed = '1'; newBtn.textContent = 'Tap again to erase your save'; setTimeout(() => { newBtn.dataset.armed = ''; newBtn.textContent = 'New game'; }, 3000); return; }
     newBtn.dataset.armed = ''; newBtn.textContent = 'New game';
-    try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* nothing to erase */ }
+    try { localStorage.removeItem(saveKey()); } catch (e) { /* nothing to erase */ }
     setPause(false); resetGame(); saveGame();
     showBanner('A new game', 'Your old save is gone. The moon rises on a fresh start.', 'title'); bannerTimer = 3;
   });
 
-  loadGame();
+  // ----- The mode picker: shown every time the game opens -----
+  // A save from the story branch, made before the modes split, carries Season 1 flags in the shared key: it becomes
+  // the Story save (once, if there is none yet). Free play keeps it too and simply ignores the story flags.
+  try {
+    const old = JSON.parse(localStorage.getItem(SAVE_KEYS.free) || 'null');
+    if (old && old.story && old.story.prog && old.story.prog.s1open && !localStorage.getItem(SAVE_KEYS.story)) localStorage.setItem(SAVE_KEYS.story, JSON.stringify(old));
+  } catch (e) { /* no storage: both modes start fresh */ }
+  const modeEl = $('#modesel');
+  function modeSummary(mode) {
+    let s = null;
+    try { s = JSON.parse(localStorage.getItem(SAVE_KEYS[mode]) || 'null'); } catch (e) { /* none */ }
+    if (!s || !s.pr) return mode === 'story' ? 'Begin the story' : 'Start fresh';
+    const shards = s.story && s.story.shards ? Object.values(s.story.shards).filter(Boolean).length : 0;
+    return `Continue · Level ${s.pr.level || 1}, ${shards} of 4 shards${s.ascension ? `, Ascension ${s.ascension}` : ''}`;
+  }
+  function showModes() {
+    $('#modestorysave').textContent = modeSummary('story');
+    $('#modefreesave').textContent = modeSummary('free');
+    G.menu = true; keys.clear(); modeEl.hidden = false;
+    $('#modestory').focus();
+  }
+  function chooseMode(mode) {
+    if (modeEl.hidden) return;
+    modeEl.hidden = true; G.menu = false; G.mode = mode;
+    try { localStorage.setItem('moonlit-moat.mode', mode); } catch (e) { /* fine */ }
+    if (!loadGame()) {
+      saveGame();
+      if (mode === 'free') { showBanner('Free play', 'The open moat, no story. Your progress saves automatically in this browser.', 'title'); bannerTimer = 4; }
+    }
+  }
+  $('#modestory').addEventListener('click', () => chooseMode('story'));
+  $('#modefree').addEventListener('click', () => chooseMode('free'));
+  window.addEventListener('keydown', ev => {
+    if (modeEl.hidden) return;
+    if (ev.code === 'Digit1' || ev.code === 'Numpad1') { ev.preventDefault(); chooseMode('story'); }
+    else if (ev.code === 'Digit2' || ev.code === 'Numpad2') { ev.preventDefault(); chooseMode('free'); }
+    else if (ev.code === 'ArrowUp' || ev.code === 'ArrowDown') { ev.preventDefault(); (document.activeElement === $('#modestory') ? $('#modefree') : $('#modestory')).focus(); }
+    else if (ev.code === 'Enter' || ev.code === 'Space') { ev.preventDefault(); chooseMode(document.activeElement === $('#modefree') ? 'free' : 'story'); }
+    ev.stopImmediatePropagation();
+  }, true);
+  // Changing mode from the pause screen: save this one, then reopen the game at the picker
+  $('#modebtn').addEventListener('click', () => { saveGame(); location.reload(); });
+  // Remember the last choice so it is the one already highlighted
+  showModes();
+  try { if (localStorage.getItem('moonlit-moat.mode') === 'free') $('#modefree').focus(); } catch (e) { /* fine */ }
   setInterval(() => { if (!G.paused) saveGame(); }, 10000);
   window.addEventListener('pagehide', saveGame);
   document.addEventListener('visibilitychange', () => { if (document.hidden) saveGame(); });

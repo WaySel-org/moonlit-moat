@@ -88,7 +88,7 @@
     return null;
   }
   const otherWorlds = () => CHAPTERS.filter(w => w !== G.world && G.story.unlocked[w]);
-  function freeCreeps() { const rk = realmKey(); return creeps.filter(c => !c.alive && c.realm === rk && !c.storyBoss && !c.neutral && !c.ancient && c.ai !== 'godling'); }
+  function freeCreeps() { const rk = realmKey(); return creeps.filter(c => !c.alive && c.realm === rk && !c.siege && !c.storyBoss && !c.neutral && !c.ancient && c.ai !== 'godling'); }
 
   function startEvent(kind) {
     const m = tierMult(worldTier()), E = { kind, t: 0, m };

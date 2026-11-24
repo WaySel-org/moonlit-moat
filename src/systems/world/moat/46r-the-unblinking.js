@@ -1,89 +1,66 @@
   // ---------- The Unblinking: the Eye's fight and the story's ending (Loremaster with the Shardkeeper of the Moat) ----------
-  // Once the brides have first fallen (Season 1's ending beat) and all four shards make the World Heart whole, a gate
-  // opens on the castle roof: the way into the Dark Half. Stepping into it starts the last fight, on the wedding roof
-  // under the open Eye, then the ending plays in the game's own world and the endless game goes on.
-  //  1. The Gaze: a searchlight sweeps the roof all fight long. Standing in it fills the Seen meter (the boss bar's
-  //     thin track); full, the Eye burns her. The fallen moon pieces on the roof hide her.
-  //  2. The Lids: strike the three moon mirrors; their light makes the Eye flinch and its root comes down onto the
-  //     altar. Strike the root while it is down. The mirrors move each time. Until the Eye is at 70%.
-  //  3. The Stolen Crowns: the brides hang chained to the Eye. Strike the chains, never the brides. Freed, Vesthra turns
-  //     its veins to stone (root hits deal 30% more) and Nyxara pins it with thorns (the root stays down longer).
-  //     Then the Lids again, until 35%.
-  //  4. Parallel Sight: four roots, one from each world, break through the roof. Cut all four.
-  //  5. The Blink: dark but the lantern. Parry its last gaze as it fires; the pupil opens and comes down. Strike it.
-  // Flags live in G.story.prog (eyeGate, eyeDone, eyeRuns) so they save and a new game clears them.
-  const UB = { on: false, phase: '', t: 0, hp: 1, max: 1, seen: 0, gz: { x: 0, z: -25, a: 0 }, win: 0, cycle: 0, freed: {}, tears: [], blink: null, keep: null, prev: '' };
-  const UB_ALTAR = new THREE.Vector3(0, ROOF.y, -25.2), UB_GATE = new THREE.Vector3(0, ROOF.y, -28.6);
-  const ubProg = () => G.story.prog;
-  const ubGateOpen = () => !!(ubProg().eyeGate && !UB.on && !EN.on);
-  const ubOnRoof = () => Math.abs(player.position.y - ROOF.y) < 1.5;
-  const ubRoofSpot = (pad) => new THREE.Vector3(ROOF.x0 + pad + Math.random() * (ROOF.x1 - ROOF.x0 - 2 * pad), ROOF.y, ROOF.z0 + pad + Math.random() * (ROOF.z1 - ROOF.z0 - 2 * pad));
+  // The Binding (46r-the-binding) drags the Eye down into a body of bone and chain, the Vessel, over the meadow south
+  // of the lake. Walking out to it starts the last fight; then the ending plays in the game's own world and the
+  // endless game goes on. The Vessel drifts around the meadow and fights back the whole time:
+  //  - Gaze Sweep: a long lane from the Vessel toward her, then a beam down it. Roll out of the lane.
+  //  - Tears: burning drops fall in circles around her, one after another.
+  //  - Root Burst: a ring of roots erupts around the Vessel when she stands close. Back off or roll through.
+  //  1. The Gaze, until 66%.
+  //  2. The Stolen Crowns: the brides hang chained under the Vessel and it hides behind them (a quarter damage) until
+  //     the chains break. Strike the chains, never the brides. Freed, Vesthra turns its veins to stone (30% more
+  //     damage) and Nyxara pins it with thorns (it drifts and attacks slower). The dead of Ashfall start to rise.
+  //  3. Parallel Sight, from 35%: four roots, one from each world, break through the meadow. The Vessel is warded and
+  //     mends itself while any stands. Cut all four.
+  //  4. The Blink: dark but the lantern. Parry its last gaze as it fires; the Vessel falls open. Strike it.
+  // Flags live in G.story.prog (eyeBound, eyeDone, eyeRuns) so they save and a new game clears them.
+  const UB = { on: false, phase: '', t: 0, hp: 1, max: 1, freed: {}, blink: null, keep: null, atkT: 0, sumT: 0, lastAtk: '', pos: new THREE.Vector3(), drift: 0, hover: 24, beamT: 0, beamF: 0 };
+  const UB_ARENA = LM_ARENA, UB_LEASH = 55;
   const UB_ORANGE = 0xff4a12;
   const ubM = (c, o) => new THREE.MeshBasicMaterial(Object.assign({ color: c, fog: false }, o));
 
-  // ----- The gate on the roof: a ring of the Eye's light with black inside it -----
-  const ubGate = new THREE.Group(); ubGate.position.copy(UB_GATE); ubGate.visible = false; scene.add(ubGate);
-  const ubRing = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.14, 6, 28), ubM(UB_ORANGE)); ubRing.position.y = 1.8; ubGate.add(ubRing);
-  const ubVoid = new THREE.Mesh(new THREE.CircleGeometry(1.42, 28), ubM(0x000000, { side: THREE.DoubleSide })); ubVoid.position.y = 1.8; ubGate.add(ubVoid);
-  tag(ubGate, 1);
-
-  // ----- The arena dressing: fallen moon pieces (cover), the searchlight, the mirrors, the root, chains, world roots -----
-  const ubArena = new THREE.Group(); ubArena.visible = false; scene.add(ubArena);
-  const pieceMat = new THREE.MeshLambertMaterial({ color: 0xd8cfb4, flatShading: true });
-  const UB_COVER = [[-8.5, -24.2], [0.2, -22.0], [8.8, -26.6], [-3.6, -28.2]].map(([x, z], i) => {
-    const m = new THREE.Mesh(new THREE.DodecahedronGeometry(1.05, 0), pieceMat); m.position.set(x, ROOF.y + 0.85, z); m.scale.set(1.2, 0.9, 0.8); m.rotation.set(i, i * 2, 0.4);
-    ubArena.add(m); return new THREE.Vector3(x, ROOF.y, z);
-  });
-  // Broken moon pieces drifting in the black around the roof
-  const ubDrift = [];
-  for (let i = 0; i < 14; i++) {
-    const m = new THREE.Mesh(new THREE.DodecahedronGeometry(0.6 + Math.random() * 1.6, 0), pieceMat);
-    const a = i / 14 * TAU, r = 22 + Math.random() * 10; m.userData = { a, r, y: ROOF.y + 2 + Math.random() * 10, s: 0.05 + Math.random() * 0.08 };
-    ubArena.add(m); ubDrift.push(m);
+  // ----- The Vessel: an eye in a cage of ribs, hung on chains -----
+  const ubVessel = new THREE.Group(); ubVessel.visible = false; scene.add(ubVessel);
+  const ubBoneM = new THREE.MeshLambertMaterial({ color: 0xd8cfb4, flatShading: true, emissive: 0x1a0804 });
+  const ubEye = new THREE.Group(); ubVessel.add(ubEye);
+  const ubSclera = new THREE.Mesh(new THREE.SphereGeometry(1.55, 18, 14), new THREE.MeshLambertMaterial({ color: 0xe8dccb, emissive: 0x2a0a04 })); ubEye.add(ubSclera);
+  const ubIris = new THREE.Mesh(new THREE.CircleGeometry(0.95, 24), ubM(UB_ORANGE)); ubIris.position.z = 1.52; ubEye.add(ubIris);
+  const ubPupil = new THREE.Mesh(new THREE.CircleGeometry(0.42, 20), ubM(0x000000)); ubPupil.position.z = 1.54; ubEye.add(ubPupil);
+  const ubRibs = [];
+  for (let i = 0; i < 6; i++) {
+    const rib = new THREE.Mesh(new THREE.TorusGeometry(2.25, 0.13, 5, 20, Math.PI * 1.25), ubBoneM);
+    rib.rotation.set(Math.PI / 2, 0, i / 6 * TAU); rib.rotation.order = 'ZXY'; ubVessel.add(rib); ubRibs.push(rib);
   }
-  // The searchlight: a column of the Eye's light and the circle it burns on the roof
-  const UB_BEAM_R = 2.3;
-  const ubBeam = new THREE.Mesh(new THREE.CylinderGeometry(UB_BEAM_R, UB_BEAM_R * 0.6, 40, 20, 1, true), ubM(UB_ORANGE, { transparent: true, opacity: 0.22, depthWrite: false, side: THREE.DoubleSide }));
-  ubBeam.renderOrder = 3; ubArena.add(ubBeam);
-  const ubSpot = new THREE.Mesh(new THREE.CircleGeometry(UB_BEAM_R, 28), ubM(UB_ORANGE, { transparent: true, opacity: 0.45, depthWrite: false }));
-  ubSpot.rotation.x = -Math.PI / 2; ubSpot.renderOrder = 3; ubArena.add(ubSpot);
-  tag(ubBeam, 2); tag(ubSpot, 2);
+  const ubSpine = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.3, 4.4, 6), ubBoneM); ubSpine.position.y = 2.6; ubVessel.add(ubSpine);
+  const ubTail = new THREE.Mesh(new THREE.ConeGeometry(0.35, 2.2, 6), ubBoneM); ubTail.position.y = -2.4; ubTail.rotation.x = Math.PI; ubVessel.add(ubTail);
+  // The chains the brides hang from (shown while they are bound)
+  const ubHangs = [-1, 1].map(() => { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1, 5), new THREE.MeshLambertMaterial({ color: 0x3a3440, emissive: 0x401008 })); m.visible = false; scene.add(m); return m; });
+  // The beam of the Gaze Sweep, flashed down the lane as it lands
+  const ubBeam = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.9, 1), ubM(UB_ORANGE, { transparent: true, opacity: 0.6, depthWrite: false }));
+  ubBeam.visible = false; scene.add(ubBeam);
+  tag(ubVessel, 2);
   const ubTele = makeTele();
-  // Targets share the interface the hero's strikes use (pos, radius, hitY, markY) and are routed by isEye
+
+  // ----- Targets: the Vessel itself, the brides' chains, the four world roots -----
   function ubTarget(kind, mesh, hits, extra) {
-    const t = Object.assign({ kind, g: mesh, pos: mesh.position, radius: 0.9, hitY: 1.2, markY: 3, isEye: true, alive: false, hits, left: hits, flash: 0 }, extra || {});
-    mesh.visible = false; ubArena.add(mesh); tag(mesh, 2); return t;
+    return Object.assign({ kind, g: mesh, pos: mesh ? mesh.position : new THREE.Vector3(), radius: 0.9, hitY: 1.2, markY: 3, isEye: true, alive: false, hits, left: hits, flash: 0 }, extra || {});
   }
-  const mirrorMk = () => {
-    const g = new THREE.Group();
-    const frame = new THREE.Mesh(new THREE.TorusGeometry(0.75, 0.12, 5, 16), new THREE.MeshLambertMaterial({ color: 0x9a8e70 })); frame.position.y = 1.4; g.add(frame);
-    const glass = new THREE.Mesh(new THREE.CircleGeometry(0.66, 18), ubM(0x5a6a80, { side: THREE.DoubleSide })); glass.position.y = 1.4; g.add(glass);
-    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.12, 0.8, 6), new THREE.MeshLambertMaterial({ color: 0x5a5040 })); post.position.y = 0.4; g.add(post);
-    g.userData.glass = glass; return g;
+  const ubCore = ubTarget('core', null, Infinity, { pos: UB.pos, radius: 2.3, hitY: 2.6, markY: 6.2 });
+  const chainMk = () => {
+    const g = new THREE.Group(), m = new THREE.MeshLambertMaterial({ color: 0x3a3440, emissive: 0x401008 });
+    for (let k = 0; k < 4; k++) { const l = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.07, 4, 8), m); l.position.y = 0.9 + k * 0.34; l.rotation.y = k % 2 ? Math.PI / 2 : 0; g.add(l); }
+    g.visible = false; scene.add(g); tag(g, 2); return g;
   };
-  const ubMirrors = [0, 1, 2].map(() => ubTarget('mirror', mirrorMk(), 1));
-  // The root: where the Eye's sight touches the world, a burning knot of veins dropped onto the altar
+  const ubChains = [0, 1].map(i => ubTarget('chain', chainMk(), 6, { bride: i, radius: 1.2, hitY: 1.4, markY: 4.2 }));
   const rootMk = (col) => {
     const g = new THREE.Group();
     const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.95, 0), ubM(col)); core.position.y = 1.3; g.add(core);
     const pup = new THREE.Mesh(new THREE.SphereGeometry(0.42, 10, 8), ubM(0x000000)); pup.position.set(0, 1.3, 0.75); g.add(pup);
-    const vein = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.3, 40, 6, 1, true), ubM(col, { transparent: true, opacity: 0.7 })); vein.position.y = 21; g.add(vein);
-    g.userData.core = core; g.userData.pup = pup; return g;
+    const vein = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.3, 30, 6, 1, true), ubM(col, { transparent: true, opacity: 0.7 })); vein.position.y = 16; g.add(vein);
+    g.userData = { core, pup }; g.visible = false; scene.add(g); tag(g, 2); return g;
   };
-  const ubRoot = ubTarget('root', rootMk(UB_ORANGE), Infinity, { radius: 1.2, hitY: 1.4, markY: 3.4 });
-  // The brides' chains, running from each bride up into the black
-  const chainMk = () => {
-    const g = new THREE.Group(), m = new THREE.MeshLambertMaterial({ color: 0x3a3440, emissive: 0x401008 });
-    for (let i = 0; i < 16; i++) { const l = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.06, 4, 8), m); l.position.y = 2.6 + i * 0.42; l.rotation.y = i % 2 ? Math.PI / 2 : 0; g.add(l); }
-    return g;
-  };
-  const UB_BRIDE_AT = [new THREE.Vector3(-6, ROOF.y, -25.6), new THREE.Vector3(6, ROOF.y, -25.6)];
-  const ubChains = UB_BRIDE_AT.map((p, i) => { const c = ubTarget('chain', chainMk(), 6, { bride: i, radius: 1.1, hitY: 2, markY: 4.6 }); c.g.position.copy(p); return c; });
-  // Parallel Sight: one root from each world the Eye looks through, in that world's colour
-  const UB_WORLD_ROOTS = [['Veyra', 0x6aff8a, -10.5, -22.4], ['Neon Verge', 0x3af0ff, 10.5, -22.4], ['Ashfall', 0xff9a3a, 10.5, -28.0], ['the Veil', 0xc8a9ff, -10.5, -28.0]];
-  const ubWorldRoots = UB_WORLD_ROOTS.map(([name, col, x, z]) => { const r = ubTarget('wroot', rootMk(col), 4, { world: name, col, radius: 1.2, hitY: 1.4, markY: 3.4 }); r.g.position.set(x, ROOF.y, z); return r; });
-  // The tears: drops of the Eye's light that fall where she stands
-  const tearGeo = new THREE.SphereGeometry(0.45, 10, 8), tearMat = ubM(UB_ORANGE);
+  const UB_WORLD_ROOTS = [['Veyra', 0x6aff8a, -12, 0], ['Neon Verge', 0x3af0ff, 12, 0], ['Ashfall', 0xff9a3a, 0, 11], ['the Veil', 0xc8a9ff, 0, -10]];
+  const ubWorldRoots = UB_WORLD_ROOTS.map(([name, col, x, z]) => { const r = ubTarget('wroot', rootMk(col), 4, { world: name, col, radius: 1.2, hitY: 1.4, markY: 3.4 }); r.g.position.set(UB_ARENA.x + x, 0, UB_ARENA.z + z); return r; });
+
   // The darkness of the Blink: everything but a circle of lantern light around her
   const ubDark = document.createElement('div'); ubDark.id = 'eyedark';
   ubDark.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:4;opacity:0;transition:opacity .8s;background:radial-gradient(circle at 50% 58%, rgba(0,0,0,0) 0, rgba(0,0,0,0) 15vmin, rgba(0,0,0,.94) 34vmin)';
@@ -94,28 +71,20 @@
   function ubTargets() {
     if (!UB.on) return [];
     const out = [];
-    ubMirrors.forEach(m => { if (m.alive) out.push(m); });
-    if (ubRoot.alive) out.push(ubRoot);
+    if (ubCore.alive) out.push(ubCore);
     ubChains.forEach(c => { if (c.alive) out.push(c); });
     ubWorldRoots.forEach(r => { if (r.alive) out.push(r); });
     return out;
   }
-
-  // ----- The gate opens: every chain is lifted -----
-  function ubCheckGate(real) {
-    const pr = ubProg();
-    if (pr.eyeGate || pr.eyeDone || !pr.s1end || shardCount() < CHAPTERS.length) return;
-    if (G.story.pending || !ui.banner.hidden || G.world !== 'moat' || (G.state !== 'explore' && G.state !== 'interlude')) return;
-    pr.eyeGate = 1; saveGame();
-    moonEyeOpen(10); moonGlance(4);
-    showBanner('A gate on the roof', 'With the World Heart whole, every chain on the moon is lifted. On the castle roof, where the brides were wed, a gate has opened into the Dark Half. The Eye is waiting behind it.', 'title');
-    bannerTimer = 9; sfx('horn');
-  }
+  const ubChained = () => ubChains.some(c => c.alive);
+  const ubRootsLeft = () => ubWorldRoots.filter(r => r.alive).length;
   function unblinkingText() {
-    const pr = ubProg();
-    if (UB.on) return UB.phase === 'blink' ? 'The Blink · parry its last gaze as it fires.' : UB.phase === 'crowns' ? 'The Stolen Crowns · strike the chains, not the brides.' : UB.phase === 'sight' ? 'Parallel Sight · cut the roots of all four worlds.' : 'The Lids · strike the moon mirrors, then the root on the altar. Hide from the gaze behind moon pieces.';
-    if (pr.eyeGate && !pr.eyeDone) return 'A gate stands open on the castle roof. Step into it to face the Eye.';
-    return null;
+    if (UB.on) return UB.phase === 'blink' ? 'The Blink · parry its last gaze as it fires.'
+      : UB.phase === 'final' ? 'The Vessel has fallen open. Strike it.'
+      : UB.phase === 'crowns' && ubChained() ? 'The Stolen Crowns · it hides behind the brides. Strike their chains, not them.'
+      : UB.phase === 'sight' ? `Parallel Sight · it is warded and mending. Cut the roots of all four worlds (${ubRootsLeft()} left).`
+      : 'The Unblinking · strike the Vessel. Roll out of its gaze, keep moving under the tears, back off when the roots stir.';
+    return bindingText();
   }
 
   // ----- The fight -----
@@ -124,58 +93,41 @@
     const tier = worldTier(), asc = G.ascension || 0;
     G.dmgMult = (1 + 0.2 * (tier - 1)) * (1 + 0.25 * asc); G.bossTier = tier;
     UB_ATK.pow = 1.9 + 0.2 * (tier + 2 + 2 * asc - 1);
-    endRoyalHunt(true); endEvent(true);
+    endRoyalHunt(true); endEvent(true); clearStrikes();
     if (P.mount) dismount(true);
     UB.max = Math.round(5200 * (1 + 0.35 * (tier + 1 + 2 * asc))); UB.hp = UB.max;
-    Object.assign(UB, { on: true, phase: 'intro', t: 0, seen: 0, win: 0, cycle: 0, freed: {}, blink: null, prev: '' });
-    UB.gz.x = 0; UB.gz.z = -22; UB.gz.a = 0;
-    // The brides leave the land and hang chained above the altar
+    Object.assign(UB, { on: true, phase: 'wake', t: 0, freed: {}, blink: null, atkT: 2.5, sumT: 8, lastAtk: '', drift: 0, beamT: 0 });
+    UB.pos.copy(UB_ARENA); ubCore.alive = true;
+    // The brides leave the land and hang chained under the Vessel
     UB.keep = royals.map(r => ({ pos: r.pos.clone(), facing: r.facing, field: r.field, state: r.state, active: r.active, alive: r.alive, vis: r.g.visible }));
-    royals.forEach((r, i) => { r.field = false; r.active = false; r.state = 'idle'; r.atk = null; r.tele.hide(); r.body.rotation.set(0, 0, 0); r.pos.copy(UB_BRIDE_AT[i]); r.facing = 0; });
+    royals.forEach(r => { r.field = false; r.active = false; r.state = 'idle'; r.atk = null; r.tele.hide(); r.body.rotation.set(0, 0, 0); r.facing = 0; });
     G.state = 'eye'; G.lock = false; G.target = null; G.hunt = null;
-    ubGate.visible = false; ubArena.visible = true;
     ui.hud.hidden = true; ui.royalbars.hidden = true; ui.bossbar.hidden = false;
     ui.bname.textContent = 'The Unblinking';
-    sfx('portal'); sfx('roar'); G.shake = 0.8;
-    showBanner('The Dark Half', 'The Warden is kneeling at the gate, holding it open with both hands. “She told me she would come home. Go. I will hold it.”', 'title'); bannerTimer = 6;
-    ubProg().eyeRuns = (ubProg().eyeRuns || 0) + 1;
+    sfx('roar'); G.shake = 0.8;
+    showBanner('The Unblinking', 'The Vessel comes down out of the sky on five threads of moonlight, and the Eye inside it opens.', 'title'); bannerTimer = 4;
+    lmProg().eyeRuns = (lmProg().eyeRuns || 0) + 1;
   }
-  function ubShowMirrors() {
-    UB.cycle++;
-    const spots = [];
-    ubMirrors.forEach(m => {
-      let p, n = 0;
-      do { p = ubRoofSpot(1.6); n++; } while (n < 30 && (spots.some(s => flatDist(s, p) < 6) || flatDist(p, UB_ALTAR) < 3 || UB_COVER.some(c => flatDist(c, p) < 2.2)));
-      spots.push(p); m.g.position.copy(p); m.g.rotation.y = yawTo(p, UB_ALTAR); m.alive = true; m.left = 1; m.g.visible = true; m.g.userData.glass.material.color.setHex(0x5a6a80);
-    });
-  }
-  function ubRootDown() {
-    UB.win = 7 + (UB.freed[1] ? 3 : 0);
-    ubRoot.alive = true; ubRoot.g.visible = true; ubRoot.g.position.copy(UB_ALTAR);
-    sfx('boom'); G.shake = Math.max(G.shake, 0.6); burst(UB_ALTAR.x, UB_ALTAR.y + 1, UB_ALTAR.z, 40, 7);
-    floatText('THE EYE FLINCHES', UB_ALTAR.clone().add(new THREE.Vector3(0, 4, 0)), 'word', '#ffb07a');
-    S1.blink = 0; moonEyeOpen(30);
-  }
-  function ubRootUp() { ubRoot.alive = false; ubRoot.g.visible = false; UB.win = 0; }
   function ubSetPhase(ph) {
     UB.phase = ph; UB.t = 0;
-    ubMirrors.forEach(m => { m.alive = false; m.g.visible = false; }); ubRootUp();
-    if (ph === 'lids' || ph === 'lids2') ubShowMirrors();
     if (ph === 'crowns') {
-      ubChains.forEach(c => { c.alive = true; c.left = c.hits; c.g.visible = true; });
-      showBanner('The Stolen Crowns', 'The brides hang from the Eye on chains. Strike the chains, not them.', 'title'); bannerTimer = 4; sfx('boss', 'royals');
+      ubChains.forEach(c => { c.alive = !UB.freed[c.bride]; c.left = c.hits; c.g.visible = c.alive; });
+      lmSummon(UB_ARENA, 4, 16, 22, null, 0);
+      showBanner('The Stolen Crowns', 'The brides hang from the Vessel on chains, and it hides behind them. Strike the chains, not them.', 'title'); bannerTimer = 4; sfx('boss', 'royals');
     }
     if (ph === 'sight') {
+      ubChains.forEach(c => { c.alive = false; c.g.visible = false; });
       ubWorldRoots.forEach(r => { r.alive = true; r.left = r.hits; r.g.visible = true; });
-      showBanner('Parallel Sight', 'The Eye looks through every world at once. Its roots break through the roof from Veyra, Neon Verge, Ashfall and the Veil. Cut all four.', 'title'); bannerTimer = 5; sfx('portal');
+      showBanner('Parallel Sight', 'The Eye looks through every world at once. Its roots break through the meadow from Veyra, Neon Verge, Ashfall and the Veil, and while they stand it is warded and mends. Cut all four.', 'title'); bannerTimer = 5; sfx('portal');
     }
     if (ph === 'blink') {
+      clearStrikes(); ubBeam.visible = false;
       UB.blink = { t: 0, stage: 'wait' }; ubDark.style.opacity = '1';
       showBanner('The Blink', 'Everything goes dark but your lantern. When it looks at you one last time, parry.', 'title'); bannerTimer = 4;
     }
   }
   // Each phase has a floor, so a big hit never skips the next phase or empties the bar before the Blink
-  const UB_FLOOR = { lids: 0.7, crowns: 0.7, lids2: 0.35, sight: 0.1, blink: 0.1 };
+  const UB_FLOOR = { wake: 1, gaze: 0.66, crowns: 0.35, sight: 0.1, blink: 0.1 };
   function ubHurt(n, at, heavy) {
     UB.hp = Math.max(UB.phase === 'final' ? 0 : UB.max * (UB_FLOOR[UB.phase] || 0), UB.hp - n);
     floatText(String(Math.round(n)), at, 'big', '#ffb07a'); sfx(heavy ? 'heavyhit' : 'hit');
@@ -186,16 +138,11 @@
     if (!t.alive || !UB.on) return;
     t.flash = 1;
     const at = t.pos.clone().add(new THREE.Vector3(0, t.hitY + 0.6, 0));
-    if (t.kind === 'mirror') {
-      t.alive = false; t.g.userData.glass.material.color.setHex(0xfff2c8);
-      sfx('chest'); burst(at.x, at.y, at.z, 20, 5); floatText('LIT', at, 'word', '#fff2c8');
-      setTimeout(() => { t.g.visible = false; }, 700);
-      if (ubMirrors.every(m => !m.alive)) setTimeout(() => { if (UB.on && (UB.phase === 'lids' || UB.phase === 'lids2')) ubRootDown(); }, 600);
-      return;
-    }
-    if (t.kind === 'root') {
+    if (t.kind === 'core') {
       if (UB.phase === 'final') { UB.hp = 0; ubHurt(Math.max(1, dmg), at, true); return; }
-      ubHurt(dmg * (UB.freed[0] ? 1.3 : 1) * (UB.phase === 'lids' || UB.phase === 'lids2' ? 1 : 0.6), at, heavy);
+      const ward = (UB.phase === 'crowns' && ubChained() ? 0.25 : 1) * (UB.phase === 'sight' && ubRootsLeft() ? 0.2 : 1);
+      if (ward < 1 && Math.random() < 0.35) floatText('warded', at.clone().add(new THREE.Vector3(0, 0.7, 0)), 'word', '#c8a9ff');
+      ubHurt(dmg * (UB.freed[0] ? 1.3 : 1) * ward, at, heavy);
       return;
     }
     // Chains and world roots count hits, not damage, so every build frees them in the same time
@@ -207,137 +154,173 @@
     else { ubHurt(UB.max * 0.06, at, true); floatText(`${t.world} lets go`, at.clone().add(new THREE.Vector3(0, 0.8, 0)), 'word', '#' + t.col.toString(16).padStart(6, '0')); }
   }
   const UB_FREED_LINES = [
-    ['Vesthra, free', '“Stone does not fade. Let me hold it still for you.” Its veins turn to stone: the root takes more damage.'],
-    ['Nyxara, free', '“Sister. I remember now. Run at it, not away.” Thorns pin the Eye: the root stays down longer.']
+    ['Vesthra, free', '“Stone does not fade. Let me hold it still for you.” Its veins turn to stone: the Vessel takes 30% more damage.'],
+    ['Nyxara, free', '“Sister. I remember now. Run at it, not away.” Thorns pin the Vessel: it drifts and strikes slower.']
   ];
   function ubFreeBride(i) {
     UB.freed[i] = true; const r = royals[i];
-    sfx(i ? 'empress' : 'gorgon'); burst(r.pos.x, ROOF.y + 2, r.pos.z, 40, 6); G.shake = Math.max(G.shake, 0.4);
+    sfx(i ? 'empress' : 'gorgon'); burst(r.pos.x, 2, r.pos.z, 40, 6); G.shake = Math.max(G.shake, 0.4);
     showTip(UB_FREED_LINES[i][0], UB_FREED_LINES[i][1], 7);
   }
-  // A parry during the Blink: the pupil opens and comes down to the altar for the last strike
+  // A parry during the Blink: the Vessel falls open for the last strike
   function eyeParried() {
     if (!UB.on || UB.phase !== 'blink' || !UB.blink || UB.blink.stage !== 'fire') return;
     UB.blink.parried = true;
   }
 
+  // ----- Its attacks -----
+  const ubOrbGeo = new THREE.SphereGeometry(0.45, 10, 8), ubOrbMat = ubM(UB_ORANGE);
+  const ubOrbs = [];
+  function ubAttack() {
+    const p = player.position, d = flatDist(p, UB.pos), ph = UB.phase;
+    const pick = d < 6 && UB.lastAtk !== 'roots' && Math.random() < 0.65 ? 'roots' : UB.lastAtk === 'sweep' ? 'tears' : Math.random() < 0.55 ? 'sweep' : 'tears';
+    UB.lastAtk = pick;
+    if (pick === 'sweep') {
+      const f = yawTo(UB.pos, p), fs = ph === 'sight' ? [f - 0.45, f + 0.45] : [f];
+      fs.forEach(ff => groundStrike({ lane: true, at: UB.pos.clone().setY(0), facing: ff, len: 28, w: 2.8, wind: 1.15, dmg: 30, kb: 9, src: UB_ATK, sound: 'breath' }));
+      UB.beamT = 1.15; UB.beamF = fs[0]; sfx('cast');
+    } else if (pick === 'tears') {
+      const n = ph === 'gaze' ? 4 : 6;
+      for (let i = 0; i < n; i++) {
+        const a = Math.random() * TAU, r = i === 0 ? 0 : 1.6 + Math.random() * 3.6, at = V3(p.x + Math.cos(a) * r, p.z + Math.sin(a) * r), wind = 0.9 + i * 0.25;
+        groundStrike({ at, r: 1.7, wind, dmg: 18, kb: 5, src: UB_ATK, sound: 'ember' });
+        const m = new THREE.Mesh(ubOrbGeo, ubOrbMat); m.position.set(at.x, 18, at.z); scene.add(m); tag(m, 2); ubOrbs.push({ m, t: 0, wind });
+      }
+    } else {
+      const n = 7, off = Math.random() * TAU;
+      for (let i = 0; i < n; i++) { const a = off + i / n * TAU; groundStrike({ at: V3(UB.pos.x + Math.cos(a) * 3.9, UB.pos.z + Math.sin(a) * 3.9), r: 2.2, wind: 1.0, dmg: 24, kb: 10, src: UB_ATK, sound: 'boom' }); }
+      floatText('the roots stir', UB.pos.clone().add(new THREE.Vector3(0, 1.4, 0)), 'word', '#ffb07a');
+    }
+  }
+
   function updateUnblinking(real) {
-    // The gate and the arena dressing
-    const pr = ubProg(), tt = uTime.value;
-    ubCheckGate(real);
-    ubGate.visible = G.world === 'moat' && ubGateOpen();
-    if (ubGate.visible) {
-      ubRing.rotation.z = tt * 0.6; ubRing.scale.setScalar(1 + 0.06 * Math.sin(tt * 3));
-      if (G.state === 'explore' || G.state === 'interlude') {
-        if (G.realm === 'material' && !G.storm && ubOnRoof() && flatDist(player.position, UB_GATE) < 1.9 && P.act !== 'leap') startUnblinking();
-        else if (ubOnRoof() && Math.random() < real * 0.3) moonEyeOpen(3);
+    const pr = lmProg(), tt = uTime.value;
+    updateBinding(real);
+    // The bound Vessel waits high over the meadow until she walks out to it
+    const waiting = storyOn() && G.world === 'moat' && pr.eyeBound && !pr.eyeDone && !UB.on && !EN.on;
+    if (!UB.on) {
+      ubVessel.visible = waiting;
+      if (waiting) {
+        ubVessel.position.set(UB_ARENA.x, 22 + Math.sin(tt * 0.7) * 0.8, UB_ARENA.z); ubVessel.rotation.y = tt * 0.25;
+        ubEye.lookAt(player.position.x, player.position.y + 1, player.position.z);
+        lmThreadsTo(ubVessel.position.clone().add(new THREE.Vector3(0, 2.6, 0)));
+        if ((G.state === 'explore' || G.state === 'interlude') && G.realm === 'material' && !G.storm && player.position.y < 1.6 && flatDist(player.position, UB_ARENA) < 15) startUnblinking();
       }
     }
     updateEnding(real);
     if (!UB.on) return;
     if (G.state === 'dead') { ubAbort(); return; }
-    // Nothing else may take the roof while the Eye is fought (a respawn, a reset from the pause screen)
+    // Nothing else may take the field while the Eye is fought (a respawn, a reset from the pause screen)
     if (G.state !== 'eye') { UB.keep = null; ubClear(); return; }
     if (G.paused) return;
+    if (flatDist(player.position, UB_ARENA) > UB_LEASH || G.world !== 'moat') {
+      ubAbort(); showBanner('The Eye lets you go', 'The Vessel rises back up its threads to wait over the meadow. Come back when you are ready.', 'title'); bannerTimer = 5; return;
+    }
     const dt = Math.max(0, G.hitstop > 0 ? 0 : G.slow > 0 ? real * 0.3 : real);
     UB.t += dt;
     moonEyeOpen(2); boss.visible = false; G.hunt = null;
-    ubDrift.forEach(m => { const u = m.userData; u.a += u.s * dt; m.position.set(Math.cos(u.a) * u.r, u.y + Math.sin(tt * 0.5 + u.a) * 0.6, -25 + Math.sin(u.a) * u.r * 0.7); m.rotation.x += dt * 0.2; });
-    ubChains.forEach(c => { if (c.alive) c.g.rotation.y = Math.sin(tt * 1.3 + c.bride) * 0.2; });
-    [ubRoot, ...ubWorldRoots].forEach(r => { if (r.alive) { r.g.userData.core.rotation.y += dt * 1.5; r.g.userData.core.scale.setScalar(1 + 0.08 * Math.sin(tt * 6) + r.flash * 0.25); r.g.userData.pup.lookAt(player.position.x, ROOF.y + 1.3, player.position.z); } r.flash = Math.max(0, r.flash - dt * 5); });
+
+    // The Vessel: comes down out of the sky, drifts around the meadow and watches her; the Blink brings it low
+    const want = UB.phase === 'wake' ? 3.4 : UB.phase === 'final' ? 1.4 : 3.4;
+    if (UB.phase === 'wake') UB.hover = Math.max(want, 22 - UB.t * 6); else UB.hover += (want - UB.hover) * Math.min(1, dt * 2);
+    if (['gaze', 'crowns', 'sight'].includes(UB.phase)) {
+      UB.drift += dt * 0.32 * (UB.freed[1] ? 0.5 : 1);
+      const aim = new THREE.Vector3(UB_ARENA.x + Math.sin(UB.drift) * 8, 0, UB_ARENA.z + Math.sin(UB.drift * 1.6) * 5).lerp(player.position.clone().setY(0), 0.25);
+      const dx = aim.x - UB.pos.x, dz = aim.z - UB.pos.z, dd = Math.hypot(dx, dz), sp = 2.4 * (UB.freed[1] ? 0.5 : 1);
+      if (dd > 0.05) { const s = Math.min(dd, sp * dt); UB.pos.x += dx / dd * s; UB.pos.z += dz / dd * s; }
+    }
+    ubVessel.visible = true;
+    ubVessel.position.set(UB.pos.x, UB.hover + Math.sin(tt * 1.4) * 0.25, UB.pos.z);
+    ubVessel.rotation.y += dt * 0.3;
+    ubRibs.forEach((rb, i) => { rb.scale.setScalar(UB.phase === 'final' ? 1.25 : 1 + 0.04 * Math.sin(tt * 3 + i)); });
+    ubEye.lookAt(player.position.x, player.position.y + 1, player.position.z);
+    ubPupil.scale.setScalar(UB.phase === 'final' ? 2 : UB.phase === 'blink' && UB.blink && UB.blink.stage === 'charge' ? 0.5 : 1 + ubCore.flash * 0.4);
+    ubCore.flash = Math.max(0, ubCore.flash - dt * 5);
+    ubSclera.material.emissive.setRGB(0.16 + ubCore.flash * 0.5, 0.04 + ubCore.flash * 0.3, 0.02);
+    lmThreadsTo(ubVessel.position.clone().add(new THREE.Vector3(0, 2.6, 0)));
+    // It is a body now: she cannot walk through it
+    if (UB.hover < 5) { const dx = player.position.x - UB.pos.x, dz = player.position.z - UB.pos.z, dd = Math.hypot(dx, dz); if (dd < 1.8 && dd > 1e-4) movePlayer(dx / dd * (1.8 - dd), dz / dd * (1.8 - dd)); }
+    [...ubWorldRoots].forEach(r => { if (r.alive) { r.g.userData.core.rotation.y += dt * 1.5; r.g.userData.core.scale.setScalar(1 + 0.08 * Math.sin(tt * 6) + r.flash * 0.25); r.g.userData.pup.lookAt(player.position.x, 1.3, player.position.z); } r.flash = Math.max(0, r.flash - dt * 5); });
     ubChains.forEach(c => { c.flash = Math.max(0, c.flash - dt * 5); });
 
     // Phases
-    if (UB.phase === 'intro' && UB.t > 5) { ubSetPhase('lids'); showTip('The Lids', ['Strike the three moon mirrors to make the Eye flinch.', 'Then strike its root on the altar.', 'Hide behind the fallen moon pieces when the gaze comes.'], 8); }
-    if (UB.win > 0) { UB.win -= dt; if (UB.win <= 0) { ubRootUp(); if (UB.phase === 'lids' || UB.phase === 'lids2') ubShowMirrors(); } }
+    if (UB.phase === 'wake' && UB.t > 3.5) { ubSetPhase('gaze'); showTip('The Unblinking', ['Strike the Vessel. It fights back:', 'Roll out of the lane before its gaze lands.', 'Keep moving under the tears. Back off when the roots stir.'], 8); }
     const frac = UB.hp / UB.max;
-    if (UB.phase === 'lids' && frac <= 0.7) ubSetPhase('crowns');
-    if (UB.phase === 'crowns' && UB.freed[0] && UB.freed[1]) { ubSetPhase('lids2'); showTip('The Lids', 'The mirrors stand again. Make it flinch.', 4); }
-    if (UB.phase === 'lids2' && frac <= 0.35) ubSetPhase('sight');
-    if (UB.phase === 'sight' && ubWorldRoots.every(r => !r.alive)) ubSetPhase('blink');
+    if (UB.phase === 'gaze' && frac <= 0.66) ubSetPhase('crowns');
+    if (UB.phase === 'crowns' && frac <= 0.35 && !ubChained()) ubSetPhase('sight');
+    if (UB.phase === 'sight') {
+      if (ubRootsLeft()) UB.hp = Math.min(UB.max * 0.35, UB.hp + UB.max * 0.004 * dt);
+      else ubSetPhase('blink');
+    }
     if (UB.phase === 'blink') ubUpdateBlink(dt);
     if (UB.phase === 'final' && UB.hp <= 0) { ubWin(); return; }
 
-    // The gaze sweeps the roof all fight, except in the dark of the Blink
-    const gazing = !['intro', 'blink', 'final'].includes(UB.phase);
-    ubBeam.visible = ubSpot.visible = gazing;
-    if (gazing) {
-      const sp = (UB.phase === 'sight' ? 3.4 : UB.phase === 'lids2' ? 3.0 : 2.5) * (UB.freed[1] ? 0.85 : 1);
-      UB.gz.a += dt * 0.45;
-      const want = new THREE.Vector3(Math.sin(UB.gz.a) * 11, 0, -25 + Math.sin(UB.gz.a * 1.7) * 3.6).lerp(player.position, 0.35);
-      const dx = want.x - UB.gz.x, dz = want.z - UB.gz.z, dd = Math.hypot(dx, dz);
-      if (dd > 0.01) { const s = Math.min(dd, sp * dt); UB.gz.x += dx / dd * s; UB.gz.z += dz / dd * s; }
-      UB.gz.x = clamp(UB.gz.x, ROOF.x0, ROOF.x1); UB.gz.z = clamp(UB.gz.z, ROOF.z0, ROOF.z1);
-      ubSpot.position.set(UB.gz.x, ROOF.y + 0.06, UB.gz.z); ubBeam.position.set(UB.gz.x, ROOF.y + 20, UB.gz.z);
-      ubSpot.material.opacity = 0.35 + 0.25 * UB.seen + 0.1 * Math.sin(tt * 9);
-      const inBeam = ubOnRoof() && flatDist(player.position, ubSpot.position) < UB_BEAM_R;
-      const hidden = UB_COVER.some(c => flatDist(c, player.position) < 1.9);
-      if (inBeam && !hidden) UB.seen = Math.min(1, UB.seen + dt * 0.55);
-      else UB.seen = Math.max(0, UB.seen - dt * 0.3);
-      if (UB.seen >= 1) {
-        UB.seen = 0.25;
-        floatText('SEEN', player.position.clone().add(new THREE.Vector3(0, 2.8, 0)), 'word', '#ff7a3a');
-        hitPlayer(26, ubSpot.position.clone(), 9, false, UB_ATK); sfx('breath');
-      }
-    } else UB.seen = Math.max(0, UB.seen - dt);
-    // Tears fall where she stands from the Crowns on
-    if (['crowns', 'lids2', 'sight'].includes(UB.phase)) {
-      UB.tearT = (UB.tearT || 0) - dt;
-      if (UB.tearT <= 0) {
-        UB.tearT = UB.phase === 'sight' ? 1.6 : 2.2;
-        const at = player.position.clone().setY(ROOF.y).add(new THREE.Vector3((Math.random() - 0.5) * 3, 0, (Math.random() - 0.5) * 3));
-        at.x = clamp(at.x, ROOF.x0, ROOF.x1); at.z = clamp(at.z, ROOF.z0, ROOF.z1);
-        const m = new THREE.Mesh(tearGeo, tearMat); m.position.copy(at).setY(ROOF.y + 18); scene.add(m); tag(m, 2);
-        UB.tears.push({ m, at, t: 0, tele: makeTele() });
-      }
+    // Attacks: faster as it weakens, slower while Nyxara's thorns hold it
+    if (['gaze', 'crowns', 'sight'].includes(UB.phase)) {
+      UB.atkT -= dt;
+      if (UB.atkT <= 0) { ubAttack(); UB.atkT = (UB.phase === 'gaze' ? 2.6 : UB.phase === 'crowns' ? 2.2 : 1.8) * (UB.freed[1] ? 1.25 : 1); }
+      if (UB.phase !== 'gaze') { UB.sumT -= dt; if (UB.sumT <= 0) { UB.sumT = UB.phase === 'sight' ? 14 : 18; lmSummon(UB_ARENA, 3, 16, 22, null, 0); } }
     }
-    for (let i = UB.tears.length - 1; i >= 0; i--) {
-      const T = UB.tears[i]; T.t += dt; const k = T.t / 1.1;
-      T.tele.circle(T.at.x, ROOF.y, T.at.z, 1.6, k); T.m.position.y = ROOF.y + 18 * (1 - k * k);
-      if (k >= 1) {
-        burst(T.at.x, ROOF.y + 0.3, T.at.z, 18, 5); sfx('ember');
-        if (ubOnRoof() && flatDist(player.position, T.at) < 1.6) hitPlayer(18, T.at, 5, true, UB_ATK);
-        T.tele.hide(); scene.remove(T.m); UB.tears.splice(i, 1);
+    if (UB.beamT > 0) {
+      UB.beamT -= dt;
+      if (UB.beamT <= 0) {
+        const f = fwdOf(UB.beamF), L = 28;
+        ubBeam.visible = true; ubBeam.scale.set(1, 1, L); ubBeam.position.set(UB.pos.x + f.x * L / 2, 0.6, UB.pos.z + f.z * L / 2); ubBeam.rotation.y = UB.beamF;
+        ubBeam.material.opacity = 0.7; UB.beamT = -0.35;
       }
-    }
+    } else if (UB.beamT < 0) { UB.beamT = Math.min(0, UB.beamT + dt); ubBeam.material.opacity = 0.7 * (-UB.beamT / 0.35); if (UB.beamT >= 0) ubBeam.visible = false; }
+    for (let i = ubOrbs.length - 1; i >= 0; i--) { const O = ubOrbs[i]; O.t += dt; const k = O.t / O.wind; O.m.position.y = 18 * (1 - k * k); if (k >= 1) { scene.remove(O.m); ubOrbs.splice(i, 1); } }
 
-    // The bar: the Eye's health, its phase, and the Seen meter on the thin track
+    // The bar: the Eye's health and its phase
     ui.bossbar.hidden = false;
     ui.bfill.style.width = ui.bghost.style.width = (UB.hp / UB.max * 100) + '%';
-    ui.pfill.style.width = (UB.seen * 100) + '%';
-    ui.btag.textContent = UB.win > 0 ? `Root down · ${Math.ceil(UB.win)}s` : UB.phase === 'blink' ? 'The Blink' : UB.phase === 'sight' ? 'Parallel Sight' : UB.phase === 'crowns' ? 'The Stolen Crowns' : UB.seen > 0.05 ? 'Seen' : 'The Lids';
+    ui.pfill.style.width = '0%';
+    ui.btag.textContent = UB.phase === 'blink' ? 'The Blink' : UB.phase === 'final' ? 'Open' : UB.phase === 'sight' ? `Parallel Sight · ${ubRootsLeft()} roots` : UB.phase === 'crowns' ? (ubChained() ? 'The Stolen Crowns · warded' : 'The Stolen Crowns') : 'The Gaze';
     ui.obj.textContent = unblinkingText();
   }
 
-  // The brides: hidden until the Crowns, chained until freed, free after. Called by the loop right after the royals
-  // update (core/53-loop), before the frame renders, so it overrides their own idle pose.
+  // The brides: hidden until the Crowns, chained under the Vessel until freed, standing on the meadow after. Called
+  // by the loop right after the royals update (core/53-loop), before the frame renders, so it overrides their idle pose.
   function ubPoseBrides() {
+    ubHangs.forEach(h => { h.visible = false; });
     if (!UB.on) return;
-    const tt = uTime.value;
+    const tt = uTime.value, right = new THREE.Vector3(Math.cos(ubVessel.rotation.y), 0, -Math.sin(ubVessel.rotation.y));
     royals.forEach((r, i) => {
-      const show = UB.phase === 'crowns' || UB.freed[i] || ['lids2', 'sight', 'blink', 'final'].includes(UB.phase);
-      r.g.visible = show && G.world === 'moat'; r.pos.copy(UB_BRIDE_AT[i]); r.facing = yawTo(r.pos, player.position); r.g.rotation.y = r.facing;
-      r.body.position.y = UB.freed[i] ? 0.25 + Math.sin(tt * 1.5 + i) * 0.1 : 1.0 + Math.sin(tt * 0.8 + i) * 0.15;
-      r.body.rotation.x = UB.freed[i] ? 0 : 0.25;
+      const show = ['crowns', 'sight', 'blink', 'final'].includes(UB.phase) || UB.freed[i];
+      r.g.visible = show && G.world === 'moat';
+      if (!show) return;
+      const s = i ? 1 : -1;
+      if (UB.freed[i]) {
+        r.pos.set(UB_ARENA.x + s * 9, 0, UB_ARENA.z + 8);
+        r.body.position.y = r.hover + Math.sin(tt * 1.5 + i) * 0.1; r.body.rotation.x = 0;
+      } else {
+        r.pos.set(UB.pos.x + right.x * s * 3.3, 0, UB.pos.z + right.z * s * 3.3);
+        r.body.position.y = r.hover + 1.4 + Math.sin(tt * 0.8 + i) * 0.15; r.body.rotation.x = 0.25;
+        const h = ubHangs[i], top = ubVessel.position.y - 0.4, bot = r.body.position.y + 2.2, len = Math.max(0.5, top - bot);
+        h.visible = true; h.scale.y = len; h.position.set(r.pos.x, bot + len / 2, r.pos.z);
+      }
+      const c = ubChains[i]; c.g.position.set(r.pos.x, r.body.position.y + 0.6, r.pos.z); c.g.rotation.y = Math.sin(tt * 1.3 + i) * 0.2;
+      c.pos.copy(r.pos);
+      r.facing = yawTo(r.pos, player.position); r.g.rotation.y = r.facing;
     });
   }
+  // The chain targets must sit at ground level for the hero's reach check; their meshes hang above
+  ubChains.forEach(c => { c.pos = new THREE.Vector3(); });
 
   function ubUpdateBlink(dt) {
     const K = UB.blink; K.t += dt;
     const p = player.position;
     if (K.stage === 'wait' && K.t > 2.2) { K.stage = 'charge'; K.t = 0; K.parried = false; sfx('cast'); }
     if (K.stage === 'charge') {
-      ubTele.circle(p.x, ROOF.y, p.z, 2.4, K.t / 2.4);
+      ubTele.circle(p.x, 0, p.z, 2.4, K.t / 2.4);
       S1.blink = 0; moonEyeOpen(5);
       if (K.t >= 2.4) {
         K.stage = 'fire'; K.t = 0; ubTele.hide();
         sfx('boom'); G.shake = Math.max(G.shake, 0.7);
-        const src = p.clone().add(new THREE.Vector3(0, 0, -6));
-        hitPlayer(48, src, 10, true, UB_ATK);
+        hitPlayer(48, UB.pos.clone(), 10, true, UB_ATK);
         if (K.parried) {
           UB.phase = 'final'; ubDark.style.opacity = '0.55';
-          ubRoot.alive = true; ubRoot.g.visible = true; ubRoot.g.position.copy(UB_ALTAR); UB.win = 0;
-          showBanner('The pupil opens', 'It has nothing left to look with. Strike it.', 'title'); bannerTimer = 3;
+          showBanner('The Vessel falls open', 'It has nothing left to look with. Strike it.', 'title'); bannerTimer = 3;
           floatText('IT BLINKS', p.clone().add(new THREE.Vector3(0, 3.2, 0)), 'word', '#fff2c8');
         } else floatText('parry as it fires', p.clone().add(new THREE.Vector3(0, 3.2, 0)), 'word', '#ffb07a');
       }
@@ -346,23 +329,26 @@
   }
 
   function ubClear() {
-    UB.tears.forEach(T => { T.tele.hide(); scene.remove(T.m); }); UB.tears.length = 0;
-    ubTele.hide(); ubArena.visible = false; ubDark.style.opacity = '0';
-    [...ubMirrors, ubRoot, ...ubChains, ...ubWorldRoots].forEach(t => { t.alive = false; t.g.visible = false; });
-    UB.on = false; UB.phase = ''; ui.bossbar.hidden = true; ui.bname.textContent = 'The Gate Warden';
+    ubOrbs.forEach(O => scene.remove(O.m)); ubOrbs.length = 0;
+    clearStrikes(); ubTele.hide(); ubBeam.visible = false; ubDark.style.opacity = '0';
+    [ubCore, ...ubChains, ...ubWorldRoots].forEach(t => { t.alive = false; if (t.g) t.g.visible = false; });
+    ubHangs.forEach(h => { h.visible = false; });
+    lmDead.forEach(c => { if (c.alive && !c.goal) dropMob(c); });
+    UB.on = false; UB.phase = ''; ui.bossbar.hidden = true; ui.hud.hidden = false; ui.bname.textContent = 'The Gate Warden';
   }
   function ubRestoreRoyals() {
     if (!UB.keep) return;
     royals.forEach((r, i) => { const k = UB.keep[i]; r.pos.copy(k.pos); r.facing = k.facing; r.field = k.field; r.state = k.state; r.active = k.active; r.alive = k.alive; r.g.visible = k.vis; r.body.position.y = r.hover; r.body.rotation.set(0, 0, 0); });
     UB.keep = null;
   }
-  // Death in the Dark Half: the gate stays open; respawn puts the brides and the roof back
+  // Death or fleeing: the Vessel goes back up to wait, and the brides go back to the land
   function ubAbort() { ubClear(); ubRestoreRoyals(); }
   function ubWin() {
     ubClear();
     G.lock = false; G.target = null; G.slow = 1.2;
     sfx('bossdown', 'royals'); G.shake = 1;
-    const pr = ubProg(); pr.eyeDone = 1; pr.eyeGate = 0;
+    const pr = lmProg(); pr.eyeDone = 1; pr.eyeBound = 0; pr.bindOn = 0;
+    ubVessel.visible = false;
     playEnding();
   }
 
@@ -380,7 +366,7 @@
   const EN_END = 41, EN_FIREWORKS = [13, 15, 17, 26, 27.5, 29, 30.5];
   const EN_LINES = [
     [0.8, 5.8, '', 'The Eye closed, and did not open again.'],
-    [6.5, 9.2, '', 'The gate on the roof closed behind her. The Warden did not come back through it.'],
+    [6.5, 9.2, '', 'The threads of moonlight went slack. The Warden had held them to the last, and he did not let go.'],
     [9.2, 12, 'A voice in the lantern', 'He kept the gate this time. Let him rest.'],
     [13, 16, 'Nyxara', 'Under this moon, I keep you.'],
     [16.2, 19.5, 'Vesthra', 'Under this moon, I keep you.'],

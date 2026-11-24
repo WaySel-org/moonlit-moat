@@ -14,8 +14,8 @@
     requestAnimationFrame(frame);
     const real = Math.min(0.05, (now - last) / 1000); last = now;
     let dt = real;
-    if (!G.shop && !G.paused) worldTick(real);
-    if (G.shop || G.paused) dt = 0;
+    if (!G.shop && !G.paused && !G.menu) worldTick(real);
+    if (G.shop || G.paused || G.menu) dt = 0;
     else if (G.hitstop > 0) { G.hitstop -= real; dt = 0; }
     else if (G.slow > 0) { G.slow -= real; dt = real * 0.3; }
     uTime.value += dt;
@@ -40,7 +40,7 @@
     if (inMoat) updatePuzzles(dt);
     updateSwooshes(dt);
     if (inMoat) { updateBeasts(dt); mountModelUpdate(dt); if (!G.storm) updateHunt(dt); }
-    if (inMoat && !G.storm && G.state === 'interlude' && !(G.royalLull > 0) && !ubGateOpen() && !UB.on && !EN.on && player.position.y > ROOF.y - 0.5 && Math.abs(player.position.z) > 20) startRoyal();
+    if (inMoat && !G.storm && G.state === 'interlude' && !(G.royalLull > 0) && !UB.on && !EN.on && player.position.y > ROOF.y - 0.5 && Math.abs(player.position.z) > 20) startRoyal();
     if (!G.shop && !G.paused) { updateWorlds(dt, real); updateAscension(dt, real); updateMythics(dt, real); }
     if (G.wardenDown) wards.forEach(w => { if (w.visible) { w.material.opacity -= real * 0.6; if (w.material.opacity <= 0) w.visible = false; } });
     else wards.forEach(w => { w.material.opacity = 0.55 + 0.2 * Math.sin(t * 6); });

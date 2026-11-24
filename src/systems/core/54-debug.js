@@ -5,7 +5,7 @@
       royals, startRoyalHunt, startHunt, enterWorld, WORLDS, raiders, startRaid, startWave, wavePool, KITS, dropGear, swordFeed, upgradeSword, openInv, jump, startEvent, startStage, NEUTRAL_CAMPS, damageRaider, damageRoyal,
       ascend, wakeMythic, saveGame, loadGame, deathPenalty, killPlayer, respawn, takeRelic, WORLDS, mythics, killCreep, killRoyal, startRoyal, groundAt, chests, RINGS, beasts, beginTame, camera, frame,
       sfx, SFX, sfxMeter, moonEyeOpen, moonGlance, playPreface, skipPreface, prefaceTime: () => PF.on ? +PF.t.toFixed(1) : -1, brideLucid, seasonOneEnd, fieldRoyalDown,
-      UB, ubTargets, startUnblinking, ubSetPhase, playEnding, skipEnding, endingTime: () => EN.on ? +EN.t.toFixed(1) : -1 };
+      UB, ubTargets, startUnblinking, ubSetPhase, LM, lmDead, lmRaise, lmProg, lmSummon, BD, playEnding, skipEnding, endingTime: () => EN.on ? +EN.t.toFixed(1) : -1 };
   }
   // Renders one sound effect offline and reports its length, peak and loudness, for tuning levels without listening
   async function sfxMeter(kind, beast) {

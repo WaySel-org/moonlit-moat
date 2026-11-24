@@ -259,11 +259,23 @@ body.touch { touch-action: manipulation; -webkit-user-select: none; user-select:
 body.touch #inv .card, body.touch #hero .body, body.touch #panel { touch-action: pan-y; }
 #newgame { font: inherit; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 7px 14px; cursor: pointer; }
 #newgame[data-armed="1"] { color: var(--blood); border-color: var(--blood); }
+#modebtn { font: inherit; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: transparent; border: 1px solid var(--line); border-radius: 4px; padding: 7px 14px; cursor: pointer; }
+/* The mode picker: shown when the game opens, before any save is loaded */
+#modesel:not([hidden]) { position: fixed; inset: 0; display: grid; place-items: center; padding-inline: 16px; background: rgba(0,0,0,.62); z-index: 6; }
+#modesel .card { width: min(480px, 100%); box-sizing: border-box; display: grid; gap: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 22px; font-size: 12px; }
+#modesel h2 { margin: 0; text-align: center; font-size: 22px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--moon); font-weight: 600; }
+#modesel p { margin: 0; text-align: center; color: var(--muted); line-height: 1.45; }
+#modesel .mode { display: grid; gap: 6px; text-align: left; font: inherit; color: var(--moon); background: rgba(255,255,255,0.02); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; cursor: pointer; }
+#modesel .mode:hover, #modesel .mode:focus-visible { border-color: var(--moon); outline: none; background: rgba(239,230,194,0.06); }
+#modesel .mode b { font-size: 14px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 600; }
+#modesel .mode kbd { font: inherit; font-size: 10px; color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 0 5px; margin-left: 6px; }
+#modesel .mode span { color: var(--muted); line-height: 1.45; }
+#modesel .mode i { font-style: normal; font-size: 11px; letter-spacing: 0.06em; color: var(--moon); opacity: 0.8; }
 
 /* ---------- Controls: key help, rebinding, pause controls list (controls agent) ---------- */
 #keyhelp kbd + kbd { margin-left: 1px; }
 #keyhelp .khint { color: var(--muted); opacity: .8; }
-#pause .card { max-height: calc(100dvh - 32px); grid-template-rows: auto auto auto auto minmax(0, 1fr); }
+#pause .card { max-height: calc(100dvh - 32px); grid-template-rows: auto auto auto auto auto minmax(0, 1fr); }
 #controlsbox { min-height: 0; max-height: min(46vh, 340px); overflow-y: auto; overscroll-behavior: contain; text-align: left; border-top: 1px solid var(--line); padding: 10px 2px 2px; scrollbar-width: thin; }
 #controlsbox h3 { margin: 0 0 2px; font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--moon); }
 #controlsbox h4 { margin: 10px 0 4px; font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }

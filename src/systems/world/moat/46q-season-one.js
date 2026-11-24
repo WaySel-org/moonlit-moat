@@ -8,6 +8,8 @@
   //  - The ending beat: after the brides first fall on the throne, the eye opens and the Warden speaks.
   // Flags live in G.story.prog (s1open, s1end, lucid) so they save and a new game clears them.
   const STORY_SEASON = 1;
+  // The story plays only in Story mode (core/55-save's picker); Free play is the moat as it was before the seasons
+  const storyOn = () => G.mode === 'story' && STORY_SEASON >= 1;
   const S1 = { open: 0, want: 0, wait: 0, blink: 0, glance: 0, gz: 0, mend: 0 }; // mend: the moon whole again (the ending)
   const s1Prog = () => G.story.prog;
 
@@ -58,9 +60,9 @@
   let lightBase = null;
   eye.scale.y = 0.03; eye.visible = false;
 
-  function moonEyeOpen(secs) { if (STORY_SEASON < 1) return; S1.want = Math.max(S1.want, secs); }
+  function moonEyeOpen(secs) { if (!storyOn()) return; S1.want = Math.max(S1.want, secs); }
   // A glance turns the camera up to the moon for a few seconds; only outside fights, and never with reduced motion
-  function moonGlance(secs) { if (STORY_SEASON >= 1 && !reduce && (G.state === 'explore' || G.state === 'interlude')) S1.glance = Math.max(S1.glance, secs); }
+  function moonGlance(secs) { if (storyOn() && !reduce && (G.state === 'explore' || G.state === 'interlude')) S1.glance = Math.max(S1.glance, secs); }
   const seasonGaze = () => S1.gz;
 
   function updateSeason(real) {
@@ -79,7 +81,7 @@
     const p = player.position;
     pupil.position.x = clamp(p.x / 70, -1, 1) * 2.4; pupil.position.y = clamp(-p.z / 140, -1, 1) * 0.8;
     // The moon gives way to the eye
-    const moonGone = o > 0.35; moon.visible = !moonGone; darkHalf.visible = !moonGone && !S1.mend && G.world === 'moat'; cracks.forEach(s => { s.visible = !moonGone && !S1.mend; });
+    const moonGone = o > 0.35; moon.visible = !moonGone; const broken = storyOn(); darkHalf.visible = broken && !moonGone && !S1.mend && G.world === 'moat'; cracks.forEach(s => { s.visible = broken && !moonGone && !S1.mend; });
     // ...but stays behind it broken in two, the halves drifting apart, with the fault running through the eye
     halfL.visible = halfR.visible = moonGone; halfL.position.x = -4.2 * o; halfR.position.x = 4.2 * o; halfL.rotation.z = 0.12 * o; halfR.rotation.z = -0.12 * o;
     fault.visible = o > 0.02; fault.scale.y = o; faultGlow.opacity = (0.65 + 0.35 * Math.sin(uTime.value * 7)) * o;
@@ -104,7 +106,7 @@
     updatePreface(real); updateUnblinking(real);
     // The wedding preface plays once per save, after any banner already up has gone
     const pr = s1Prog();
-    if (pr.s1open || PF.on || G.paused || G.state !== 'explore' || G.world !== 'moat') return;
+    if (!storyOn() || pr.s1open || PF.on || G.paused || G.state !== 'explore' || G.world !== 'moat') return;
     S1.wait += real;
     if (S1.wait < 1.5 || (!ui.banner.hidden && S1.wait < 9)) return;
     playPreface();
@@ -194,7 +196,7 @@
     gorgon: ['My guests. Are they still safe?', 'Stone does not fade. Remember that.', 'Something is wearing my face.', 'Tell the dragon the party is over.']
   };
   function brideLucid(r) {
-    if (STORY_SEASON < 1) return;
+    if (!storyOn()) return;
     const pr = s1Prog(), k = r.kind === 'gorgon' ? 'gorgon' : 'empress';
     pr.lucid = pr.lucid || {}; const n = pr.lucid[k] || 0; pr.lucid[k] = n + 1;
     const line = LUCID[k][n % LUCID[k].length], who = k === 'gorgon' ? 'Vesthra, for a moment' : 'Nyxara, for a moment';
@@ -204,7 +206,7 @@
   // The season's ending: the first time the brides fall on the throne
   function seasonOneEnd() {
     const pr = s1Prog();
-    if (STORY_SEASON < 1 || pr.s1end) return;
+    if (!storyOn() || pr.s1end) return;
     pr.s1end = 1;
     setTimeout(() => {
       moonEyeOpen(12); moonGlance(5);
