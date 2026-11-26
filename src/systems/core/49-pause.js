@@ -7,5 +7,5 @@
   function togglePause() { setPause(!G.paused); }
   document.getElementById('pausebtn').addEventListener('click', togglePause);
   document.getElementById('resumebtn').addEventListener('click', () => setPause(false));
-  document.addEventListener('visibilitychange', () => { if (document.hidden) setPause(true); });
-  window.addEventListener('blur', () => setPause(true));
+  document.addEventListener('visibilitychange', () => { if (document.hidden && !G.menu) setPause(true); });
+  window.addEventListener('blur', () => { if (!G.menu) setPause(true); });

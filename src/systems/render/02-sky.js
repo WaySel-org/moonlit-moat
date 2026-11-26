@@ -23,7 +23,7 @@
     for (let i = 0; i < 26; i++) { const r = 6 + sr() * 26; g.fillStyle = `rgba(150,145,125,${0.25 + sr() * 0.35})`; g.beginPath(); g.arc(sr() * w, sr() * h, r, 0, TAU); g.fill(); }
   });
   const moon = new THREE.Mesh(new THREE.SphereGeometry(9, 32, 16), new THREE.MeshBasicMaterial({ map: moonTex }));
-  moon.position.set(16, 40, -170);
+  moon.position.set(34, 40, -170); // right of the keep roof, so the hero can see it from the gate (Season 1 eye)
   scene.add(moon);
   const haloTex = canvasTex(128, 128, (g, w, h) => {
     const gr = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);

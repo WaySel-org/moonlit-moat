@@ -3,3 +3,5 @@ dist/
 .vercel/
 .DS_Store
 __pycache__/
+# Unreleased story (spoilers); the repository is public
+lore/vault/

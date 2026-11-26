@@ -116,7 +116,7 @@
     if (G.target === r) G.target = null;
     const other = royals.find(o => o.alive && o.field);
     if (other) { other.enraged = true; if (other.where === realmKey()) floatText('ENRAGED', other.pos.clone().add(new THREE.Vector3(0, 3.8, 0)), 'word'); }
-    showBanner(`${r.name} falls`, 'She will rise again in two minutes, two levels stronger.', 'title'); bannerTimer = 3;
+    showBanner(`${r.name} falls`, 'She will rise again in two minutes, two levels stronger.', 'title'); bannerTimer = 3; brideLucid(r);
     if (G.royalHunt && !royals.some(o => o.alive)) endRoyalHunt(false, 'Both royals are down and the hunt breaks. They will be back, stronger.');
   }
   function riseRoyal(r, i) {
@@ -136,7 +136,7 @@
       if (r.where !== realmKey() || flatDist(r.pos, player.position) > 30) r.cross = 2.5 + i * 2.5;
     });
     showBanner('The Royal Hunt', 'Vesthra and Nyxara are coming for you, and every creep here comes with them. They follow you through gates, rifts and the Veil. Survive 60 seconds, or bring them down.', 'title');
-    bannerTimer = 4.5; sfx('bossintro', 'royals'); G.shake = Math.max(G.shake, 0.5);
+    bannerTimer = 4.5; sfx('bossintro', 'royals'); G.shake = Math.max(G.shake, 0.5); moonEyeOpen(5);
   }
   function endRoyalHunt(quiet, msg) {
     if (!G.royalHunt) return;

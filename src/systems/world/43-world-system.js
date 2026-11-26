@@ -26,7 +26,8 @@
     return `${lab} \u00b7 ${W.name}: ${W.task} (${ST.prog[w].filter(v => v >= 1).length}/3).`;
   }
   function objectiveText() {
-    const ev = [royalHuntText(), waveText(), eventText()].filter(Boolean).join(' '), t = (ev ? ev + ' ' : '') + chapterText(G.world);
+    const ub = G.world === 'moat' ? unblinkingText() : null;
+    const ev = [royalHuntText(), waveText(), eventText()].filter(Boolean).join(' '), t = (ev ? ev + ' ' : '') + (ub || chapterText(G.world));
     return G.storm ? `Rift storm \u00b7 ${fmtTime(Math.ceil(Math.max(0, G.storm.t)))} until it lets go. ${t}` : t;
   }
   function worldPrompt() {
@@ -103,7 +104,7 @@
     if (G.state === 'dead' || G.state === 'won') return 'Not now';
     if (G.realm === 'spirit') return 'The World Gate does not answer in the Spirit Realm';
     if (G.hunt) return 'Not while the Warden hunts you';
-    if (G.state === 'fight' || G.state === 'intro' || G.state === 'royal') return 'Not in the middle of a boss fight';
+    if (G.state === 'fight' || G.state === 'intro' || G.state === 'royal' || G.state === 'eye') return 'Not in the middle of a boss fight';
     if (storyBossEngaged()) return 'Not while a shard guardian is on you';
     if (titanEngaged()) return 'Not while the Bellringer is on you';
     if (G.storm && !ignoreStorm) return 'The rift storm holds you here';

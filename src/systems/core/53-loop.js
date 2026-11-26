@@ -23,7 +23,7 @@
     const inMoat = G.world === 'moat';
     if (inMoat) { updateBoss(dt); wardenModelUpdate(dt); updatePods(dt); }
     updateBolts(dt);
-    royals.forEach(r => updateRoyal(r, dt)); nyxaraModelUpdate(dt); vesthraModelUpdate(dt); updateShots(dt);
+    royals.forEach(r => updateRoyal(r, dt)); ubPoseBrides(); nyxaraModelUpdate(dt); vesthraModelUpdate(dt); updateShots(dt);
     if (inMoat) { updateDragon(dt); cinderwingModelUpdate(dt); }
     updateFireworks(dt);
     updatePatches(dt);
@@ -36,7 +36,7 @@
     if (inMoat) updatePuzzles(dt);
     updateSwooshes(dt);
     if (inMoat) { updateBeasts(dt); mountModelUpdate(dt); if (!G.storm) updateHunt(dt); }
-    if (inMoat && !G.storm && G.state === 'interlude' && !(G.royalLull > 0) && player.position.y > ROOF.y - 0.5 && Math.abs(player.position.z) > 20) startRoyal();
+    if (inMoat && !G.storm && G.state === 'interlude' && !(G.royalLull > 0) && !UB.on && !EN.on && player.position.y > ROOF.y - 0.5 && Math.abs(player.position.z) > 20) startRoyal();
     updateWorlds(dt, real); updateAscension(dt, real); updateMythics(dt, real);
     if (G.wardenDown) wards.forEach(w => { if (w.visible) { w.material.opacity -= real * 0.6; if (w.material.opacity <= 0) w.visible = false; } });
     else wards.forEach(w => { w.material.opacity = 0.55 + 0.2 * Math.sin(t * 6); });
@@ -82,7 +82,7 @@
     requestAnimationFrame(frame);
     const real = Math.min(0.05, (now - last) / 1000); last = now;
     // A zero delta still lets contact checks resolve. Keep simulation out of paused/menu frames.
-    if (!G.shop && !G.paused) stepGame(real);
+    if (!G.shop && !G.paused && !G.menu) stepGame(real);
     const t = uTime.value;
 
     torches.forEach(tc => { const k = 0.85 + 0.15 * Math.sin(t * 13 + tc.phase) * Math.sin(t * 7.3 + tc.phase * 2); tc.light.intensity = 2.2 * k; tc.flame.scale.set(1, k, 1); });
@@ -120,8 +120,19 @@
     camPull = first ? clear : camPull + (clear - camPull) * (1 - Math.pow(clear < camPull ? 1e-7 : 0.25, real));
     const wantPos = head.clone().lerp(ideal, camPull).add(new THREE.Vector3(0, (1 - camPull) * 1.5, 0));
     const wantLook = player.position.clone().addScaledVector(cf, 3.5 * camPull).setY(camBase + 1.2 + (body - camBase) * 0.5);
+    // Story glances (Season 1): turn the view up toward the moon for a moment
+    // Free look: the player dragged the view up toward the sky; it eases down once she moves or fights
+    if (pitch > 0) {
+      if (inFight || moveInput().lengthSq() > 0.01) pitch = Math.max(0, pitch - real * 0.8);
+      const e = 0.12 + 0.75 * pitch, up = camPos.clone().add(cf.clone().multiplyScalar(Math.cos(e) * 20)).add(new THREE.Vector3(0, Math.sin(e) * 20, 0));
+      wantLook.lerp(up, Math.min(1, pitch * 1.4));
+    }
+    const gz = seasonGaze();
+    // Aim a little under the moon so it sits above the centre banner
+    if (gz > 0) wantLook.lerp(camPos.clone().add(moon.position.clone().setY(moon.position.y - 45).sub(camPos).normalize().multiplyScalar(20)), gz);
     const k = first ? 1 : 1 - Math.pow(0.0004, real);
     camPos.lerp(wantPos, k); camLook.lerp(wantLook, k); first = false;
+    seasonCutCam(camPos, camLook); endingCutCam(camPos, camLook);
     // Shake: G.shake is trauma (0..1) that decays; the camera moves trauma squared times smooth noise (a few
     // incommensurate sines per axis) plus a small roll, instead of a fresh random jolt every frame
     G.shake = Math.max(0, G.shake - real * 1.8);
@@ -220,7 +231,7 @@
         b.row.classList.toggle('dead', !r.alive);
       });
     }
-    updateHud(real);
+    updateHud(real); updateSeason(real);
     const mark = G.lock ? lockTarget() : null;
     ui.lockmark.hidden = !mark;
     if (mark) {

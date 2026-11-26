@@ -291,6 +291,7 @@
     sfx('bossdown', r.kind === 'gorgon' ? 'gorgon' : 'empress'); G.slow = 0.6;
     burst(r.pos.x, ROOF.y + 1.5, r.pos.z, 40, 7);
     reward(250 * tierMult(G.bossTier || 1), 140 * tierMult(G.bossTier || 1), r.pos.clone().add(new THREE.Vector3(0, 3, 0)));
+    brideLucid(r);
     const other = royals.find(o => o.alive);
     if (other) { other.enraged = true; floatText('ENRAGED', other.pos.clone().add(new THREE.Vector3(0, 3.8, 0)), 'word'); }
     else winGame();

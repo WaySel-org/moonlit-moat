@@ -83,4 +83,5 @@
       c.fillRect(x - k * 0.7, z - k * 0.5, k * 1.2, k * 1.2);
       c.beginPath(); c.arc(x - k * 0.1, z - k * 0.62, k * 0.32, 0, TAU); c.fill(); c.beginPath(); c.arc(x + k * 0.62, z + k * 0.1, k * 0.32, 0, TAU); c.fill();
     });
+    drawLandmarks(c, X, Z, big);
   }

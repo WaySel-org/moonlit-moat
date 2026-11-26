@@ -2,6 +2,7 @@
   const WARDEN = { get pos() { return boss.position; }, radius: 1.3, hitY: 2.6, markY: 6.3, isWarden: true };
   function isLiveTarget(t, realm, inMoat) {
     if (t.isWarden) return inMoat && HITTABLE.includes(B.state);
+    if (t.isEye) return inMoat && UB.on && t.alive;
     if (!t.alive) return false;
     if (t.isCreep) return t.realm === realm && flatDist(t.pos, player.position) < (t.ai === 'godling' || t.mythic ? 40 : 26);
     if (t.isRaider) return t.g.visible && flatDist(t.pos, player.position) < 40;
@@ -15,6 +16,7 @@
     royals.forEach(add);
     raiders.forEach(add);
     creeps.forEach(add);
+    if (inMoat) out.push(...ubTargets());
     return out;
   }
   function nearestTarget(list, from) {
@@ -30,7 +32,7 @@
     G.target = nearestTarget(bosses.length ? bosses : live, player.position);
     return G.target;
   }
-  function damageEnemy(t, dmg, poiseDmg, heavy) { if (t.isWarden) damageBoss(dmg, poiseDmg, heavy); else if (t.isCreep) damageCreep(t, dmg, poiseDmg, heavy); else if (t.isRaider) damageRaider(t, dmg, poiseDmg, heavy); else damageRoyal(t, dmg, poiseDmg, heavy); }
+  function damageEnemy(t, dmg, poiseDmg, heavy) { if (t.isEye) damageEye(t, dmg, poiseDmg, heavy); else if (t.isWarden) damageBoss(dmg, poiseDmg, heavy); else if (t.isCreep) damageCreep(t, dmg, poiseDmg, heavy); else if (t.isRaider) damageRaider(t, dmg, poiseDmg, heavy); else damageRoyal(t, dmg, poiseDmg, heavy); }
 
   // Moves the player, sliding along walls and refusing ledges taller than a step
   // What the hero stands on at (x, z): the walkable height, the top of a solid she can get onto, or null for a wall.
@@ -160,6 +162,7 @@
         if (relicHas('ward')) { P.mana = Math.min(P.manaMax, P.mana + 25); P.st = P.stMax; floatText('Wardstone', player.position.clone().add(new THREE.Vector3(0, 2.9, 0)), 'word', '#bff6ff'); }
         if (attacker && attacker.isCreep) { attacker.stun = 1.3; attacker.atk = null; attacker.tele.hide(); }
         else if (attacker && attacker.isRaider) { attacker.state = 'rest'; attacker.t = 0; attacker.tele.hide(); }
+        else if (attacker && attacker.isEye) eyeParried();
         else if (attacker) staggerRoyal(attacker, 1.3, 'STUNNED'); else staggerBoss(1.3, 'STUNNED');
         return false;
       }

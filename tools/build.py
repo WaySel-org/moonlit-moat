@@ -30,7 +30,7 @@ ASSETS = DIST / 'a'
 FONTS = ROOT / 'vendor' / 'fonts'
 # Gzip bytes a phone fetches before the first frame (HTML, CSS, scripts, preloaded font).
 # Raised for the QOL batch; real art assets are coming, so this is a sanity ceiling, not a design limit
-BUDGET_KB = 400
+BUDGET_KB = 420
 
 REQUIRED = {
     'character': ['id', 'name', 'kind', 'world', 'originality'],
