@@ -128,6 +128,7 @@ def build():
             'godling': emit('godling.glb', (ROOT / 'assets' / 'creeps' / 'godling.glb').read_bytes()),
             'oni': emit('oni.glb', (ROOT / 'assets' / 'mythics' / 'oni.glb').read_bytes()),
             'minotaur': emit('minotaur.glb', (ROOT / 'assets' / 'mythics' / 'minotaur.glb').read_bytes()),
+            'basilisk': emit('basilisk.glb', (ROOT / 'assets' / 'mythics' / 'basilisk.glb').read_bytes()),
             'cinderwing': emit('cinderwing.glb', (ROOT / 'assets' / 'bosses' / 'cinderwing.glb').read_bytes()),
             'rex': emit('tyrant-rex.glb', (ROOT / 'assets' / 'bosses' / 'tyrant-rex.glb').read_bytes()),
             'drake': emit('drake.glb', (ROOT / 'assets' / 'mounts' / 'drake.glb').read_bytes()),
